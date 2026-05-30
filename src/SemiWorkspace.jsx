@@ -80,6 +80,41 @@ export default function SemiWorkspace({ parsedData }) {
   
   const handleDeselectAllExport = () => setCheckedExportScenes({});
 
+  // 🚀 HÀM XỬ LÝ TẢI VIDEO XUỐNG MÁY (Click chuột ảo)
+  const handleDownloadVideos = () => {
+    const selectedCount = Object.values(checkedExportScenes).filter(Boolean).length;
+    if (selectedCount === 0) return alert("Vui lòng chọn ít nhất 1 scene để Export!");
+
+    // Lọc ra những scene đã được tick chọn
+    const scenesToExport = parsedData.filter(scene => checkedExportScenes[scene.scene_n]);
+    let validCount = 0;
+
+    scenesToExport.forEach((scene, index) => {
+      // Nếu scene không có link video thì bỏ qua
+      if (!scene.videoUrl) return; 
+
+      // Dùng setTimeout để tách thời gian tải từng file ra (tránh bị trình duyệt chặn spam)
+      setTimeout(() => {
+        const a = document.createElement('a');
+        a.href = scene.videoUrl;
+        a.download = `Scene_${scene.scene_n}_Output.mp4`; // Đặt tên file lưu về máy
+        document.body.appendChild(a);
+        a.click();
+        a.remove(); // Tải xong thì xóa nút tàng hình đi
+      }, index * 800); // Mỗi file cách nhau 0.8 giây
+
+      validCount++;
+    });
+
+    if (validCount > 0) {
+      alert(`✅ Đang tiến hành tải ${validCount} video về máy!\n(Vui lòng kiểm tra thư mục Downloads hoặc góc phải trình duyệt)`);
+    } else {
+      alert("❌ Các cảnh bạn chọn chưa có video thực tế để xuất!");
+    }
+    
+    setIsExportModalOpen(false); // Đóng bảng modal
+  };
+
   // --- LOGIC VOICE CLONE ---
   const handleVoiceUpload = (e) => {
     const file = e.target.files[0];
@@ -324,12 +359,10 @@ export default function SemiWorkspace({ parsedData }) {
             </div>
             <div className="flex justify-end gap-2 border-t border-[#2A2A30] pt-3 mt-3 shrink-0">
               <button onClick={() => setIsExportModalOpen(false)} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-md font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={() => {
-                  const selectedCount = Object.values(checkedExportScenes).filter(Boolean).length;
-                  if(selectedCount === 0) return alert("Vui lòng chọn ít nhất 1 scene để Export!");
-                  alert(`Đang tiến hành Export ${selectedCount} cảnh!`);
-                  setIsExportModalOpen(false);
-                }} className="h-8 px-4 bg-green-600 hover:bg-green-500 text-white rounded-md font-bold shadow-md cursor-pointer">Xuất File</button>
+              
+              {/* NÚT XUẤT FILE ĐÃ ĐƯỢC GẮN LOGIC MỚI */}
+              <button onClick={handleDownloadVideos} className="h-8 px-4 bg-green-600 hover:bg-green-500 text-white rounded-md font-bold shadow-md cursor-pointer">Xuất File</button>
+              
             </div>
           </div>
         </div>
