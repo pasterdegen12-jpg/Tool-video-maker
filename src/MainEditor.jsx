@@ -3,6 +3,9 @@ import { FileText, Upload, Scissors, ArrowRight, CheckCircle2, Loader2, Download
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 
+// 1. SỬA CHỮ .jsc THÀNH .js Ở ĐÂY 👇
+import { autoSaveToFirebase } from './firebase.js'; 
+
 // GỌI NGƯỜI NHÀ
 import coreURL from './ffmpeg-core.js?url';
 import wasmURL from './ffmpeg-core.wasm?url';
@@ -18,22 +21,19 @@ export default function MainEditor({ onComplete }) {
   const fileInputRef = useRef(null);
   const ffmpegRef = useRef(new FFmpeg());
 
-  // === DÁN API KEY VÀO ĐÂY ===
   const handleParseScript = async () => {
     if (!script) return alert("Vui lòng nhập kịch bản!");
     
-    // 1. Gom 3 key từ file .env vào một danh sách
     const geminiKeys = [
       import.meta.env.VITE_GEMINI_KEY_1,
       import.meta.env.VITE_GEMINI_KEY_2,
       import.meta.env.VITE_GEMINI_KEY_3
-    ].filter(Boolean); // Lọc bỏ đi nếu bạn lỡ quên điền key nào đó
+    ].filter(Boolean);
 
     if (geminiKeys.length === 0) {
       return alert("Bạn chưa dán API Key Gemini nào trong file .env!");
     }
 
-    // 2. Rút thăm ngẫu nhiên 1 key trong danh sách để gọi AI
     const randomKey = geminiKeys[Math.floor(Math.random() * geminiKeys.length)];
 
     setIsParsing(true);
@@ -49,7 +49,6 @@ Mỗi object bắt buộc phải có ĐỦ các trường sau:
 - status: "pending".
 Kịch bản cần bóc tách: ${script}`;
       
-      // Gọi API với cái key vừa bốc thăm được
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${randomKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: { response_mime_type: "application/json" } })
@@ -101,6 +100,15 @@ Kịch bản cần bóc tách: ${script}`;
 
       setParsedData(updatedData);
       setCutComplete(true);
+      
+      // TỰ ĐỘNG: Đẩy lên Cloudinary chạy nền
+      autoSaveToFirebase(updatedData, "Video Project - " + new Date().toLocaleTimeString())
+        .catch(err => console.error("Lỗi đồng bộ nền:", err));
+        
+      // TỰ ĐỘNG: Đá bay sang tab SemiWorkspace luôn
+      if (typeof onComplete === 'function') {
+        onComplete(updatedData);
+      }
     } catch (error) {
       console.error("❌ LỖI:", error);
       alert("Lỗi khi cắt video! F12 xem chi tiết.");
@@ -110,7 +118,6 @@ Kịch bản cần bóc tách: ${script}`;
   };
 
   return (
-    // Đã thay h-full thành h-screen ở đây để cố định khung
     <div className="flex h-screen w-full font-sans bg-[#0E0E10] p-6 gap-6 overflow-hidden text-white">
       
       <div className="flex-1 bg-[#15151A] border border-[#2A2A30] rounded-xl p-6 flex flex-col shadow-lg min-h-0">
@@ -121,7 +128,6 @@ Kịch bản cần bóc tách: ${script}`;
         </button>
 
         {parsedData && (
-          // Đã thêm overflow-y-auto và min-h-0 vào đây để tạo thanh cuộn xịn xò
           <div className="flex-1 border border-[#2A2A30] rounded-lg overflow-y-auto min-h-0 bg-[#0E0E10]">
             <table className="w-full text-sm text-left text-gray-400">
               <thead className="text-xs text-gray-300 uppercase bg-[#1E1E24] border-b border-[#2A2A30] sticky top-0 z-10">
@@ -160,21 +166,24 @@ Kịch bản cần bóc tách: ${script}`;
         <div className={`flex-1 bg-[#15151A] border rounded-xl p-6 flex flex-col justify-center items-center text-center transition-all duration-500 min-h-0 ${cutComplete ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.15)]' : 'border-[#2A2A30] opacity-50'}`}>
           <h2 className="text-xl font-bold mb-2">3. Hoàn tất</h2>
           <p className="text-sm text-gray-400 mb-6">Dữ liệu đã sẵn sàng. Hệ thống sẽ tạo một Project Workspace riêng để bạn biên tập chi tiết.</p>
-          {/* NÚT BẤM CÓ TÍCH HỢP RADAR DÒ LỖI */}
-<button 
-  onClick={() => {
-    console.log(">> Đã click nút chuyển Tab!");
-    if (typeof onComplete === 'function') {
-      onComplete(parsedData);
-    } else {
-      alert("🚨 LỖI ĐỨT CÁP: Nút thì bấm được nhưng file App.jsx chưa cắm dây 'onComplete' sang đây! Hãy kiểm tra lại file App.jsx!");
-    }
-  }} 
-  disabled={!cutComplete} 
-  className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white px-6 py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 w-full cursor-pointer disabled:cursor-not-allowed"
->
-  Vào Project Workspace <ArrowRight size={18} />
-</button>
+          
+          <button 
+            onClick={() => {
+              console.log(">> Đã click nút chuyển Tab!");
+              if (typeof onComplete === 'function') {
+                autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString())
+                  .catch(err => console.error("Lỗi đồng bộ nền:", err));
+                onComplete(parsedData);
+              } else {
+                alert("🚨 LỖI ĐỨT CÁP: Nút thì bấm được nhưng file App.jsx chưa cắm dây 'onComplete' sang đây! Hãy kiểm tra lại file App.jsx!");
+              }
+            }} 
+            disabled={!cutComplete} 
+            className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white px-6 py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 w-full cursor-pointer disabled:cursor-not-allowed"
+          >
+            Vào Project Workspace <ArrowRight size={18} />
+          </button>
+          
         </div>
       </div>
     </div>

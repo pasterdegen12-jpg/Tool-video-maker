@@ -1,20 +1,20 @@
 import React, { useState, useRef } from 'react';
-import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2 } from 'lucide-react';
+import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play } from 'lucide-react';
 
 export default function SemiWorkspace({ parsedData }) {
-  // --- STATE QUẢN LÝ CÁC MODAL VÀ TÍNH NĂNG ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
-  
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [checkedExportScenes, setCheckedExportScenes] = useState({});
-
   const [voiceCloneUrl, setVoiceCloneUrl] = useState(null);
   const [voiceCloneFile, setVoiceCloneFile] = useState(null);
   const fileInputRef = useRef(null);
-
   const [mergeOptions, setMergeOptions] = useState({});
   const [audioVolumes, setAudioVolumes] = useState({});
+
+  // 🚀 STATE: Quản lý file Audio trả về từ Dia TTS
+  const [generatedAudios, setGeneratedAudios] = useState({}); 
+  const [isGenerating, setIsGenerating] = useState({}); 
 
   if (!parsedData || parsedData.length === 0) {
     return (
@@ -24,98 +24,124 @@ export default function SemiWorkspace({ parsedData }) {
     );
   }
 
-  // --- THÔNG SỐ BẢNG TỔNG QUAN ---
   const totalScenes = parsedData.length;
   const totalVoice = parsedData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
   const avgDuration = "00:05";
   const estCost = `$${(totalVoice * 0.01).toFixed(2)}`;
-  const imageGenStatus = `0 / ${totalScenes}`;
-  const audioGenStatus = `0 / ${totalVoice}`;
-  const videoGenStatus = `0 / ${totalScenes}`;
+  const generatedCount = Object.keys(generatedAudios).length;
+  const audioGenStatus = `${generatedCount} / ${totalVoice}`;
 
-  const filteredScenesForAudio = parsedData.filter(scene => 
-    !scene.audioUrl && (scene.Voiceover && scene.Voiceover.trim() !== '')
-  );
+  // 🚀 HÀM GỌI API DIA TTS QUA FAL.AI
+  const handleGenAudio = async (sceneNo, text) => {
+    if (!text || text.trim() === '') return;
+    
+    setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
-  // --- LOGIC GEN AUDIO ---
-  const handleToggleCheck = (sceneNo) => {
-    const isCurrentlyChecked = !!checkedScenes[sceneNo];
-    if (!isCurrentlyChecked) {
-      const currentCheckedCount = Object.values(checkedScenes).filter(Boolean).length;
-      if (currentCheckedCount >= 3) {
-        alert("⚠️ Batch Audio gen: Chỉ được chọn tối đa 3 audio để gen cùng một lúc!");
-        return;
+    try {
+      const response = await fetch("https://fal.run/fal-ai/dia-tts", {
+        method: "POST",
+        headers: {
+          "Authorization": `Key ${import.meta.env.VITE_FAL_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: text,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Lỗi API: ${response.statusText}`);
       }
+
+      const result = await response.json();
+      
+      if (result && result.audio_url) {
+        setGeneratedAudios(prev => ({ ...prev, [sceneNo]: result.audio_url }));
+      } else {
+        console.error("API không trả về file audio hợp lệ cho scene:", sceneNo);
+      }
+
+    } catch (error) {
+      console.error(`Lỗi khi gen audio scene ${sceneNo}:`, error);
+    } finally {
+      setIsGenerating(prev => ({ ...prev, [sceneNo]: false }));
     }
-    setCheckedScenes(prev => ({ ...prev, [sceneNo]: !isCurrentlyChecked }));
+  };
+
+  // --- LOGIC GEN AUDIO BATCH KHÔNG GIỚI HẠN ---
+  const handleToggleCheck = (sceneNo) => {
+    setCheckedScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   };
 
   const handleSelectAll = () => {
+    const filtered = parsedData.filter(scene => !generatedAudios[scene.scene_n] && scene.Voiceover);
     const newChecked = {};
-    filteredScenesForAudio.slice(0, 3).forEach(scene => {
+    filtered.forEach(scene => {
       newChecked[scene.scene_n] = true;
     });
     setCheckedScenes(newChecked);
-    if (filteredScenesForAudio.length > 3) {
-      alert("💡 Đã tự động chọn 3 scene đầu tiên. Bạn chỉ được gen tối đa 3 audio cùng lúc.");
-    }
   };
 
   const handleDeselectAll = () => setCheckedScenes({});
 
-  // --- LOGIC ÂM THANH TỪNG SCENE ---
+  // 🚀 HÀM CHẠY BATCH GEN TỰ ĐỘNG
+  const handleStartBatchGen = async () => {
+    const selectedSceneNumbers = Object.keys(checkedScenes).filter(key => checkedScenes[key]);
+    
+    if (selectedSceneNumbers.length === 0) {
+      return alert("Vui lòng chọn ít nhất 1 scene để gen!");
+    }
+
+    setIsModalOpen(false); // Đóng Modal để xem tiến trình
+    
+    // Gọi API tuần tự cho từng cảnh đã chọn
+    for (const sceneNo of selectedSceneNumbers) {
+      const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
+      if (scene && scene.Voiceover) {
+        await handleGenAudio(scene.scene_n, scene.Voiceover);
+      }
+    }
+    
+    setCheckedScenes({}); // Chạy xong tự bỏ tick
+  };
+
+  // --- LOGIC UI KHÁC ---
   const handleMergeChange = (index, value) => setMergeOptions(prev => ({ ...prev, [index]: value }));
   const handleVolumeChange = (index, value) => setAudioVolumes(prev => ({ ...prev, [index]: value }));
-
-  // --- LOGIC EXPORT ---
-  const handleToggleExportCheck = (sceneNo) => {
-    setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
-  };
+  const handleToggleExportCheck = (sceneNo) => setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   
   const handleSelectAllExport = () => {
     const newChecked = {};
     parsedData.forEach(scene => { newChecked[scene.scene_n] = true; });
     setCheckedExportScenes(newChecked);
   };
-  
   const handleDeselectAllExport = () => setCheckedExportScenes({});
 
-  // 🚀 HÀM XỬ LÝ TẢI VIDEO XUỐNG MÁY (Click chuột ảo)
+  // --- TẢI VIDEO XUỐNG ---
   const handleDownloadVideos = () => {
     const selectedCount = Object.values(checkedExportScenes).filter(Boolean).length;
     if (selectedCount === 0) return alert("Vui lòng chọn ít nhất 1 scene để Export!");
 
-    // Lọc ra những scene đã được tick chọn
     const scenesToExport = parsedData.filter(scene => checkedExportScenes[scene.scene_n]);
     let validCount = 0;
 
     scenesToExport.forEach((scene, index) => {
-      // Nếu scene không có link video thì bỏ qua
       if (!scene.videoUrl) return; 
-
-      // Dùng setTimeout để tách thời gian tải từng file ra (tránh bị trình duyệt chặn spam)
       setTimeout(() => {
         const a = document.createElement('a');
         a.href = scene.videoUrl;
-        a.download = `Scene_${scene.scene_n}_Output.mp4`; // Đặt tên file lưu về máy
+        a.download = `Scene_${scene.scene_n}_Output.mp4`; 
         document.body.appendChild(a);
         a.click();
-        a.remove(); // Tải xong thì xóa nút tàng hình đi
-      }, index * 800); // Mỗi file cách nhau 0.8 giây
-
+        a.remove(); 
+      }, index * 800); 
       validCount++;
     });
 
-    if (validCount > 0) {
-      alert(`✅ Đang tiến hành tải ${validCount} video về máy!\n(Vui lòng kiểm tra thư mục Downloads hoặc góc phải trình duyệt)`);
-    } else {
-      alert("❌ Các cảnh bạn chọn chưa có video thực tế để xuất!");
-    }
-    
-    setIsExportModalOpen(false); // Đóng bảng modal
+    if (validCount > 0) alert(`✅ Đang tiến hành tải ${validCount} video về máy!`);
+    setIsExportModalOpen(false); 
   };
 
-  // --- LOGIC VOICE CLONE ---
   const handleVoiceUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -131,11 +157,15 @@ export default function SemiWorkspace({ parsedData }) {
     if (fileInputRef.current) fileInputRef.current.value = null;
   };
 
+  const filteredScenesForAudio = parsedData.filter(scene => 
+    !generatedAudios[scene.scene_n] && (scene.Voiceover && scene.Voiceover.trim() !== '')
+  );
+
   return (
     <div className="h-screen w-full bg-[#0E0E10] font-sans text-white p-4 overflow-y-auto relative">
       <div className="flex flex-col gap-4 max-w-7xl mx-auto pb-16 pr-48">
         
-        {/* === BẢNG TỔNG QUAN === */}
+        {/* BẢNG TỔNG QUAN */}
         <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-3 shadow-md">
           <div className="flex items-center gap-1.5 text-blue-400 font-bold text-[11px] uppercase tracking-wider mb-2.5 border-b border-[#2A2A30] pb-1.5">
             <LayoutDashboard size={13} /> Bảng tổng quan dự án
@@ -159,7 +189,7 @@ export default function SemiWorkspace({ parsedData }) {
             </div>
             <div className="bg-[#0E0E10] p-2 rounded-lg border border-[#2A2A30]">
               <div className="text-[10px] text-gray-400 font-medium">Image Gen:</div>
-              <div className="text-xs font-bold text-gray-300 mt-0.5">{imageGenStatus}</div>
+              <div className="text-xs font-bold text-gray-300 mt-0.5">0 / {totalScenes}</div>
             </div>
             <div className="bg-[#0E0E10] p-2 rounded-lg border border-[#2A2A30]">
               <div className="text-[10px] text-gray-400 font-medium">Audio Gen:</div>
@@ -167,20 +197,22 @@ export default function SemiWorkspace({ parsedData }) {
             </div>
             <div className="bg-[#0E0E10] p-2 rounded-lg border border-[#2A2A30]">
               <div className="text-[10px] text-gray-400 font-medium">Video Gen:</div>
-              <div className="text-xs font-bold text-orange-400 mt-0.5">{videoGenStatus}</div>
+              <div className="text-xs font-bold text-orange-400 mt-0.5">0 / {totalScenes}</div>
             </div>
           </div>
         </div>
 
-        {/* === DANH SÁCH SCENE === */}
+        {/* DANH SÁCH SCENE */}
         {parsedData.map((scene, index) => {
           const currentMergeOption = mergeOptions[index] || '1';
           const currentVolume = audioVolumes[index] !== undefined ? audioVolumes[index] : 50;
+          const isLoading = isGenerating[scene.scene_n];
+          const hasAudio = generatedAudios[scene.scene_n];
 
           return (
             <div key={index} className="flex gap-5 bg-[#121216] hover:bg-[#16161B] p-4 rounded-2xl border border-[#2A2A30] hover:border-gray-600 shadow-lg transition-all items-stretch group">
               
-              {/* Box Video tinh chỉnh giống Frame của Editor */}
+              {/* Box Video */}
               <div className="w-[240px] flex flex-col shrink-0 bg-[#0A0A0C] rounded-xl p-2.5 border border-[#2A2A30]">
                 <div className="flex items-center justify-between border-b border-[#2A2A30] pb-2 mb-2">
                   <div className="flex items-center gap-1.5 text-purple-400">
@@ -202,10 +234,8 @@ export default function SemiWorkspace({ parsedData }) {
                 </div>
               </div>
 
-              {/* Box Thông tin kịch bản & Nút bấm */}
+              {/* Box Thông tin & Nút bấm */}
               <div className="flex-1 flex flex-col min-w-0 justify-between py-0.5">
-                
-                {/* Text Content */}
                 <div className="space-y-2.5">
                   <div className="flex gap-2 items-start text-[11px]">
                     <span className="text-gray-500 font-medium shrink-0 w-16 flex items-center gap-1 mt-0.5"><AlignLeft size={12} /> Voice:</span>
@@ -221,10 +251,23 @@ export default function SemiWorkspace({ parsedData }) {
                   </div>
                 </div>
 
+                {/* Khu vực phát audio khi đã gen xong */}
+                {hasAudio && (
+                  <div className="mt-2 bg-green-500/10 border border-green-500/30 p-2 rounded-lg flex items-center gap-2">
+                    <Play size={14} className="text-green-400" />
+                    <audio src={hasAudio} controls className="h-6 w-full [&::-webkit-media-controls-panel]:bg-[#1A1A21]" />
+                  </div>
+                )}
+
                 {/* Thanh Control Action */}
                 <div className="flex items-center gap-3 bg-[#0A0A0C] p-2 rounded-xl border border-[#2A2A30] mt-3 shrink-0 shadow-inner">
-                  <button onClick={() => alert(`Chuẩn bị gắn API TTS cho Scene ${scene.scene_n}`)} className="h-7 px-4 bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all text-purple-400 hover:text-purple-300 cursor-pointer shrink-0">
-                    <Mic size={13} /> Gen Audio
+                  <button 
+                    onClick={() => handleGenAudio(scene.scene_n, scene.Voiceover)} 
+                    disabled={isLoading}
+                    className={`h-7 px-4 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${isLoading ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:text-purple-300'}`}
+                  >
+                    {isLoading ? <Loader2 size={13} className="animate-spin" /> : <Mic size={13} />} 
+                    {isLoading ? 'Đang tạo...' : (hasAudio ? 'Gen Lại' : 'Gen Audio')}
                   </button>
                   
                   <div className="w-[1px] h-4 bg-[#2A2A30] shrink-0"></div>
@@ -252,7 +295,7 @@ export default function SemiWorkspace({ parsedData }) {
         })}
       </div>
 
-      {/* === BẢNG ĐIỀU KHIỂN CỐ ĐỊNH BÊN PHẢI === */}
+      {/* BẢNG ĐIỀU KHIỂN CỐ ĐỊNH BÊN PHẢI */}
       <div className="fixed right-4 top-24 bg-[#15151A] border border-[#2A2A30] rounded-xl p-3 shadow-2xl z-20 flex flex-col gap-3 w-[200px]">
         <div className="flex items-center gap-1 text-gray-400 text-[10px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-1.5">
           <Sliders size={12} /> Bảng điều khiển
@@ -297,11 +340,12 @@ export default function SemiWorkspace({ parsedData }) {
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-5 w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={16} /></button>
             <h3 className="text-sm font-bold border-b border-[#2A2A30] pb-3 text-purple-400 flex items-center gap-2"><Music size={16} /> Cấu hình sinh âm thanh đồng loạt</h3>
-            <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 p-2 rounded-lg font-medium text-[11px]">⚠️ Batch Audio gen: Chỉ được gen batch 3 audio 1 lúc</div>
-            <div className="flex gap-2 mt-3 shrink-0">
-              <button onClick={handleSelectAll} className="h-6 px-2.5 bg-[#2A2A30] hover:bg-[#3A3A40] rounded text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer text-gray-300 hover:text-white">Chọn tất cả (Tối đa 3)</button>
+            
+            <div className="flex gap-2 mt-4 shrink-0">
+              <button onClick={handleSelectAll} className="h-6 px-2.5 bg-[#2A2A30] hover:bg-[#3A3A40] rounded text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
               <button onClick={handleDeselectAll} className="h-6 px-2.5 bg-[#2A2A30] hover:bg-[#3A3A40] rounded text-[11px] font-medium flex items-center gap-1 transition-all cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
             </div>
+            
             <div className="text-[11px] text-gray-400 font-bold uppercase mt-4 mb-2 tracking-wider">Scenes chưa có audio ({filteredScenesForAudio.length})</div>
             <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-lg p-2 bg-[#0E0E10] space-y-2 min-h-0">
               {filteredScenesForAudio.length === 0 ? (
@@ -324,12 +368,7 @@ export default function SemiWorkspace({ parsedData }) {
             </div>
             <div className="flex justify-end gap-2 border-t border-[#2A2A30] pt-3 mt-3 shrink-0">
               <button onClick={() => setIsModalOpen(false)} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-md font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={() => {
-                  const selectedCount = Object.values(checkedScenes).filter(Boolean).length;
-                  if(selectedCount === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
-                  alert(`Đã kích hoạt xếp hàng tạo Audio cho ${selectedCount} cảnh!`);
-                  setIsModalOpen(false);
-                }} className="h-8 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-bold shadow-md cursor-pointer">Bắt đầu Gen Audio</button>
+              <button onClick={handleStartBatchGen} className="h-8 px-4 bg-purple-600 hover:bg-purple-500 text-white rounded-md font-bold shadow-md cursor-pointer">Bắt đầu Gen Audio</button>
             </div>
           </div>
         </div>
@@ -359,10 +398,7 @@ export default function SemiWorkspace({ parsedData }) {
             </div>
             <div className="flex justify-end gap-2 border-t border-[#2A2A30] pt-3 mt-3 shrink-0">
               <button onClick={() => setIsExportModalOpen(false)} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-md font-semibold cursor-pointer">Hủy bỏ</button>
-              
-              {/* NÚT XUẤT FILE ĐÃ ĐƯỢC GẮN LOGIC MỚI */}
               <button onClick={handleDownloadVideos} className="h-8 px-4 bg-green-600 hover:bg-green-500 text-white rounded-md font-bold shadow-md cursor-pointer">Xuất File</button>
-              
             </div>
           </div>
         </div>

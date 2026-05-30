@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import MainEditor from './MainEditor';
 import SemiWorkspace from './SemiWorkspace'; 
-import { LayoutTemplate, PlaySquare } from 'lucide-react';
+import HistoryModel from './HistoryModel'; // <-- IMPORT TAB LỊCH SỬ VÀO ĐÂY
+import { LayoutTemplate, PlaySquare, History } from 'lucide-react'; // <-- Thêm icon History
 
 // 1. Nhập khẩu bộ khiên bảo vệ từ Clerk
 import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/clerk-react";
 
 export default function App() {
-  // Quản lý tab đang hiển thị ('main' hoặc 'workspace')
+  // Quản lý tab đang hiển thị ('main', 'workspace', hoặc 'history')
   const [activeTab, setActiveTab] = useState('main'); 
   // Nơi lưu trữ tạm thời các đoạn video đã cắt thành công
   const [projectData, setProjectData] = useState([]); 
 
-  // Hàm nhận dữ liệu từ Tab 1 truyền sang
+  // Hàm nhận dữ liệu từ Tab 1 (Hoặc Tab Lịch sử) truyền sang
   const handleTransferData = (data) => {
     console.log(">> [Quản gia App]: Đã nhận dữ liệu video. Tiến hành chuyển sang SemiWorkspace!");
     setProjectData(data);
@@ -47,6 +48,15 @@ export default function App() {
             >
               <PlaySquare size={16} /> Tab Chính (Làm Video)
             </button>
+
+            {/* NÚT BẤM SANG TAB LỊCH SỬ */}
+            <button 
+              onClick={() => setActiveTab('history')}
+              className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'history' ? 'bg-[#2A2A30] text-yellow-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              <History size={16} /> Lịch sử Dự án
+            </button>
+
             <button 
               onClick={() => setActiveTab('workspace')}
               className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'workspace' ? 'bg-[#2A2A30] text-green-400' : 'text-gray-400 hover:text-white'}`}
@@ -63,10 +73,18 @@ export default function App() {
 
         {/* Khu vực hiển thị Nội dung các Tab */}
         <div className="flex-1 overflow-hidden relative">
+          
+          {/* Nơi cắt video */}
           {activeTab === 'main' && (
             <MainEditor onComplete={handleTransferData} />
           )}
           
+          {/* Giao diện lưu trữ các dự án cũ */}
+          {activeTab === 'history' && (
+            <HistoryModel onLoadProject={handleTransferData} />
+          )}
+
+          {/* Không gian edit chi tiết */}
           {activeTab === 'workspace' && (
             <SemiWorkspace parsedData={projectData} />
           )}
