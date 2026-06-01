@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play } from 'lucide-react';
 
-export default function SemiWorkspace({ parsedData, ffmpeg }) {
+export default function SemiWorkspace({ parsedData, ffmpeg, isFfmpegReady }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -224,7 +224,7 @@ export default function SemiWorkspace({ parsedData, ffmpeg }) {
   const handleStartMerge = async () => {
     const scenesToMerge = parsedData.filter(scene => checkedMergeScenes[scene.scene_n]);
     if (scenesToMerge.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để Merge!");
-    if (!ffmpeg || !ffmpeg.loaded) return alert("Hệ thống FFmpeg chưa sẵn sàng. Vui lòng đợi trang tải xong!");
+    if (!ffmpeg || !isFfmpegReady) return alert("Hệ thống FFmpeg chưa sẵn sàng. Vui lòng đợi trang tải xong!");
 
     setIsMerging(true);
 

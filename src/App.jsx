@@ -93,7 +93,11 @@ export default function App() {
             <HistoryModel onLoadProject={handleTransferData} />
           )}
           {activeTab === 'workspace' && (
-            <SemiWorkspace parsedData={projectData} ffmpeg={ffmpegRef.current} />
+            <SemiWorkspace 
+               parsedData={projectData} 
+               ffmpeg={ffmpegRef.current} 
+               isFfmpegReady={isFfmpegLoaded} 
+            />
           )}
         </div>
       </SignedIn>
