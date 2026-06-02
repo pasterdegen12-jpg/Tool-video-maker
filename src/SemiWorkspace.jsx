@@ -113,18 +113,15 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      // Dọn dẹp văn bản: Xóa khoảng trắng thừa, giữ nguyên dấu câu
       let cleanText = scriptText.trim().replace(/\s+/g, ' ');
-      
-      // Chốt đuôi bằng dấu chấm để ngắt câu, chống bệnh "16s im lặng"
+      // Ép có dấu chấm ở cuối để trị dứt điểm bệnh ảo giác "16s im lặng"
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
       let endpoint = "https://queue.fal.run/fal-ai/dia-tts";
       
-      // Mặc định (Không dùng clone): Giao cho model tự quyết định
-      let payload = { text: cleanText }; 
+      // 🚀 BẮT BUỘC PHẢI CÓ [S1] ĐỂ KHÓA CHẶT GIỌNG CLONE (Tránh bị random giọng)
+      let payload = { text: `[S1] ${cleanText}` }; 
 
-      // NẾU DÙNG VOICE CLONE: Truyền thẳng Pure Text, TUYỆT ĐỐI KHÔNG DÙNG [S1]
       if (voiceCloneFile && voiceCloneBase64) {
         if (!voiceCloneRefText || voiceCloneRefText.trim() === '' || voiceCloneRefText === "AI đang nghe...") {
           alert("🚨 Lỗi: Nội dung file Audio mẫu chưa sẵn sàng! Hãy đảm bảo AI đã chép chính tả xong hoặc bạn đã tự gõ vào ô Text.");
@@ -133,7 +130,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         }
         endpoint = "https://queue.fal.run/fal-ai/dia-tts/voice-clone";
         payload = { 
-          text: cleanText, 
+          text: `[S1] ${cleanText}`, // Khóa cứng vào giọng nhân vật số 1
           ref_audio_url: voiceCloneBase64, 
           ref_text: voiceCloneRefText.trim() 
         };
