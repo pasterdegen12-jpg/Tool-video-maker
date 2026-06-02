@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from './firebase.js';
+import { db, updateProjectProgress, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './firebase.js';
 import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock } from 'lucide-react';
 
 export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { 
@@ -43,6 +43,17 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         if (docSnap.exists()) {
           const projectInfo = docSnap.data();
           setParsedData(projectInfo.data || []);
+          
+          // 🚀 KHÔI PHỤC TOÀN BỘ TIẾN ĐỘ TỪ FIREBASE (Chống mất dữ liệu khi F5)
+          if (projectInfo.generatedAudios) setGeneratedAudios(projectInfo.generatedAudios);
+          if (projectInfo.mergedVideos) setMergedVideos(projectInfo.mergedVideos);
+          if (projectInfo.voiceCloneRefText) setVoiceCloneRefText(projectInfo.voiceCloneRefText);
+          
+          if (projectInfo.voiceCloneBase64) {
+            setVoiceCloneBase64(projectInfo.voiceCloneBase64);
+            setVoiceCloneUrl(projectInfo.voiceCloneBase64); // Dùng Base64 làm URL phát
+            setVoiceCloneFile({ name: "Voice_Clone_Saved.mp3" }); // Fake file name
+          }
         } else {
           alert("🚨 Dự án không tồn tại hoặc đã bị xóa!");
         }
@@ -81,7 +92,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const generatedCount = Object.keys(generatedAudios).length;
   const audioGenStatus = `${generatedCount} / ${totalVoice}`;
 
-  // 🚀 HÀM TẢI XUỐNG ĐÃ SỬA LỖI BLOB
   const forceDownloadVideo = async (url, filename) => {
     try {
       if (url.includes('cloudinary.com')) {
@@ -95,7 +105,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         return;
       }
       
-      // Nếu là URL blob từ FFmpeg, gán thẳng không cần fetch lại
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
@@ -113,76 +122,95 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      let cleanText = scriptText.trim().replace(/\s+/g, ' ');
-      // Ép có dấu chấm ở cuối để trị dứt điểm bệnh ảo giác "16s im lặng"
+      let cleanText = scriptText
+        .trim()
+        .replace(/[\r\n]+/g, ' ') 
+        .replace(/\s+/g, ' ');
+      
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
-      let endpoint = "https://queue.fal.run/fal-ai/dia-tts";
-      
-      // 🚀 BẮT BUỘC PHẢI CÓ [S1] ĐỂ KHÓA CHẶT GIỌNG CLONE (Tránh bị random giọng)
-      let payload = { text: `[S1] ${cleanText}` }; 
+      const isVoiceClone = !!(voiceCloneFile && voiceCloneBase64);
+      const endpoint = isVoiceClone 
+        ? "https://queue.fal.run/fal-ai/dia-tts/voice-clone" 
+        : "https://queue.fal.run/fal-ai/dia-tts";
 
-      if (voiceCloneFile && voiceCloneBase64) {
-        if (!voiceCloneRefText || voiceCloneRefText.trim() === '' || voiceCloneRefText === "AI đang nghe...") {
-          alert("🚨 Lỗi: Nội dung file Audio mẫu chưa sẵn sàng! Hãy đảm bảo AI đã chép chính tả xong hoặc bạn đã tự gõ vào ô Text.");
-          setIsGenerating(prev => ({ ...prev, [sceneNo]: false }));
-          return;
-        }
-        endpoint = "https://queue.fal.run/fal-ai/dia-tts/voice-clone";
-        payload = { 
-          text: `[S1] ${cleanText}`, // Khóa cứng vào giọng nhân vật số 1
-          ref_audio_url: voiceCloneBase64, 
-          ref_text: voiceCloneRefText.trim() 
-        };
-      }
+      const payload = isVoiceClone 
+        ? { 
+            text: `[S1] ${cleanText}`, 
+            ref_audio_url: voiceCloneBase64, 
+            ref_text: voiceCloneRefText.trim() 
+          }
+        : { 
+            text: `[S1] ${cleanText}` 
+          };
 
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
+        headers: { 
+            "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, 
+            "Content-Type": "application/json" 
+        },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("API Fal AI từ chối yêu cầu. Kiểm tra lại API Key.");
+      if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(`API Fal AI từ chối yêu cầu. ${errorData.detail || response.statusText}`);
+      }
 
       const queueData = await response.json();
       let result = null;
 
       if (queueData.status_url) {
-        while (true) {
+        let attempts = 0;
+        const maxAttempts = 45; 
+        
+        while (attempts < maxAttempts) {
+          attempts++;
           await new Promise(resolve => setTimeout(resolve, 2000));
-          const statusRes = await fetch(queueData.status_url, {
-            method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
-          });
           
-          if (!statusRes.ok) throw new Error("Lỗi mạng khi hỏi thăm tiến độ Queue.");
+          const statusRes = await fetch(queueData.status_url, {
+            method: "GET", 
+            headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+          });
           const statusJson = await statusRes.json();
           
           if (statusJson.status === "COMPLETED") {
-            const finalLink = statusJson.response_url || queueData.response_url;
-            const finalRes = await fetch(finalLink, {
-              method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
-            });
-            result = await finalRes.json(); 
-            break; 
+            if (statusJson.data) {
+                result = statusJson.data;
+            } else {
+                const finalRes = await fetch(statusJson.response_url || queueData.response_url, {
+                    method: "GET", 
+                    headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+                });
+                result = await finalRes.json(); 
+            }
+            break;
           } else if (statusJson.status === "FAILED") {
-            throw new Error("Fal AI xử lý thất bại: " + JSON.stringify(statusJson.error));
+            throw new Error(statusJson.error || "Lỗi xử lý AI từ server.");
           }
         }
+        
+        if (attempts >= maxAttempts) throw new Error("Quá thời gian chờ API từ hệ thống (Timeout).");
       } else {
-        result = queueData; 
+        result = queueData;
       }
 
-      const audioResultUrl = result?.audio?.url || result?.audio_url || result?.audio_file?.url;
+      const audioUrl = result?.audio?.url || result?.audio_url;
       
-      if (audioResultUrl) {
-        setGeneratedAudios(prev => ({ ...prev, [sceneNo]: audioResultUrl }));
+      if (audioUrl) {
+        const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
+        setGeneratedAudios(newAudios);
+        
+        // 🚀 LƯU FIREBASE NGAY ĐỂ F5 KHÔNG MẤT
+        await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
-        throw new Error("Tạo thành công nhưng không tìm thấy file audio trả về!");
+          throw new Error("API chạy thành công nhưng không tìm thấy URL Audio.");
       }
-      
+
     } catch (error) {
-      console.error(`Lỗi hệ thống ở Scene ${sceneNo}:`, error);
-      alert(`Báo lỗi Scene ${sceneNo}: ${error.message}`);
+      console.error(error);
+      alert(`Lỗi Scene ${sceneNo}: ${error.message}`);
     } finally {
       setIsGenerating(prev => ({ ...prev, [sceneNo]: false }));
     }
@@ -201,22 +229,22 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     const selectedSceneNumbers = Object.keys(checkedScenes).filter(key => checkedScenes[key]);
     if (selectedSceneNumbers.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
     setIsModalOpen(false);
-    const promises = selectedSceneNumbers.map(sceneNo => {
+    
+    // 🚀 Chạy tuần tự thay vì Promise.all để tránh Rate Limit Fal AI
+    for (const sceneNo of selectedSceneNumbers) {
       const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
-      if (scene && scene.Voiceover) return handleGenAudio(scene.scene_n, scene.Voiceover);
-      return Promise.resolve();
-    });
-    try { await Promise.all(promises); } 
-    catch (error) { console.error(error); } 
-    finally { setCheckedScenes({}); }
+      if (scene && scene.Voiceover) {
+        await handleGenAudio(scene.scene_n, scene.Voiceover);
+        await new Promise(resolve => setTimeout(resolve, 500)); // Delay 0.5s giữa các request
+      }
+    }
+    setCheckedScenes({});
   };
 
-  // 🚀 LOGIC TẢI XUỐNG ĐÃ ĐƯỢC CHUYỂN SANG OUTPUT
   const handleToggleExportCheck = (sceneNo) => setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   const handleSelectAllExport = () => {
     const newChecked = {};
     parsedData.forEach(scene => { 
-      // Chỉ tự động chọn những cảnh ĐÃ CÓ OUTPUT
       if (mergedVideos[scene.scene_n]) {
         newChecked[scene.scene_n] = true; 
       }
@@ -226,11 +254,10 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const handleDeselectAllExport = () => setCheckedExportScenes({});
 
   const handleDownloadVideos = async () => {
-    // Chỉ lấy những scene được check VÀ đã có Output
     const scenesToExport = parsedData.filter(scene => checkedExportScenes[scene.scene_n] && mergedVideos[scene.scene_n]);
     if (scenesToExport.length === 0) return alert("Vui lòng chọn ít nhất 1 Output để tải!");
     
-    alert(`⏳ Đang chuẩn bị tải ${scenesToExport.length} video Output. \n\nLƯU Ý: Nếu trình duyệt hỏi "Allow downloading multiple files" trên góc màn hình, hãy bấm Allow (Cho phép) nhé!`);
+    alert(`⏳ Đang chuẩn bị tải ${scenesToExport.length} video Output. \n\nLƯU Ý: Nếu trình duyệt hỏi "Allow downloading multiple files", hãy bấm Allow (Cho phép) nhé!`);
     setIsExportModalOpen(false); 
     
     for (let i = 0; i < scenesToExport.length; i++) {
@@ -239,8 +266,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       if (!outputUrl) continue; 
       
       await forceDownloadVideo(outputUrl, `Scene_${scene.scene_n}_Output.mp4`);
-      
-      // 🚀 CHỐNG BỊ CHẶN SPAM DOWNLOAD: Cho vòng lặp nghỉ 0.8 giây
       await new Promise(resolve => setTimeout(resolve, 800));
     }
   };
@@ -313,7 +338,25 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           if (exitCode === 0) {
              const outData = await ffmpeg.readFile(outName);
              const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
-             finalUrl = URL.createObjectURL(outBlob);
+             
+             // 🚀 TẢI LÊN CLOUDINARY ĐỂ BẢO TOÀN VIDEO KHI F5
+             const formData = new FormData();
+             formData.append('file', outBlob);
+             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+             formData.append('resource_type', 'video');
+             
+             try {
+               const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
+                 method: 'POST', body: formData
+               });
+               const uploadDataRes = await uploadRes.json();
+               if (uploadDataRes.secure_url) {
+                 finalUrl = uploadDataRes.secure_url; 
+               }
+             } catch(err) {
+               console.error("Lỗi upload video output:", err);
+               finalUrl = URL.createObjectURL(outBlob); // Fallback: Dùng link tạm nếu mất mạng
+             }
           }
 
           await ffmpeg.deleteFile(inVid);
@@ -322,7 +365,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         }
 
         if (finalUrl) {
-          setMergedVideos(prev => ({ ...prev, [scene.scene_n]: finalUrl }));
+          setMergedVideos(prev => {
+             const newMergedVideos = { ...prev, [scene.scene_n]: finalUrl };
+             // 🚀 LƯU LÊN FIREBASE
+             updateProjectProgress(projectId, { mergedVideos: newMergedVideos });
+             return newMergedVideos;
+          });
         }
 
       } catch (error) {
@@ -358,17 +406,31 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       });
       
       const result = await response.json();
-      setVoiceCloneRefText(result.text ? result.text.trim() : "Không nhận diện được giọng.");
+      const refText = result.text ? result.text.trim() : "Không nhận diện được giọng.";
+      setVoiceCloneRefText(refText);
+
+      // 🚀 LƯU VOICE CLONE (BASE64) LÊN FIREBASE NGAY LẬP TỨC
+      await updateProjectProgress(projectId, {
+          voiceCloneBase64: base64Audio,
+          voiceCloneRefText: refText
+      });
+      
     } catch (error) {
       setVoiceCloneRefText("Lỗi tự động nghe. Hãy tự gõ nhé.");
     } finally { setIsTranscribing(false); }
   };
 
-  const handleRemoveVoice = () => {
-    if (voiceCloneUrl) URL.revokeObjectURL(voiceCloneUrl);
+  const handleRemoveVoice = async () => {
+    if (voiceCloneUrl && voiceCloneUrl.startsWith('blob:')) URL.revokeObjectURL(voiceCloneUrl);
     setVoiceCloneFile(null); setVoiceCloneUrl(null); setVoiceCloneBase64(null);
     setVoiceCloneRefText(""); setIsTranscribing(false);
     if (fileInputRef.current) fileInputRef.current.value = null;
+
+    // 🚀 XÓA VOICE CLONE KHỎI FIREBASE
+    await updateProjectProgress(projectId, {
+        voiceCloneBase64: null,
+        voiceCloneRefText: ""
+    });
   };
 
   const filteredScenesForAudio = parsedData.filter(scene => 
@@ -539,7 +601,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           <Merge size={14} /> Merge All Videos
         </button>
 
-        {/* ĐỔI TÊN NÚT EXPORT */}
         <button onClick={() => setIsExportModalOpen(true)} className="w-full h-9 bg-[#2A2A30] hover:bg-gray-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
           <Download size={14} /> Export Output
         </button>
@@ -658,7 +719,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* CÁC MODAL CÒN LẠI */}
+      {/* === MODAL GEN AUDIO BATCH === */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
@@ -698,7 +759,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* === MODAL EXPORT OUTPUT (ĐÃ SỬA THÀNH OUTPUT) === */}
+      {/* === MODAL EXPORT OUTPUT === */}
       {isExportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
@@ -717,7 +778,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                 </div>
                 <div className="text-xs text-gray-400 font-bold uppercase mt-5 mb-2 tracking-wider">Chọn Output để xuất ({Object.keys(mergedVideos).length})</div>
                 <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-1.5 min-h-0">
-                  {/* Lọc ra để CHỈ HIỂN THỊ CÁC CẢNH ĐÃ CÓ OUTPUT */}
                   {parsedData.filter(scene => mergedVideos[scene.scene_n]).map((scene) => {
                     const isChecked = !!checkedExportScenes[scene.scene_n];
                     return (
@@ -738,6 +798,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
+      {/* === MODAL GEN AUDIO LẺ === */}
       {activeGenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md flex flex-col shadow-2xl text-xs relative">

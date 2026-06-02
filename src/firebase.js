@@ -16,8 +16,8 @@ export const db = getFirestore(app);
 // ==========================================
 // CẤU HÌNH CLOUDINARY (Lưu file Video)
 // ==========================================
-const CLOUDINARY_CLOUD_NAME = "djjvtqnjv"; 
-const CLOUDINARY_UPLOAD_PRESET = "video-maker-upload"; 
+export const CLOUDINARY_CLOUD_NAME = "djjvtqnjv"; 
+export const CLOUDINARY_UPLOAD_PRESET = "video-maker-upload"; 
 
 // 🚀 HÀM ÉP TIMEOUT: Bắt buộc dừng và văng lỗi nếu chạy quá lâu
 const withTimeout = (promise, ms, errorMessage) => {
@@ -104,5 +104,16 @@ export const autoSaveToFirebase = async (parsedData, projectName = "Video Projec
   } catch (dbError) {
     console.error("❌ LỖI FIREBASE DATABASE:", dbError);
     throw dbError; 
+  }
+};
+
+// 🚀 HÀM MỚI: Cập nhật tiến độ dự án (Lưu Audio, Video Output, Voice Clone)
+export const updateProjectProgress = async (projectId, updates) => {
+  try {
+    // { merge: true } giúp chỉ cập nhật những phần có thay đổi, giữ nguyên kịch bản cũ
+    await setDoc(doc(db, "projects", projectId), updates, { merge: true });
+    console.log(`✅ Đã lưu trữ tiến độ (Audio/Video/Voice) lên Firebase!`);
+  } catch (error) {
+    console.error("❌ Lỗi khi cập nhật tiến độ dự án:", error);
   }
 };
