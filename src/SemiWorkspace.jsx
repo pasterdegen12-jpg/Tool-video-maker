@@ -228,17 +228,26 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const handleStartBatchGen = async () => {
     const selectedSceneNumbers = Object.keys(checkedScenes).filter(key => checkedScenes[key]);
     if (selectedSceneNumbers.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
-    setIsModalOpen(false);
     
-    // 🚀 Chạy tuần tự thay vì Promise.all để tránh Rate Limit Fal AI
-    for (const sceneNo of selectedSceneNumbers) {
+    setIsModalOpen(false); // Đóng modal ngay lập tức để thấy giao diện loading
+    
+    // 🚀 Bắn TẤT CẢ các request lên Fal AI cùng một lúc
+    const promises = selectedSceneNumbers.map(sceneNo => {
       const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
       if (scene && scene.Voiceover) {
-        await handleGenAudio(scene.scene_n, scene.Voiceover);
-        await new Promise(resolve => setTimeout(resolve, 500)); // Delay 0.5s giữa các request
+        return handleGenAudio(scene.scene_n, scene.Voiceover);
       }
+      return Promise.resolve();
+    });
+
+    try {
+      // Đợi cho đến khi TẤT CẢ các audio đều xử lý xong
+      await Promise.all(promises); 
+    } catch (error) {
+      console.error("Lỗi khi chạy Gen All:", error);
+    } finally {
+      setCheckedScenes({});
     }
-    setCheckedScenes({});
   };
 
   const handleToggleExportCheck = (sceneNo) => setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
