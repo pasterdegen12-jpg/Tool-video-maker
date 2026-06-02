@@ -21,7 +21,9 @@ const CLOUDINARY_UPLOAD_PRESET = "video-maker-upload";
 
 export const autoSaveToFirebase = async (parsedData, projectName = "Video Project") => {
   const projectId = `proj_${Date.now()}`;
-  let uploadData = [...parsedData]; 
+  
+  // FIX: Sử dụng Deep Copy thay vì Shallow Copy để ngắt kết nối hoàn toàn với state của React
+  let uploadData = JSON.parse(JSON.stringify(parsedData)); 
 
   for (let i = 0; i < uploadData.length; i++) {
     const scene = uploadData[i];
@@ -71,4 +73,7 @@ export const autoSaveToFirebase = async (parsedData, projectName = "Video Projec
   // Ném kịch bản vào Firebase
   await setDoc(doc(collection(db, "projects"), projectId), projectDoc);
   console.log("✅ Đã đẩy Video lên Cloudinary và lưu lịch sử Database thành công!");
+  
+  // 🚀 THÊM DÒNG NÀY ĐỂ TRẢ VỀ ID DỰ ÁN CHO ĐƯỜNG LINK (ROUTER)
+  return projectId;
 };

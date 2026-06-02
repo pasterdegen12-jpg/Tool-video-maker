@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { FolderClock, Play, Trash2, Loader2, Calendar, FileVideo, DollarSign } from 'lucide-react';
 import { collection, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { db } from './firebase.js'; // Gọi kết nối database
+import { useNavigate } from 'react-router-dom'; // 🚀 THÊM ROUTER ĐIỀU HƯỚNG
 
-export default function HistoryModel({ onLoadProject }) {
+export default function HistoryModel() { // 🚀 ĐÃ BỎ onLoadProject
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate(); // 🚀 KHỞI TẠO ROUTER
 
   // Hàm tải dữ liệu từ Firebase
   const fetchProjects = async () => {
@@ -59,7 +61,7 @@ export default function HistoryModel({ onLoadProject }) {
           <FolderClock className="text-blue-500" size={28} />
           Lịch sử Dự án
         </h1>
-        <button onClick={fetchProjects} className="px-4 py-2 bg-[#1A1A1F] hover:bg-[#2A2A30] border border-[#2A2A30] rounded-lg text-sm transition-colors flex items-center gap-2">
+        <button onClick={fetchProjects} className="px-4 py-2 bg-[#1A1A1F] hover:bg-[#2A2A30] border border-[#2A2A30] rounded-lg text-sm transition-colors flex items-center gap-2 cursor-pointer">
           Làm mới
         </button>
       </div>
@@ -82,12 +84,12 @@ export default function HistoryModel({ onLoadProject }) {
                 <div 
                   key={project.docId} 
                   className="bg-[#1A1A1F] border border-[#2A2A30] hover:border-blue-500/50 rounded-xl p-5 flex flex-col gap-4 transition-all group relative cursor-pointer"
-                  onClick={() => onLoadProject(project.data)}
+                  onClick={() => navigate(`/project/${project.docId}`)} // 🚀 CHUYỂN TRANG BẰNG ROUTER THAY VÌ TRUYỀN HÀM
                 >
                   {/* Nút xóa hiện ra khi hover */}
                   <button 
                     onClick={(e) => handleDelete(project.docId, e)}
-                    className="absolute top-4 right-4 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-[#15151A] rounded"
+                    className="absolute top-4 right-4 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 bg-[#15151A] rounded cursor-pointer"
                     title="Xóa dự án"
                   >
                     <Trash2 size={18} />
@@ -104,7 +106,7 @@ export default function HistoryModel({ onLoadProject }) {
                   </div>
 
                   <button 
-                    className="mt-2 w-full py-2.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
+                    className="mt-2 w-full py-2.5 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
                     <Play size={16} /> Mở không gian làm việc
                   </button>

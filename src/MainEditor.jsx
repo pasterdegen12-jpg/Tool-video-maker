@@ -2,21 +2,24 @@ import React, { useState, useRef } from 'react';
 import { FileText, Upload, Scissors, ArrowRight, CheckCircle2, Loader2, Download } from 'lucide-react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { useNavigate } from 'react-router-dom'; // 🚀 THÊM ROUTER ĐIỀU HƯỚNG
 
-// 1. SỬA CHỮ .jsc THÀNH .js Ở ĐÂY 👇
 import { autoSaveToFirebase } from './firebase.js'; 
 
 // GỌI NGƯỜI NHÀ
 import coreURL from './ffmpeg-core.js?url';
 import wasmURL from './ffmpeg-core.wasm?url';
 
-export default function MainEditor({ onComplete }) {
+export default function MainEditor() { // 🚀 ĐÃ BỎ onComplete
+  const navigate = useNavigate(); // 🚀 KHỞI TẠO ROUTER
+
   const [script, setScript] = useState('');
   const [parsedData, setParsedData] = useState(null);
   const [isParsing, setIsParsing] = useState(false);
   const [videoFile, setVideoFile] = useState(null);
   const [isCutting, setIsCutting] = useState(false);
   const [cutComplete, setCutComplete] = useState(false);
+  const [isSaving, setIsSaving] = useState(false); // 🚀 THÊM STATE CHỜ LƯU ĐỂ TRÁNH SPAM NÚT CHUYỂN TRANG
 
   const fileInputRef = useRef(null);
   const ffmpegRef = useRef(new FFmpeg());
@@ -57,7 +60,12 @@ Kịch bản cần bóc tách: ${script}`;
       const data = await response.json();
       if (data.error) throw new Error(data.error.message);
       
-      setParsedData(Array.isArray(JSON.parse(data.candidates[0].content.parts[0].text)) ? JSON.parse(data.candidates[0].content.parts[0].text) : [JSON.parse(data.candidates[0].content.parts[0].text)]);
+      const rawText = data.candidates[0].content.parts[0].text;
+      const cleanJsonText = rawText.replace(/```json|```/gi, "").trim();
+      
+      const parsedJson = JSON.parse(cleanJsonText);
+      setParsedData(Array.isArray(parsedJson) ? parsedJson : [parsedJson]);
+      
     } catch (error) { 
       alert("Lỗi AI: " + error.message); 
     } finally { 
@@ -73,7 +81,7 @@ Kịch bản cần bóc tách: ${script}`;
     const ffmpeg = ffmpegRef.current;
 
     ffmpeg.on('log', ({ message }) => console.log(">> [FFmpeg]:", message));
-
+    
     try {
       if (!ffmpeg.loaded) {
         await ffmpeg.load({
@@ -85,12 +93,11 @@ Kịch bản cần bóc tách: ${script}`;
       await ffmpeg.writeFile('input_video.mp4', await fetchFile(videoFile));
       
       const updatedData = [...parsedData];
-      
       for (let i = 0; i < updatedData.length; i++) {
         const scene = updatedData[i];
         const [start, end] = scene.time_origin.split('-').map(s => s.trim());
         const outputName = `scene_${scene.scene_n}.mp4`;
-
+        
         await ffmpeg.exec(['-i', 'input_video.mp4', '-ss', start, '-to', end, '-c', 'copy', outputName]);
 
         const data = await ffmpeg.readFile(outputName);
@@ -101,14 +108,8 @@ Kịch bản cần bóc tách: ${script}`;
       setParsedData(updatedData);
       setCutComplete(true);
       
-      // TỰ ĐỘNG: Đẩy lên Cloudinary chạy nền
-      autoSaveToFirebase(updatedData, "Video Project - " + new Date().toLocaleTimeString())
-        .catch(err => console.error("Lỗi đồng bộ nền:", err));
-        
-      // TỰ ĐỘNG: Đá bay sang tab SemiWorkspace luôn
-      if (typeof onComplete === 'function') {
-        onComplete(updatedData);
-      }
+      // Đã gỡ bỏ tính năng auto-redirect rườm rà ở đây để User tự kiểm tra và ấn nút "Hoàn tất"
+
     } catch (error) {
       console.error("❌ LỖI:", error);
       alert("Lỗi khi cắt video! F12 xem chi tiết.");
@@ -168,20 +169,29 @@ Kịch bản cần bóc tách: ${script}`;
           <p className="text-sm text-gray-400 mb-6">Dữ liệu đã sẵn sàng. Hệ thống sẽ tạo một Project Workspace riêng để bạn biên tập chi tiết.</p>
           
           <button 
-            onClick={() => {
-              console.log(">> Đã click nút chuyển Tab!");
-              if (typeof onComplete === 'function') {
-                autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString())
-                  .catch(err => console.error("Lỗi đồng bộ nền:", err));
-                onComplete(parsedData);
-              } else {
-                alert("🚨 LỖI ĐỨT CÁP: Nút thì bấm được nhưng file App.jsx chưa cắm dây 'onComplete' sang đây! Hãy kiểm tra lại file App.jsx!");
+            onClick={async () => {
+              setIsSaving(true);
+              try {
+                // 🚀 LƯU FIREBASE VÀ ĐỢI ĐẨY VIDEO LÊN CLOUDINARY
+                const savedProjectId = await autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString());
+                if (savedProjectId) {
+                   navigate(`/project/${savedProjectId}`); // 🚀 ĐỔI LINK TRÌNH DUYỆT
+                }
+              } catch(err) {
+                console.error("Lỗi đồng bộ:", err);
+                alert("Lỗi tải lên mây! Bạn hãy thử lại.");
+              } finally {
+                setIsSaving(false);
               }
             }} 
-            disabled={!cutComplete} 
+            disabled={!cutComplete || isSaving} 
             className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white px-6 py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 w-full cursor-pointer disabled:cursor-not-allowed"
           >
-            Vào Project Workspace <ArrowRight size={18} />
+            {isSaving ? (
+              <><Loader2 size={18} className="animate-spin" /> Đang tải video lên mây...</>
+            ) : (
+              <>Vào Project Workspace <ArrowRight size={18} /></>
+            )}
           </button>
           
         </div>
