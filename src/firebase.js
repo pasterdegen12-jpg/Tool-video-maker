@@ -19,17 +19,26 @@ export const db = getFirestore(app);
 const CLOUDINARY_CLOUD_NAME = "djjvtqnjv"; 
 const CLOUDINARY_UPLOAD_PRESET = "video-maker-upload"; 
 
+// 🚀 HÀM ÉP TIMEOUT: Bắt buộc dừng và văng lỗi nếu chạy quá lâu
+const withTimeout = (promise, ms, errorMessage) => {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+};
+
 export const autoSaveToFirebase = async (parsedData, projectName = "Video Project") => {
   const projectId = `proj_${Date.now()}`;
   let uploadData = JSON.parse(JSON.stringify(parsedData)); 
 
   console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudinary...`);
 
-  // 🚀 TĂNG TỐC: BẮN TOÀN BỘ VIDEO LÊN MÂY CÙNG 1 LÚC (ĐA LUỒNG)
+  // BẮN TOÀN BỘ VIDEO LÊN MÂY (ĐA LUỒNG)
   const uploadPromises = uploadData.map(async (scene, i) => {
     if (scene.videoUrl && scene.videoUrl.startsWith('blob:')) {
       try {
-        console.log(`-> Đang tải Scene ${scene.scene_n}...`);
+        console.log(`-> Đang tải Scene ${scene.scene_n} lên Cloudinary...`);
         const response = await fetch(scene.videoUrl);
         const blob = await response.blob();
         
@@ -38,10 +47,14 @@ export const autoSaveToFirebase = async (parsedData, projectName = "Video Projec
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
         formData.append('resource_type', 'video');
         
-        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
-          method: 'POST',
-          body: formData
-        });
+        // 🚀 Ép Cloudinary phải xong trong 90 giây/video
+        const uploadRes = await withTimeout(
+          fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
+            method: 'POST', body: formData
+          }),
+          90000, 
+          `Cloudinary upload bị kẹt quá 90s cho Scene ${scene.scene_n}`
+        );
         
         const uploadDataRes = await uploadRes.json();
         
@@ -49,17 +62,22 @@ export const autoSaveToFirebase = async (parsedData, projectName = "Video Projec
            uploadData[i].videoUrl = uploadDataRes.secure_url; 
            console.log(`✅ [THÀNH CÔNG] Đã upload xong Scene ${scene.scene_n}!`);
         } else {
-           console.error(`❌ [LỖI CLOUDINARY] Scene ${scene.scene_n} thất bại:`, uploadDataRes);
+           throw new Error(JSON.stringify(uploadDataRes));
         }
       } catch (error) {
-        console.error(`❌ [LỖI MẠNG] Không thể upload Scene ${scene.scene_n}:`, error);
+        console.error(`❌ [LỖI TẢI LÊN] Scene ${scene.scene_n}:`, error.message);
+        throw new Error(`Scene ${scene.scene_n} tải lên thất bại: ${error.message}`);
       }
     }
   });
 
-  // Chờ tất cả video chạy đa luồng hoàn tất
-  await Promise.all(uploadPromises);
-  console.log("🔥 Hoàn tất upload Video. Đang lưu thông tin vào Firebase...");
+  // Chờ tất cả video tải xong (Nếu 1 cái lỗi, sẽ ném lỗi ngay ra ngoài)
+  try {
+    await Promise.all(uploadPromises);
+    console.log("🔥 Hoàn tất upload toàn bộ Video. Đang lưu thông tin vào Firebase...");
+  } catch (err) {
+    throw new Error(`Đẩy video lên mây thất bại. Chi tiết: ${err.message}`);
+  }
 
   // Tính tiền AI
   const totalVoice = uploadData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
@@ -74,15 +92,17 @@ export const autoSaveToFirebase = async (parsedData, projectName = "Video Projec
     data: uploadData
   };
 
+  // 🚀 ÉP TIMEOUT CHO FIREBASE (Tối đa 15 giây)
   try {
-    // 🚀 LƯU VÀO FIREBASE VÀ BẮT LỖI GẮT GAO
-    await setDoc(doc(db, "projects", projectId), projectDoc);
+    await withTimeout(
+      setDoc(doc(db, "projects", projectId), projectDoc),
+      15000,
+      "Firebase không phản hồi sau 15 giây. Vui lòng kiểm tra lại cấu hình Database Rules (Quyền truy cập) hoặc mạng của bạn."
+    );
     console.log("✅ Đã lưu Database thành công!");
-    return projectId; // Trả về ID để tự động nhảy trang
+    return projectId; 
   } catch (dbError) {
     console.error("❌ LỖI FIREBASE DATABASE:", dbError);
-    // Cảnh báo thẳng mặt người dùng nếu Database từ chối
-    alert(`Không thể lưu Database: ${dbError.message} (Nếu báo lỗi "Missing or insufficient permissions" tức là bạn chưa mở quyền Firebase Rules)`);
     throw dbError; 
   }
 };
