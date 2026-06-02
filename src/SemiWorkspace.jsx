@@ -115,46 +115,60 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { // 🚀 BỎ 
     }
   };
 
-  // 🚀 HÀM GEN AUDIO
+  // 🚀 HÀM GEN AUDIO ĐÃ ĐƯỢC TỐI ƯU HÓA CHO FAL DIA-TTS
   const handleGenAudio = async (sceneNo, scriptText) => {
     if (!scriptText || scriptText.trim() === '') return;
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      let cleanText = scriptText.trim().replace(/\s+/g, ' ').replace(/["'()[\]{}]/g, '');
+      // 1. CHUẨN HÓA TEXT TỐI ƯU: 
+      // Chỉ bỏ khoảng trắng thừa, GIỮ NGUYÊN dấu câu (phẩy, chấm, hỏi chấm) để AI biết ngắt nghỉ
+      let cleanText = scriptText.trim().replace(/\s+/g, ' ');
+      
+      // Đảm bảo cuối câu có dấu chấm để AI kết thúc giọng tự nhiên, không bị kéo dài âm đuôi (16s im lặng)
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
       let endpoint = "https://queue.fal.run/fal-ai/dia-tts";
-      let payload = { text: `[S1] ${cleanText}` }; 
+      
+      // BỎ HẲN cái [S1] đi, truyền text thô tinh khiết vào cho AI dễ đọc
+      let payload = { text: cleanText }; 
 
+      // 2. NẾU ĐANG DÙNG VOICE CLONE (NHÁI GIỌNG)
       if (voiceCloneFile && voiceCloneBase64) {
-        if (!voiceCloneRefText || voiceCloneRefText.trim() === '') {
-          alert("Nội dung file mẫu trống! Hãy đợi AI chép chính tả xong.");
+        if (!voiceCloneRefText || voiceCloneRefText.trim() === '' || voiceCloneRefText === "AI đang nghe...") {
+          alert("🚨 Lỗi: Nội dung file Audio mẫu chưa sẵn sàng! Hãy đảm bảo AI đã chép chính tả xong hoặc bạn đã tự gõ vào ô Text.");
           setIsGenerating(prev => ({ ...prev, [sceneNo]: false }));
           return;
         }
         endpoint = "https://queue.fal.run/fal-ai/dia-tts/voice-clone";
-        payload = { text: `[S1] ${cleanText} . `, ref_audio_url: voiceCloneBase64, ref_text: voiceCloneRefText };
+        payload = { 
+          text: cleanText, 
+          ref_audio_url: voiceCloneBase64, 
+          ref_text: voiceCloneRefText.trim() // Text mẫu bắt buộc phải chính xác
+        };
       }
 
+      // 3. GỬI YÊU CẦU LÊN FAL
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("API Fal lỗi");
+      if (!response.ok) throw new Error("API Fal AI từ chối yêu cầu. Kiểm tra lại API Key.");
 
       const queueData = await response.json();
       let result = null;
 
+      // 4. CHỜ ĐỢI KẾT QUẢ TỪ HÀNG ĐỢI (QUEUE)
       if (queueData.status_url) {
         while (true) {
           await new Promise(resolve => setTimeout(resolve, 2000));
           const statusRes = await fetch(queueData.status_url, {
             method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
           });
-          if (!statusRes.ok) throw new Error("Lỗi mạng khi hỏi thăm Queue.");
+          
+          if (!statusRes.ok) throw new Error("Lỗi mạng khi hỏi thăm tiến độ Queue.");
           const statusJson = await statusRes.json();
           
           if (statusJson.status === "COMPLETED") {
@@ -163,19 +177,24 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { // 🚀 BỎ 
               method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
             });
             result = await finalRes.json(); 
-            break;
+            break; // Hoàn thành -> Thoát vòng lặp
           } else if (statusJson.status === "FAILED") {
             throw new Error("Fal AI xử lý thất bại: " + JSON.stringify(statusJson.error));
           }
         }
       } else {
-        result = queueData;
+        result = queueData; // Fallback nếu API trả về ngay lập tức
       }
 
+      // 5. TRÍCH XUẤT ĐƯỜNG LINK AUDIO TỪ JSON
       const audioResultUrl = result?.audio?.url || result?.audio_url || result?.audio_file?.url;
+      
       if (audioResultUrl) {
         setGeneratedAudios(prev => ({ ...prev, [sceneNo]: audioResultUrl }));
+      } else {
+        throw new Error("Tạo thành công nhưng không tìm thấy file audio trả về!");
       }
+      
     } catch (error) {
       console.error(`Lỗi hệ thống ở Scene ${sceneNo}:`, error);
       alert(`Báo lỗi Scene ${sceneNo}: ${error.message}`);
@@ -183,7 +202,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { // 🚀 BỎ 
       setIsGenerating(prev => ({ ...prev, [sceneNo]: false }));
     }
   };
-
   const handleToggleCheck = (sceneNo) => setCheckedScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   const handleSelectAll = () => {
     const filtered = parsedData.filter(scene => !generatedAudios[scene.scene_n] && scene.Voiceover);
