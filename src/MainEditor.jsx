@@ -98,7 +98,27 @@ Kịch bản cần bóc tách: ${script}`;
         const [start, end] = scene.time_origin.split('-').map(s => s.trim());
         const outputName = `scene_${scene.scene_n}.mp4`;
         
-        await ffmpeg.exec(['-i', 'input_video.mp4', '-ss', start, '-to', end, outputName]);
+        // 🚀 THỦ THUẬT XỬ LÝ THỜI GIAN: Đổi mm:ss ra giây để cắt mượt hơn
+        const timeToSeconds = (timeStr) => {
+          const parts = timeStr.split(':');
+          if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+          if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+          return parseFloat(timeStr);
+        };
+
+        const startSec = timeToSeconds(start);
+        const duration = timeToSeconds(end) - startSec;
+
+        // 🚀 LỆNH CẮT ĐÃ ĐƯỢC VÁ LỖI: 
+        // Đưa -ss lên trước -i để ép FFmpeg nhảy thẳng đến Keyframe cực nhanh.
+        // Dùng -t (duration) để đảm bảo thời lượng cắt ra luôn chuẩn xác, không bị 0.04s
+        await ffmpeg.exec([
+          '-ss', startSec.toString(), 
+          '-i', 'input_video.mp4', 
+          '-t', duration.toString(), 
+          '-c', 'copy', 
+          outputName
+        ]);
 
         const data = await ffmpeg.readFile(outputName);
         scene.videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
