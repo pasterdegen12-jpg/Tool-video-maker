@@ -98,7 +98,7 @@ Kịch bản cần bóc tách: ${script}`;
         const [start, end] = scene.time_origin.split('-').map(s => s.trim());
         const outputName = `scene_${scene.scene_n}.mp4`;
         
-        await ffmpeg.exec(['-i', 'input_video.mp4', '-ss', start, '-to', end, '-c', 'copy', outputName]);
+        await ffmpeg.exec(['-i', 'input_video.mp4', '-ss', start, '-to', end, outputName]);
 
         const data = await ffmpeg.readFile(outputName);
         scene.videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));

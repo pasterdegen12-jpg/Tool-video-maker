@@ -122,11 +122,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      let cleanText = scriptText
-        .trim()
-        .replace(/[\r\n]+/g, ' ') 
-        .replace(/\s+/g, ' ');
-      
+      let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
       const isVoiceClone = !!(voiceCloneFile && voiceCloneBase64);
@@ -137,12 +133,10 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       const payload = isVoiceClone 
         ? { 
             text: `[S1] ${cleanText}`, 
-            ref_audio_url: voiceCloneBase64, 
+            ref_audio_url: voiceCloneBase64, // Bây giờ cái này sẽ là link Cloudinary
             ref_text: voiceCloneRefText.trim() 
           }
-        : { 
-            text: `[S1] ${cleanText}` 
-          };
+        : { text: `[S1] ${cleanText}` };
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -162,16 +156,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       let result = null;
 
       if (queueData.status_url) {
-        let attempts = 0;
-        const maxAttempts = 45; 
-        
-        while (attempts < maxAttempts) {
-          attempts++;
+        // 🚀 BỎ GIỚI HẠN TIMEOUT, ĐỢI ĐẾN KHI API XONG
+        while (true) {
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           const statusRes = await fetch(queueData.status_url, {
-            method: "GET", 
-            headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+            method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
           });
           const statusJson = await statusRes.json();
           
@@ -180,34 +170,27 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                 result = statusJson.data;
             } else {
                 const finalRes = await fetch(statusJson.response_url || queueData.response_url, {
-                    method: "GET", 
-                    headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+                    method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
                 });
                 result = await finalRes.json(); 
             }
-            break;
+            break; // THOÁT VÒNG LẶP KHI THÀNH CÔNG
           } else if (statusJson.status === "FAILED") {
             throw new Error(statusJson.error || "Lỗi xử lý AI từ server.");
           }
         }
-        
-        if (attempts >= maxAttempts) throw new Error("Quá thời gian chờ API từ hệ thống (Timeout).");
       } else {
         result = queueData;
       }
 
       const audioUrl = result?.audio?.url || result?.audio_url;
-      
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
-        
-        // 🚀 LƯU FIREBASE NGAY ĐỂ F5 KHÔNG MẤT
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
           throw new Error("API chạy thành công nhưng không tìm thấy URL Audio.");
       }
-
     } catch (error) {
       console.error(error);
       alert(`Lỗi Scene ${sceneNo}: ${error.message}`);
@@ -399,15 +382,32 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setVoiceCloneUrl(URL.createObjectURL(file));
     setIsTranscribing(true);
     setVoiceCloneRefText("AI đang nghe..."); 
+    
     try {
+      // 1. Chuyển sang Base64 để gửi cho AI Whisper (Vì API này cần file thô)
       const base64Audio = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
       });
-      setVoiceCloneBase64(base64Audio);
 
+      // 2. Upload file audio lên Cloudinary để lấy link URL gọn nhẹ
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('resource_type', 'auto'); // Auto để nhận diện audio
+
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+         method: 'POST', body: formData
+      });
+      const uploadDataRes = await uploadRes.json();
+      const audioCloudUrl = uploadDataRes.secure_url;
+
+      // Lưu link URL vào State thay vì chuỗi Base64
+      setVoiceCloneBase64(audioCloudUrl);
+
+      // 3. Gọi AI Whisper lấy text
       const response = await fetch("https://fal.run/fal-ai/whisper", {
         method: "POST",
         headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
@@ -418,14 +418,15 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       const refText = result.text ? result.text.trim() : "Không nhận diện được giọng.";
       setVoiceCloneRefText(refText);
 
-      // 🚀 LƯU VOICE CLONE (BASE64) LÊN FIREBASE NGAY LẬP TỨC
+      // 4. 🚀 LƯU FIREBASE: Chỉ lưu link URL ngắn của Cloudinary, không sợ vượt quá 1MB
       await updateProjectProgress(projectId, {
-          voiceCloneBase64: base64Audio,
+          voiceCloneBase64: audioCloudUrl, 
           voiceCloneRefText: refText
       });
       
     } catch (error) {
-      setVoiceCloneRefText("Lỗi tự động nghe. Hãy tự gõ nhé.");
+      console.error(error);
+      setVoiceCloneRefText("Lỗi upload hoặc nhận diện. Hãy thử lại.");
     } finally { setIsTranscribing(false); }
   };
 
@@ -584,7 +585,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                     className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isLoading ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:text-purple-300'}`}
                   >
                     {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} 
-                    {isLoading ? 'Đang tạo Audio...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio AI')}
+                    {isLoading ? 'Đang tạo Audio...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio')}
                   </button>
                   
                   {!hasOutput && (
@@ -753,7 +754,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                       <div className="space-y-1 min-w-0 text-xs">
                         <div className="font-bold text-[13px] text-blue-400">Scene {scene.scene_n}</div>
                         <div className="text-gray-200 truncate leading-relaxed"><span className="text-gray-400 font-medium">Voiceover:</span> {scene.Voiceover}</div>
-                        <div className="text-gray-400 italic truncate"><span className="text-gray-500 font-medium font-normal">Translate:</span> {scene.Translate || "N/A"}</div>
+                        <div className="text-gray-400 italic truncate"><span className="text-gray-500 font-medium font-normal">Dịch:</span> {scene.Translate || "N/A"}</div>
                       </div>
                     </div>
                   );
