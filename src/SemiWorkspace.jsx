@@ -166,24 +166,30 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           const statusJson = await statusRes.json();
           
           if (statusJson.status === "COMPLETED") {
-            if (statusJson.data) {
-                result = statusJson.data;
+            // 🚀 ĐỔI .data THÀNH .payload ĐỂ KHỚP VỚI CHUẨN FAL AI
+            if (statusJson.payload) {
+                result = statusJson.payload;
             } else {
                 const finalRes = await fetch(statusJson.response_url || queueData.response_url, {
-                    method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+                    method: "GET", 
+                    headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
                 });
                 result = await finalRes.json(); 
             }
-            break; // THOÁT VÒNG LẶP KHI THÀNH CÔNG
+            break;
           } else if (statusJson.status === "FAILED") {
             throw new Error(statusJson.error || "Lỗi xử lý AI từ server.");
           }
         }
+        
+        if (attempts >= maxAttempts) throw new Error("Quá thời gian chờ API từ hệ thống (Timeout).");
       } else {
         result = queueData;
       }
 
-      const audioUrl = result?.audio?.url || result?.audio_url;
+      // 🚀 VÁ LỖI Ở ĐÂY: Quét toàn bộ các kiểu trả link của Fal AI (Bổ sung audio_file.url)
+      const audioUrl = result?.audio_file?.url || result?.audio?.url || result?.audio_url || result?.url;
+      
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
