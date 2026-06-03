@@ -122,13 +122,11 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      // 1. Dọn dẹp text cực mạnh: Cắt mọi dấu xuống dòng, khoảng trắng thừa
+      // Dọn dẹp text và thêm dấu chấm câu
       let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
-      
-      // 2. Ép kết thúc câu bằng dấu chấm để model không bị ảo giác 16s im lặng
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
-      // 🚀 CHÍNH XÁC THEO DOCS: BẮT BUỘC PHẢI CÓ [S1] CHO CẢ 2 MODEL
+      // BẮT BUỘC có [S1] theo đúng chuẩn Docs của Fal AI
       const formattedText = `[S1] ${cleanText}`;
 
       const isVoiceClone = !!(voiceCloneFile && voiceCloneBase64);
@@ -138,11 +136,13 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
       const payload = isVoiceClone 
         ? { 
-            text: formattedText, // Đã có [S1]
+            text: formattedText, 
             ref_audio_url: voiceCloneBase64, 
             ref_text: voiceCloneRefText.trim() 
           }
-        : { text: formattedText }; // Đã có [S1]
+        : { text: formattedText };
+
+      console.log(`🚀 Bắt đầu gửi API Scene ${sceneNo}...`);
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -155,16 +155,17 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
       if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(`API Fal AI từ chối yêu cầu. ${errorData.detail || response.statusText}`);
+          throw new Error(`Fal AI từ chối: ${JSON.stringify(errorData.detail || errorData)}`);
       }
 
       const queueData = await response.json();
       let result = null;
 
       if (queueData.status_url) {
-        // 🚀 VÒNG LẶP CHỜ CÓ GIỚI HẠN (Chống treo sập web)
         let attempts = 0;
-        const maxAttempts = 60; // Tối đa chờ 2 phút
+        // 🚀 TĂNG THỜI GIAN CHỜ LÊN 5 PHÚT (150 lần x 2 giây)
+        const maxAttempts = 150; 
+        let lastStatus = "IN_QUEUE";
         
         while (attempts < maxAttempts) {
           attempts++;
@@ -174,8 +175,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
           });
           const statusJson = await statusRes.json();
+          lastStatus = statusJson.status;
           
-          if (statusJson.status === "COMPLETED") {
+          // 🚀 IN LOG LIÊN TỤC ĐỂ THEO DÕI FAL AI CÓ BỊ KẸT KHÔNG
+          console.log(`⏳ Scene ${sceneNo} - Fal AI đang chạy... Lần ${attempts}/150 - Trạng thái: ${lastStatus}`);
+          
+          if (lastStatus === "COMPLETED") {
             const finalLink = statusJson.response_url || queueData.response_url;
             if (finalLink) {
                 const finalRes = await fetch(finalLink, {
@@ -187,26 +192,25 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                 result = statusJson.payload || statusJson.data || statusJson;
             }
             break;
-          } else if (statusJson.status === "FAILED") {
+          } else if (lastStatus === "FAILED") {
             throw new Error(statusJson.error || "Lỗi xử lý AI từ server.");
           }
         }
         
-        if (attempts >= maxAttempts) throw new Error("Quá thời gian chờ API từ hệ thống (Timeout).");
+        if (attempts >= maxAttempts) throw new Error(`Quá thời gian chờ API (Timeout 5 phút). Trạng thái cuối: ${lastStatus}`);
       } else {
         result = queueData;
       }
 
       console.log(`>> Kết quả Fal AI Scene ${sceneNo}:`, result);
 
-      // 🚀 QUÉT TÌM URL AUDIO TRONG MỌI TRƯỜNG HỢP CỦA API
       const audioUrl = 
-        result?.audio_file?.url || 
         result?.audio?.url || 
+        result?.audio_file?.url || 
         result?.audio_url || 
         result?.url || 
-        (typeof result?.audio_file === 'string' ? result.audio_file : null) ||
-        (typeof result?.audio === 'string' ? result.audio : null);
+        (typeof result?.audio === 'string' ? result.audio : null) ||
+        (typeof result?.audio_file === 'string' ? result.audio_file : null);
       
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
