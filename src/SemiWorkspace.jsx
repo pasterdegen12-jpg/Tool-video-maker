@@ -122,22 +122,27 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
+      // 1. Dọn dẹp text cực mạnh: Cắt mọi dấu xuống dòng, khoảng trắng thừa
       let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+      
+      // 2. Ép kết thúc câu bằng dấu chấm để model không bị ảo giác 16s im lặng
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
+
+      // 🚀 CHÍNH XÁC THEO DOCS: BẮT BUỘC PHẢI CÓ [S1] CHO CẢ 2 MODEL
+      const formattedText = `[S1] ${cleanText}`;
 
       const isVoiceClone = !!(voiceCloneFile && voiceCloneBase64);
       const endpoint = isVoiceClone 
         ? "https://queue.fal.run/fal-ai/dia-tts/voice-clone" 
         : "https://queue.fal.run/fal-ai/dia-tts";
 
-      // 🚀 VÁ LỖI 1: TUYỆT ĐỐI BỎ [S1] KHỎI CHẾ ĐỘ VOICE CLONE
       const payload = isVoiceClone 
         ? { 
-            text: cleanText, // Văn bản tinh khiết, không có [S1]
+            text: formattedText, // Đã có [S1]
             ref_audio_url: voiceCloneBase64, 
             ref_text: voiceCloneRefText.trim() 
           }
-        : { text: `[S1] ${cleanText}` };
+        : { text: formattedText }; // Đã có [S1]
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -157,9 +162,9 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       let result = null;
 
       if (queueData.status_url) {
-        // 🚀 VÁ LỖI 2: KHÔI PHỤC BIẾN ATTEMPTS ĐỂ CHỐNG TREO TRÌNH DUYỆT VĨNH VIỄN
+        // 🚀 VÒNG LẶP CHỜ CÓ GIỚI HẠN (Chống treo sập web)
         let attempts = 0;
-        const maxAttempts = 60; // Chờ tối đa 2 phút (60 x 2s)
+        const maxAttempts = 60; // Tối đa chờ 2 phút
         
         while (attempts < maxAttempts) {
           attempts++;
@@ -192,10 +197,9 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         result = queueData;
       }
 
-      // 🚀 IN RA CONSOLE ĐỂ THEO DÕI TOÀN BỘ KẾT QUẢ CỦA FAL
       console.log(`>> Kết quả Fal AI Scene ${sceneNo}:`, result);
 
-      // 🚀 VÁ LỖI 3: QUÉT MỌI NGÓC NGÁCH CHỨA LINK AUDIO CỦA FAL AI
+      // 🚀 QUÉT TÌM URL AUDIO TRONG MỌI TRƯỜNG HỢP CỦA API
       const audioUrl = 
         result?.audio_file?.url || 
         result?.audio?.url || 
@@ -209,7 +213,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
-          // Văng data lỗi ra màn hình để bắt bệnh nếu Fal AI đổi cấu trúc
           throw new Error(`Fal trả về Data lạ không có Audio URL: ${JSON.stringify(result).substring(0, 150)}... Bấm F12 xem chi tiết.`);
       }
     } catch (error) {
