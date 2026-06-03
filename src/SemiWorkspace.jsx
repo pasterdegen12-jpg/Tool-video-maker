@@ -130,10 +130,11 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         ? "https://queue.fal.run/fal-ai/dia-tts/voice-clone" 
         : "https://queue.fal.run/fal-ai/dia-tts";
 
+      // 🚀 VÁ LỖI 1: TUYỆT ĐỐI BỎ [S1] KHỎI CHẾ ĐỘ VOICE CLONE
       const payload = isVoiceClone 
         ? { 
-            text: `[S1] ${cleanText}`, 
-            ref_audio_url: voiceCloneBase64, // Bây giờ cái này sẽ là link Cloudinary
+            text: cleanText, // Văn bản tinh khiết, không có [S1]
+            ref_audio_url: voiceCloneBase64, 
             ref_text: voiceCloneRefText.trim() 
           }
         : { text: `[S1] ${cleanText}` };
@@ -156,8 +157,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       let result = null;
 
       if (queueData.status_url) {
-        // 🚀 BỎ GIỚI HẠN TIMEOUT, ĐỢI ĐẾN KHI API XONG
-        while (true) {
+        // 🚀 VÁ LỖI 2: KHÔI PHỤC BIẾN ATTEMPTS ĐỂ CHỐNG TREO TRÌNH DUYỆT VĨNH VIỄN
+        let attempts = 0;
+        const maxAttempts = 60; // Chờ tối đa 2 phút (60 x 2s)
+        
+        while (attempts < maxAttempts) {
+          attempts++;
           await new Promise(resolve => setTimeout(resolve, 2000));
           
           const statusRes = await fetch(queueData.status_url, {
@@ -166,15 +171,15 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           const statusJson = await statusRes.json();
           
           if (statusJson.status === "COMPLETED") {
-            // 🚀 ĐỔI .data THÀNH .payload ĐỂ KHỚP VỚI CHUẨN FAL AI
-            if (statusJson.payload) {
-                result = statusJson.payload;
-            } else {
-                const finalRes = await fetch(statusJson.response_url || queueData.response_url, {
+            const finalLink = statusJson.response_url || queueData.response_url;
+            if (finalLink) {
+                const finalRes = await fetch(finalLink, {
                     method: "GET", 
                     headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
                 });
                 result = await finalRes.json(); 
+            } else {
+                result = statusJson.payload || statusJson.data || statusJson;
             }
             break;
           } else if (statusJson.status === "FAILED") {
@@ -187,15 +192,25 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         result = queueData;
       }
 
-      // 🚀 VÁ LỖI Ở ĐÂY: Quét toàn bộ các kiểu trả link của Fal AI (Bổ sung audio_file.url)
-      const audioUrl = result?.audio_file?.url || result?.audio?.url || result?.audio_url || result?.url;
+      // 🚀 IN RA CONSOLE ĐỂ THEO DÕI TOÀN BỘ KẾT QUẢ CỦA FAL
+      console.log(`>> Kết quả Fal AI Scene ${sceneNo}:`, result);
+
+      // 🚀 VÁ LỖI 3: QUÉT MỌI NGÓC NGÁCH CHỨA LINK AUDIO CỦA FAL AI
+      const audioUrl = 
+        result?.audio_file?.url || 
+        result?.audio?.url || 
+        result?.audio_url || 
+        result?.url || 
+        (typeof result?.audio_file === 'string' ? result.audio_file : null) ||
+        (typeof result?.audio === 'string' ? result.audio : null);
       
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
-          throw new Error("API chạy thành công nhưng không tìm thấy URL Audio.");
+          // Văng data lỗi ra màn hình để bắt bệnh nếu Fal AI đổi cấu trúc
+          throw new Error(`Fal trả về Data lạ không có Audio URL: ${JSON.stringify(result).substring(0, 150)}... Bấm F12 xem chi tiết.`);
       }
     } catch (error) {
       console.error(error);
