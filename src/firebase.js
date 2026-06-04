@@ -28,23 +28,13 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
-// Sửa ở file firebase.js
-export const autoSaveToFirebase = async (data, projectName, script) => { // Thêm tham số script
-  // ... (code cũ)
-  const projectDoc = {
-    id: projectId,
-    name: projectName,
-    createdAt: Date.now(),
-    sceneCount: data.length,
-    estCost: cost,
-    data: data,
-    originalScript: script // 🚀 THÊM DÒNG NÀY ĐỂ LƯU KỊCH BẢN
-  };
-  // ...
-  let uploadData = JSON.parse(JSON.stringify(parsedData)); 
+// 🚀 HÀM ĐÃ ĐƯỢC DỌN DẸP SẠCH LỖI VÀ TÍCH HỢP LƯU KỊCH BẢN
+export const autoSaveToFirebase = async (data, projectName, script) => { 
+  const projectId = "proj_" + Date.now();
+  let uploadData = JSON.parse(JSON.stringify(data)); 
 
   console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudinary...`);
-
+  
   // BẮN TOÀN BỘ VIDEO LÊN MÂY (ĐA LUỒNG)
   const uploadPromises = uploadData.map(async (scene, i) => {
     if (scene.videoUrl && scene.videoUrl.startsWith('blob:')) {
@@ -58,7 +48,7 @@ export const autoSaveToFirebase = async (data, projectName, script) => { // Thê
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
         formData.append('resource_type', 'video');
         
-        // 🚀 Ép Cloudinary phải xong trong 90 giây/video
+        // Ép Cloudinary phải xong trong 90 giây/video
         const uploadRes = await withTimeout(
           fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
             method: 'POST', body: formData
@@ -68,9 +58,8 @@ export const autoSaveToFirebase = async (data, projectName, script) => { // Thê
         );
         
         const uploadDataRes = await uploadRes.json();
-        
         if (uploadDataRes.secure_url) {
-           uploadData[i].videoUrl = uploadDataRes.secure_url; 
+           uploadData[i].videoUrl = uploadDataRes.secure_url;
            console.log(`✅ [THÀNH CÔNG] Đã upload xong Scene ${scene.scene_n}!`);
         } else {
            throw new Error(JSON.stringify(uploadDataRes));
@@ -82,7 +71,7 @@ export const autoSaveToFirebase = async (data, projectName, script) => { // Thê
     }
   });
 
-  // Chờ tất cả video tải xong (Nếu 1 cái lỗi, sẽ ném lỗi ngay ra ngoài)
+  // Chờ tất cả video tải xong 
   try {
     await Promise.all(uploadPromises);
     console.log("🔥 Hoàn tất upload toàn bộ Video. Đang lưu thông tin vào Firebase...");
@@ -94,21 +83,23 @@ export const autoSaveToFirebase = async (data, projectName, script) => { // Thê
   const totalVoice = uploadData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
   const cost = totalVoice * 0.01;
 
+  // 🚀 ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO FIREBASE (Bao gồm cả Script)
   const projectDoc = {
     id: projectId,
     name: projectName,
     createdAt: Date.now(),
     sceneCount: uploadData.length,
     estCost: cost,
-    data: uploadData
+    data: uploadData,
+    originalScript: script // 🚀 Lưu kịch bản để hiển thị bảng bên trái
   };
 
-  // 🚀 ÉP TIMEOUT CHO FIREBASE (Tối đa 15 giây)
+  // 🚀 LƯU VÀO FIREBASE
   try {
     await withTimeout(
       setDoc(doc(db, "projects", projectId), projectDoc),
       15000,
-      "Firebase không phản hồi sau 15 giây. Vui lòng kiểm tra lại cấu hình Database Rules (Quyền truy cập) hoặc mạng của bạn."
+      "Firebase không phản hồi sau 15 giây. Vui lòng kiểm tra lại kết nối mạng."
     );
     console.log("✅ Đã lưu Database thành công!");
     return projectId; 
