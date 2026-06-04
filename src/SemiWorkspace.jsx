@@ -2,17 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './firebase.js';
-import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock } from 'lucide-react';
+import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock, Maximize } from 'lucide-react';
 
 export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { 
-  const { projectId } = useParams(); 
+  const { projectId } = useParams();
   const [parsedData, setParsedData] = useState([]); 
+  const [originalScript, setOriginalScript] = useState(""); // 🚀 STATE LƯU KỊCH BẢN
   const [isDataLoading, setIsDataLoading] = useState(true); 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [checkedExportScenes, setCheckedExportScenes] = useState({});
+  
   const [voiceCloneUrl, setVoiceCloneUrl] = useState(null);
   const [voiceCloneFile, setVoiceCloneFile] = useState(null);
   const [voiceCloneBase64, setVoiceCloneBase64] = useState(null);
@@ -28,6 +30,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const [checkedMergeScenes, setCheckedMergeScenes] = useState({});
   const [globalMixVol, setGlobalMixVol] = useState(35); 
   const [isMerging, setIsMerging] = useState(false); 
+  const [mergingScenes, setMergingScenes] = useState({}); // 🚀 STATE MERGE CHO TỪNG CẢNH LẺ
   const [mergedVideos, setMergedVideos] = useState({});
 
   useEffect(() => {
@@ -44,22 +47,21 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           const projectInfo = docSnap.data();
           setParsedData(projectInfo.data || []);
           
-          // 🚀 KHÔI PHỤC TOÀN BỘ TIẾN ĐỘ TỪ FIREBASE (Chống mất dữ liệu khi F5)
+          if (projectInfo.originalScript) setOriginalScript(projectInfo.originalScript); // 🚀 LOAD KỊCH BẢN TỪ FIREBASE
           if (projectInfo.generatedAudios) setGeneratedAudios(projectInfo.generatedAudios);
           if (projectInfo.mergedVideos) setMergedVideos(projectInfo.mergedVideos);
           if (projectInfo.voiceCloneRefText) setVoiceCloneRefText(projectInfo.voiceCloneRefText);
           
           if (projectInfo.voiceCloneBase64) {
             setVoiceCloneBase64(projectInfo.voiceCloneBase64);
-            setVoiceCloneUrl(projectInfo.voiceCloneBase64); // Dùng Base64 làm URL phát
-            setVoiceCloneFile({ name: "Voice_Clone_Saved.mp3" }); // Fake file name
+            setVoiceCloneUrl(projectInfo.voiceCloneBase64);
+            setVoiceCloneFile({ name: "Voice_Clone_Saved.mp3" });
           }
         } else {
           alert("🚨 Dự án không tồn tại hoặc đã bị xóa!");
         }
       } catch (error) {
         console.error("Lỗi tải data dự án:", error);
-        alert("Lỗi đường truyền khi tải dự án.");
       } finally {
         setIsDataLoading(false);
       }
@@ -104,7 +106,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         a.remove();
         return;
       }
-      
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
@@ -113,7 +114,16 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       a.remove();
     } catch (error) {
       console.error("Lỗi khi tải video:", error);
-      alert("Đường truyền có vấn đề, không thể tải video!");
+    }
+  };
+
+  const toggleFullscreen = (e) => {
+    const videoContainer = e.currentTarget.closest('.video-wrapper');
+    const videoElement = videoContainer.querySelector('video');
+    if (videoElement) {
+      if (videoElement.requestFullscreen) videoElement.requestFullscreen();
+      else if (videoElement.webkitRequestFullscreen) videoElement.webkitRequestFullscreen();
+      else if (videoElement.msRequestFullscreen) videoElement.msRequestFullscreen();
     }
   };
 
@@ -122,24 +132,23 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
 
     try {
-      // Dọn dẹp text và thêm dấu chấm câu
-      let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+      // 🚀 DỌN DẸP CỰC MẠNH: Giữ nguyên bản vá lỗi chống câm 25 giây
+      let cleanText = scriptText
+        .trim()
+        .replace(/[\r\n]+/g, ' ')
+        .replace(/["'”’“‘()[\]{}]/g, '')
+        .replace(/\s+/g, ' ');
+
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
-
-      // BẮT BUỘC có [S1] theo đúng chuẩn Docs của Fal AI
       const formattedText = `[S1] ${cleanText}`;
-
+      
       const isVoiceClone = !!(voiceCloneFile && voiceCloneBase64);
       const endpoint = isVoiceClone 
         ? "https://queue.fal.run/fal-ai/dia-tts/voice-clone" 
         : "https://queue.fal.run/fal-ai/dia-tts";
 
       const payload = isVoiceClone 
-        ? { 
-            text: formattedText, 
-            ref_audio_url: voiceCloneBase64, 
-            ref_text: voiceCloneRefText.trim() 
-          }
+        ? { text: formattedText, ref_audio_url: voiceCloneBase64, ref_text: voiceCloneRefText.trim() }
         : { text: formattedText };
 
       console.log(`🚀 Bắt đầu gửi API Scene ${sceneNo}...`);
@@ -163,29 +172,23 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
       if (queueData.status_url) {
         let attempts = 0;
-        // 🚀 TĂNG THỜI GIAN CHỜ LÊN 5 PHÚT (150 lần x 2 giây)
-        const maxAttempts = 150; 
+        const maxAttempts = 150;
         let lastStatus = "IN_QUEUE";
         
         while (attempts < maxAttempts) {
           attempts++;
           await new Promise(resolve => setTimeout(resolve, 2000));
-          
           const statusRes = await fetch(queueData.status_url, {
             method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
           });
           const statusJson = await statusRes.json();
           lastStatus = statusJson.status;
           
-          // 🚀 IN LOG LIÊN TỤC ĐỂ THEO DÕI FAL AI CÓ BỊ KẸT KHÔNG
-          console.log(`⏳ Scene ${sceneNo} - Fal AI đang chạy... Lần ${attempts}/150 - Trạng thái: ${lastStatus}`);
-          
           if (lastStatus === "COMPLETED") {
             const finalLink = statusJson.response_url || queueData.response_url;
             if (finalLink) {
                 const finalRes = await fetch(finalLink, {
-                    method: "GET", 
-                    headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
+                    method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
                 });
                 result = await finalRes.json(); 
             } else {
@@ -196,28 +199,19 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             throw new Error(statusJson.error || "Lỗi xử lý AI từ server.");
           }
         }
-        
-        if (attempts >= maxAttempts) throw new Error(`Quá thời gian chờ API (Timeout 5 phút). Trạng thái cuối: ${lastStatus}`);
+        if (attempts >= maxAttempts) throw new Error(`Quá thời gian chờ API (Timeout 5 phút). Trạng thái: ${lastStatus}`);
       } else {
         result = queueData;
       }
 
-      console.log(`>> Kết quả Fal AI Scene ${sceneNo}:`, result);
-
-      const audioUrl = 
-        result?.audio?.url || 
-        result?.audio_file?.url || 
-        result?.audio_url || 
-        result?.url || 
-        (typeof result?.audio === 'string' ? result.audio : null) ||
-        (typeof result?.audio_file === 'string' ? result.audio_file : null);
+      const audioUrl = result?.audio?.url || result?.audio_file?.url || result?.audio_url || result?.url || (typeof result?.audio === 'string' ? result.audio : null) || (typeof result?.audio_file === 'string' ? result.audio_file : null);
       
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
-          throw new Error(`Fal trả về Data lạ không có Audio URL: ${JSON.stringify(result).substring(0, 150)}... Bấm F12 xem chi tiết.`);
+          throw new Error(`Fal trả về Data lạ không có Audio URL.`);
       }
     } catch (error) {
       console.error(error);
@@ -227,6 +221,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     }
   };
 
+  // Các hàm tiện ích Select All
   const handleToggleCheck = (sceneNo) => setCheckedScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   const handleSelectAll = () => {
     const filtered = parsedData.filter(scene => !generatedAudios[scene.scene_n] && scene.Voiceover);
@@ -239,36 +234,22 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const handleStartBatchGen = async () => {
     const selectedSceneNumbers = Object.keys(checkedScenes).filter(key => checkedScenes[key]);
     if (selectedSceneNumbers.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
+    setIsModalOpen(false);
     
-    setIsModalOpen(false); // Đóng modal ngay lập tức để thấy giao diện loading
-    
-    // 🚀 Bắn TẤT CẢ các request lên Fal AI cùng một lúc
     const promises = selectedSceneNumbers.map(sceneNo => {
       const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
-      if (scene && scene.Voiceover) {
-        return handleGenAudio(scene.scene_n, scene.Voiceover);
-      }
+      if (scene && scene.Voiceover) return handleGenAudio(scene.scene_n, scene.Voiceover);
       return Promise.resolve();
     });
-
-    try {
-      // Đợi cho đến khi TẤT CẢ các audio đều xử lý xong
-      await Promise.all(promises); 
-    } catch (error) {
-      console.error("Lỗi khi chạy Gen All:", error);
-    } finally {
-      setCheckedScenes({});
-    }
+    try { await Promise.all(promises); } 
+    catch (error) { console.error("Lỗi Gen All:", error); } 
+    finally { setCheckedScenes({}); }
   };
 
   const handleToggleExportCheck = (sceneNo) => setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
   const handleSelectAllExport = () => {
     const newChecked = {};
-    parsedData.forEach(scene => { 
-      if (mergedVideos[scene.scene_n]) {
-        newChecked[scene.scene_n] = true; 
-      }
-    });
+    parsedData.forEach(scene => { if (mergedVideos[scene.scene_n]) newChecked[scene.scene_n] = true; });
     setCheckedExportScenes(newChecked);
   };
   const handleDeselectAllExport = () => setCheckedExportScenes({});
@@ -276,15 +257,13 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const handleDownloadVideos = async () => {
     const scenesToExport = parsedData.filter(scene => checkedExportScenes[scene.scene_n] && mergedVideos[scene.scene_n]);
     if (scenesToExport.length === 0) return alert("Vui lòng chọn ít nhất 1 Output để tải!");
-    
-    alert(`⏳ Đang chuẩn bị tải ${scenesToExport.length} video Output. \n\nLƯU Ý: Nếu trình duyệt hỏi "Allow downloading multiple files", hãy bấm Allow (Cho phép) nhé!`);
+    alert(`⏳ Đang chuẩn bị tải ${scenesToExport.length} video...`);
     setIsExportModalOpen(false); 
     
     for (let i = 0; i < scenesToExport.length; i++) {
       const scene = scenesToExport[i];
       const outputUrl = mergedVideos[scene.scene_n];
       if (!outputUrl) continue; 
-      
       await forceDownloadVideo(outputUrl, `Scene_${scene.scene_n}_Output.mp4`);
       await new Promise(resolve => setTimeout(resolve, 800));
     }
@@ -298,109 +277,115 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   };
   const handleDeselectAllMerge = () => setCheckedMergeScenes({});
 
+  // 🚀 TÁCH RIÊNG LOGIC MERGE ĐỂ TÁI SỬ DỤNG CHO 1 CẢNH LẺ HOẶC MERGE ALL
+  const processMergeSingleScene = async (scene) => {
+    const videoUrl = scene.videoUrl;
+    const aiAudioUrl = generatedAudios[scene.scene_n];
+    if (!videoUrl) return null;
+    let finalUrl = null;
+
+    if (!aiAudioUrl) {
+      finalUrl = videoUrl;
+    } else {
+      const inVid = `vid_${scene.scene_n}.mp4`;
+      const inAud = `aud_${scene.scene_n}.mp3`;
+      const outName = `Scene_${scene.scene_n}_Merged.mp4`;
+
+      await ffmpeg.writeFile(inVid, new Uint8Array(await (await fetch(videoUrl)).arrayBuffer()));
+      await ffmpeg.writeFile(inAud, new Uint8Array(await (await fetch(aiAudioUrl)).arrayBuffer()));
+      
+      let exitCode = -1;
+      if (globalMixVol == 0) {
+        try {
+          exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]);
+        } catch (err) { exitCode = 1; }
+      } else {
+        const vol = globalMixVol / 100;
+        try {
+          exitCode = await ffmpeg.exec([
+            '-i', inVid, '-i', inAud,
+            '-filter_complex', `[0:a]volume=${vol}[a1];[1:a]volume=1.0[a2];[a1][a2]amix=inputs=2:duration=shortest[aout]`,
+            '-map', '0:v', '-map', '[aout]', '-c:v', 'copy', '-c:a', 'aac', outName
+          ]);
+        } catch (err) { exitCode = 1; }
+
+        if (exitCode !== 0) {
+          try {
+            exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]);
+          } catch (err) {}
+        }
+      }
+
+      if (exitCode === 0) {
+          const outData = await ffmpeg.readFile(outName);
+          const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
+          const formData = new FormData();
+          formData.append('file', outBlob);
+          formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+          formData.append('resource_type', 'video');
+          
+          try {
+            const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, { method: 'POST', body: formData });
+            const uploadDataRes = await uploadRes.json();
+            if (uploadDataRes.secure_url) finalUrl = uploadDataRes.secure_url;
+          } catch(err) {
+            finalUrl = URL.createObjectURL(outBlob);
+          }
+      }
+      await ffmpeg.deleteFile(inVid);
+      await ffmpeg.deleteFile(inAud);
+      try { await ffmpeg.deleteFile(outName); } catch(e) {}
+    }
+    return finalUrl;
+  };
+
   const handleStartMerge = async () => {
     const scenesToMerge = parsedData.filter(scene => checkedMergeScenes[scene.scene_n]);
     if (scenesToMerge.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để Merge!");
-    if (!ffmpeg || !isFfmpegReady) return alert("Hệ thống FFmpeg chưa sẵn sàng. Vui lòng đợi trang tải xong!");
+    if (!ffmpeg || !isFfmpegReady) return alert("Hệ thống FFmpeg chưa sẵn sàng!");
 
     setIsMerging(true);
-
     for (let i = 0; i < scenesToMerge.length; i++) {
       const scene = scenesToMerge[i];
-      const videoUrl = scene.videoUrl;
-      const aiAudioUrl = generatedAudios[scene.scene_n];
-
-      if (!videoUrl) continue;
-
       try {
-        let finalUrl = null;
-
-        if (!aiAudioUrl) {
-          finalUrl = videoUrl; 
-        } 
-        else {
-          const inVid = `vid_${scene.scene_n}.mp4`;
-          const inAud = `aud_${scene.scene_n}.mp3`;
-          const outName = `Scene_${scene.scene_n}_Merged.mp4`;
-
-          await ffmpeg.writeFile(inVid, new Uint8Array(await (await fetch(videoUrl)).arrayBuffer()));
-          await ffmpeg.writeFile(inAud, new Uint8Array(await (await fetch(aiAudioUrl)).arrayBuffer()));
-
-          let exitCode = -1;
-
-          if (globalMixVol == 0) {
-            try {
-              exitCode = await ffmpeg.exec([
-                '-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', 
-                '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName
-              ]);
-            } catch (err) { exitCode = 1; }
-          } else {
-            const vol = globalMixVol / 100;
-            try {
-              exitCode = await ffmpeg.exec([
-                '-i', inVid, '-i', inAud,
-                '-filter_complex', `[0:a]volume=${vol}[a1];[1:a]volume=1.0[a2];[a1][a2]amix=inputs=2:duration=shortest[aout]`,
-                '-map', '0:v', '-map', '[aout]', '-c:v', 'copy', '-c:a', 'aac', outName
-              ]);
-            } catch (err) { exitCode = 1; }
-
-            if (exitCode !== 0) {
-              try {
-                exitCode = await ffmpeg.exec([
-                  '-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', 
-                  '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName
-                ]);
-              } catch (err) {}
-            }
-          }
-
-          if (exitCode === 0) {
-             const outData = await ffmpeg.readFile(outName);
-             const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
-             
-             // 🚀 TẢI LÊN CLOUDINARY ĐỂ BẢO TOÀN VIDEO KHI F5
-             const formData = new FormData();
-             formData.append('file', outBlob);
-             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-             formData.append('resource_type', 'video');
-             
-             try {
-               const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
-                 method: 'POST', body: formData
-               });
-               const uploadDataRes = await uploadRes.json();
-               if (uploadDataRes.secure_url) {
-                 finalUrl = uploadDataRes.secure_url; 
-               }
-             } catch(err) {
-               console.error("Lỗi upload video output:", err);
-               finalUrl = URL.createObjectURL(outBlob); // Fallback: Dùng link tạm nếu mất mạng
-             }
-          }
-
-          await ffmpeg.deleteFile(inVid);
-          await ffmpeg.deleteFile(inAud);
-          try { await ffmpeg.deleteFile(outName); } catch(e) {}
-        }
-
+        const finalUrl = await processMergeSingleScene(scene);
         if (finalUrl) {
           setMergedVideos(prev => {
              const newMergedVideos = { ...prev, [scene.scene_n]: finalUrl };
-             // 🚀 LƯU LÊN FIREBASE
              updateProjectProgress(projectId, { mergedVideos: newMergedVideos });
              return newMergedVideos;
           });
         }
-
-      } catch (error) {
-        console.error(`Lỗi hệ thống Merge Scene ${scene.scene_n}:`, error);
-      }
+      } catch (error) { console.error(`Lỗi Merge Scene ${scene.scene_n}:`, error); }
     }
-
     setIsMerging(false);
     setIsMergeModalOpen(false);
-    alert("✅ Đã xử lý xong! Video Output đã hiển thị ở từng cảnh bên dưới.");
+    alert("✅ Đã xử lý xong Batch Merge!");
+  };
+
+  // 🚀 HÀM MERGE LẺ TỪNG CẢNH CHO USER
+  const handleSingleSceneMergeClick = async (scene) => {
+    if (!ffmpeg || !isFfmpegReady) return alert("Hệ thống FFmpeg chưa sẵn sàng!");
+    if (!scene.videoUrl) return alert("Cảnh này chưa có video gốc!");
+    
+    setMergingScenes(prev => ({ ...prev, [scene.scene_n]: true }));
+    try {
+      const finalUrl = await processMergeSingleScene(scene);
+      if (finalUrl) {
+        setMergedVideos(prev => {
+            const newMergedVideos = { ...prev, [scene.scene_n]: finalUrl };
+            updateProjectProgress(projectId, { mergedVideos: newMergedVideos });
+            return newMergedVideos;
+        });
+      } else {
+        throw new Error("Không thể tạo được video.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Lỗi khi Merge cảnh " + scene.scene_n);
+    } finally {
+      setMergingScenes(prev => ({ ...prev, [scene.scene_n]: false }));
+    }
   };
 
   const handleVoiceUpload = async (e) => {
@@ -412,49 +397,32 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setVoiceCloneRefText("AI đang nghe..."); 
     
     try {
-      // 1. Chuyển sang Base64 để gửi cho AI Whisper (Vì API này cần file thô)
       const base64Audio = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
       });
-
-      // 2. Upload file audio lên Cloudinary để lấy link URL gọn nhẹ
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('resource_type', 'auto'); // Auto để nhận diện audio
+      formData.append('resource_type', 'auto'); 
 
-      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
-         method: 'POST', body: formData
-      });
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: formData });
       const uploadDataRes = await uploadRes.json();
       const audioCloudUrl = uploadDataRes.secure_url;
 
-      // Lưu link URL vào State thay vì chuỗi Base64
       setVoiceCloneBase64(audioCloudUrl);
-
-      // 3. Gọi AI Whisper lấy text
       const response = await fetch("https://fal.run/fal-ai/whisper", {
-        method: "POST",
-        headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
+        method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({ audio_url: base64Audio }),
       });
-      
       const result = await response.json();
       const refText = result.text ? result.text.trim() : "Không nhận diện được giọng.";
       setVoiceCloneRefText(refText);
-
-      // 4. 🚀 LƯU FIREBASE: Chỉ lưu link URL ngắn của Cloudinary, không sợ vượt quá 1MB
-      await updateProjectProgress(projectId, {
-          voiceCloneBase64: audioCloudUrl, 
-          voiceCloneRefText: refText
-      });
-      
+      await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: refText });
     } catch (error) {
-      console.error(error);
-      setVoiceCloneRefText("Lỗi upload hoặc nhận diện. Hãy thử lại.");
+      setVoiceCloneRefText("Lỗi upload. Hãy thử lại.");
     } finally { setIsTranscribing(false); }
   };
 
@@ -463,28 +431,33 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setVoiceCloneFile(null); setVoiceCloneUrl(null); setVoiceCloneBase64(null);
     setVoiceCloneRefText(""); setIsTranscribing(false);
     if (fileInputRef.current) fileInputRef.current.value = null;
-
-    // 🚀 XÓA VOICE CLONE KHỎI FIREBASE
-    await updateProjectProgress(projectId, {
-        voiceCloneBase64: null,
-        voiceCloneRefText: ""
-    });
+    await updateProjectProgress(projectId, { voiceCloneBase64: null, voiceCloneRefText: "" });
   };
 
-  const filteredScenesForAudio = parsedData.filter(scene => 
-    !generatedAudios[scene.scene_n] && (scene.Voiceover && scene.Voiceover.trim() !== '')
-  );
+  const filteredScenesForAudio = parsedData.filter(scene => !generatedAudios[scene.scene_n] && (scene.Voiceover && scene.Voiceover.trim() !== ''));
 
   return (
     <div className="h-screen w-full bg-[#0E0E10] font-sans text-white p-4 overflow-y-auto relative">
-      <div className="flex flex-col gap-5 max-w-7xl mx-auto pb-16 pr-52">
+      
+      {/* 🚀 BẢNG KỊCH BẢN GỐC (LEFT PANEL) */}
+      <div className="fixed left-5 top-24 bottom-5 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[260px] hidden xl:flex">
+        <div className="flex items-center justify-between text-blue-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-2 shrink-0">
+          <div className="flex items-center gap-1.5"><FileText size={14} /> Kịch bản gốc</div>
+        </div>
+        <div className="flex-1 overflow-y-auto pr-1 text-gray-300 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">
+          {originalScript ? originalScript : "Kịch bản gốc trống. Hãy đảm bảo bạn đã cập nhật hàm autoSave trong MainEditor và Firebase."}
+        </div>
+      </div>
+
+      {/* 🚀 Tinh chỉnh padding để chứa 2 bảng 2 bên */}
+      <div className="flex flex-col gap-5 w-full max-w-5xl mx-auto pb-16 xl:pl-[280px] xl:pr-[240px]">
         
         {/* BẢNG TỔNG QUAN */}
         <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-md">
           <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider mb-3 border-b border-[#2A2A30] pb-2">
             <LayoutDashboard size={14} /> Bảng tổng quan dự án
           </div>
-          <div className="grid grid-cols-7 gap-4 text-center">
+          <div className="grid grid-cols-3 md:grid-cols-7 gap-4 text-center">
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Total Scene</div>
               <div className="text-sm font-bold text-white mt-1">{totalScenes}</div>
@@ -518,51 +491,50 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
         {/* DANH SÁCH SCENE */}
         {parsedData.map((scene, index) => {
-          const isLoading = isGenerating[scene.scene_n];
+          const isLoadingAudio = isGenerating[scene.scene_n];
+          const isMergingThisScene = mergingScenes[scene.scene_n];
           const hasAudio = generatedAudios[scene.scene_n];
           const hasOutput = mergedVideos[scene.scene_n];
 
           return (
-            <div key={index} className="flex gap-6 bg-[#121216] hover:bg-[#16161B] p-5 rounded-2xl border border-[#2A2A30] hover:border-gray-600 shadow-lg transition-all items-stretch group">
+            <div key={index} className="flex flex-col md:flex-row gap-6 bg-[#121216] hover:bg-[#16161B] p-5 rounded-2xl border border-[#2A2A30] hover:border-gray-600 shadow-lg transition-all items-stretch group">
               
               {/* CỘT VIDEO */}
-              <div className="w-[180px] flex flex-col gap-4 shrink-0">
-                <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-[#2A2A30] shadow-sm">
+              <div className="w-full md:w-[220px] flex flex-col gap-4 shrink-0">
+                <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-[#2A2A30] shadow-sm video-wrapper">
                   <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
                     <div className="flex items-center gap-1.5 text-purple-400">
                       <Video size={13} /> 
                       <span className="text-[10px] font-bold uppercase tracking-widest">Input</span>
                     </div>
-                    <span className="text-[10px] text-gray-400 font-medium">S_{scene.scene_n}</span>
+                    <div className="flex items-center gap-2 text-gray-400">
+                      {/* 🚀 NÚT PHÓNG TO MÀN HÌNH */}
+                      <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-purple-400/70 hover:text-purple-300" title="Phóng to video"><Maximize size={12} /></button>
+                      <span className="text-[10px] font-medium">S_{scene.scene_n}</span>
+                    </div>
                   </div>
-                  
                   <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
                     {scene.videoUrl ? (
                       <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     ) : (
-                      <div className="text-center flex flex-col items-center gap-1.5 opacity-40">
-                        <Video size={18} className="text-gray-400" />
-                      </div>
+                      <div className="text-center flex flex-col items-center gap-1.5 opacity-40"><Video size={18} className="text-gray-400" /></div>
                     )}
                   </div>
                 </div>
 
                 {hasOutput && (
-                  <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                  <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.1)] video-wrapper">
                     <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
                       <div className="flex items-center gap-1.5 text-green-400">
                         <CheckSquare size={13} /> 
                         <span className="text-[10px] font-bold uppercase tracking-widest">Output</span>
                       </div>
-                      
-                      <button 
-                        onClick={() => forceDownloadVideo(hasOutput, `Scene_${scene.scene_n}_Output.mp4`)}
-                        className="text-[9px] font-bold text-white bg-green-600 hover:bg-green-500 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <Download size={10} /> Tải
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {/* 🚀 NÚT PHÓNG TO MÀN HÌNH */}
+                        <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-green-400/70 hover:text-green-300" title="Phóng to video"><Maximize size={12} /></button>
+                        <button onClick={() => forceDownloadVideo(hasOutput, `Scene_${scene.scene_n}_Output.mp4`)} className="text-[9px] font-bold text-white bg-green-600 hover:bg-green-500 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"><Download size={10} /> Tải</button>
+                      </div>
                     </div>
-                    
                     <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
                       <video src={hasOutput} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     </div>
@@ -573,25 +545,14 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
               {/* CỘT THÔNG TIN */}
               <div className="flex-1 flex flex-col min-w-0">
                 <div className="space-y-3.5 flex-1">
-                  
                   <div className="flex gap-3 items-start text-sm">
-                    <span className="text-gray-400 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1">
-                      <AlignLeft size={14} /> Voice:
-                    </span>
-                    <p className="text-gray-200 leading-relaxed bg-[#1A1A21] px-4 py-2.5 rounded-lg flex-1 border border-[#2A2A30] shadow-inner">
-                      {scene.Voiceover || "N/A"}
-                    </p>
+                    <span className="text-gray-400 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1"><AlignLeft size={14} /> Voice:</span>
+                    <p className="text-gray-200 leading-relaxed bg-[#1A1A21] px-4 py-2.5 rounded-lg flex-1 border border-[#2A2A30] shadow-inner">{scene.Voiceover || "N/A"}</p>
                   </div>
-
                   <div className="flex gap-3 items-start text-sm">
-                    <span className="text-gray-500 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1">
-                      <Globe size={14} /> Trans:
-                    </span>
-                    <p className="text-gray-400 italic leading-relaxed bg-[#0E0E10] px-4 py-2.5 rounded-lg flex-1 border border-[#1A1A21]">
-                      {scene.Translate || "N/A"}
-                    </p>
+                    <span className="text-gray-500 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1"><Globe size={14} /> Trans:</span>
+                    <p className="text-gray-400 italic leading-relaxed bg-[#0E0E10] px-4 py-2.5 rounded-lg flex-1 border border-[#1A1A21]">{scene.Translate || "N/A"}</p>
                   </div>
-                  
                   <div className="flex gap-6 text-[11px] pt-1 px-1 border-t border-[#2A2A30]/50 pt-3 mt-2">
                     <div className="flex items-center gap-1.5"><Clock size={13} className="text-gray-500"/> <span className="text-gray-500">Thời gian:</span><span className="text-green-400 font-bold bg-green-500/10 px-1.5 py-0.5 rounded">{scene.time_origin}</span></div>
                     <div className="flex items-center gap-1.5"><span className="text-gray-500">Số từ:</span><span className="text-blue-400 font-bold">{scene.Word_count || 0}</span></div>
@@ -606,20 +567,30 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 bg-[#0A0A0C] p-2.5 rounded-xl border border-[#2A2A30] mt-4 shrink-0 shadow-inner">
+                <div className="flex flex-wrap items-center gap-3 bg-[#0A0A0C] p-2.5 rounded-xl border border-[#2A2A30] mt-4 shrink-0 shadow-inner">
                   <button 
                     onClick={() => setActiveGenModal({ scene_n: scene.scene_n, Voiceover: scene.Voiceover, Translate: scene.Translate })} 
-                    disabled={isLoading}
-                    className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isLoading ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:text-purple-300'}`}
+                    disabled={isLoadingAudio}
+                    className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isLoadingAudio ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:text-purple-300'}`}
                   >
-                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} 
-                    {isLoading ? 'Đang tạo Audio...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio')}
+                    {isLoadingAudio ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} 
+                    {isLoadingAudio ? 'Đang tạo Audio...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio')}
                   </button>
                   
-                  {!hasOutput && (
+                  {/* 🚀 NÚT MERGE ĐỘC LẬP CHO TỪNG CẢNH */}
+                  <button 
+                    onClick={() => handleSingleSceneMergeClick(scene)} 
+                    disabled={isMergingThisScene || !scene.videoUrl}
+                    className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isMergingThisScene || !scene.videoUrl ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:text-blue-300'}`}
+                  >
+                    {isMergingThisScene ? <Loader2 size={14} className="animate-spin" /> : <Merge size={14} />} 
+                    {isMergingThisScene ? 'Đang Merge...' : (hasOutput ? 'Merge Lại Video' : 'Merge Video')}
+                  </button>
+
+                  {!hasOutput && !isMergingThisScene && (
                     <>
-                      <div className="w-[1px] h-5 bg-[#2A2A30] shrink-0"></div>
-                      <span className="text-[11px] text-gray-500 flex-1 ml-1 italic">Đợi chạy batch Merge All ở bảng điều khiển...</span>
+                      <div className="hidden md:block w-[1px] h-5 bg-[#2A2A30] shrink-0"></div>
+                      <span className="text-[11px] text-gray-500 flex-1 ml-1 italic hidden md:block">Bấm Merge để ghép Audio vào cảnh...</span>
                     </>
                   )}
                 </div>
@@ -630,13 +601,13 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       </div>
 
       {/* BẢNG ĐIỀU KHIỂN CỐ ĐỊNH BÊN PHẢI */}
-      <div className="fixed right-5 top-24 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[220px]">
+      <div className="fixed right-5 top-24 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[220px] hidden xl:flex">
         <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-2">
           <Sliders size={14} /> Bảng điều khiển
         </div>
         
         <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-9 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer mt-1">
-          <Merge size={14} /> Merge All Videos
+          <Merge size={14} /> Batch Merge Videos
         </button>
 
         <button onClick={() => setIsExportModalOpen(true)} className="w-full h-9 bg-[#2A2A30] hover:bg-gray-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
@@ -644,16 +615,14 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </button>
 
         <button onClick={() => setIsModalOpen(true)} className="w-full h-9 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer mt-2">
-          <Music size={14} /> Gen All Audio
+          <Music size={14} /> Batch Gen Audio
         </button>
 
         <div className="bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 flex flex-col gap-2 mt-2">
           <div className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex justify-between items-center mb-1">
             Voice Clone
             {voiceCloneFile && (
-              <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 cursor-pointer" title="Xóa file">
-                <Trash2 size={13} />
-              </button>
+              <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 cursor-pointer" title="Xóa file"><Trash2 size={13} /></button>
             )}
           </div>
           
@@ -667,7 +636,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             <div className="flex flex-col gap-2">
               <span className="text-[10px] text-gray-300 truncate" title={voiceCloneFile.name}>{voiceCloneFile.name}</span>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-7 [&::-webkit-media-controls-panel]:bg-[#2A2A30]" />
-              
               <div className="relative mt-1">
                 <input 
                   type="text" 
@@ -676,71 +644,48 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   disabled={isTranscribing}
                   className={`w-full h-8 px-2 pr-7 bg-[#1A1A21] border border-[#2A2A30] rounded-md text-[11px] text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-600 ${isTranscribing ? 'opacity-70 cursor-not-allowed' : ''}`}
                 />
-                {isTranscribing && (
-                  <Loader2 size={13} className="absolute right-2 top-2 animate-spin text-purple-400" />
-                )}
+                {isTranscribing && <Loader2 size={13} className="absolute right-2 top-2 animate-spin text-purple-400" />}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* === MODAL MERGE ALL VIDEOS === */}
+      {/* CÁC MODAL HIỆN CÓ... */}
+      {/* === MODAL BATCH MERGE ALL === */}
       {isMergeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl text-xs relative">
             <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
-            
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2">
-              <Merge size={18} /> Merge input &rarr; output (all scenes)
-            </h3>
-            <p className="text-gray-400 mt-3 leading-relaxed text-[11px]">
-              Tạo Video Output hiển thị trực tiếp bên dưới mỗi Scene. Kể cả Scene không có Audio AI cũng sẽ tự động xuất Output.
-            </p>
+            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2"><Merge size={18} /> Batch Merge Videos</h3>
+            <p className="text-gray-400 mt-3 leading-relaxed text-[11px]">Tạo Video Output hàng loạt cho các Scene đã chọn.</p>
 
             <div className="mt-5 bg-[#0E0E10] border border-[#2A2A30] p-4 rounded-xl">
               <div className="flex justify-between items-center mb-3">
                 <span className="font-semibold text-gray-300">Input video original audio (mix)</span>
                 <span className="text-gray-400 font-mono font-medium text-[11px]">{(globalMixVol / 100).toFixed(2)}</span>
               </div>
-              <input 
-                type="range" min="0" max="100" 
-                value={globalMixVol} 
-                onChange={(e) => setGlobalMixVol(e.target.value)} 
-                disabled={isMerging}
-                className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" 
-              />
-              <div className="text-[10px] text-gray-500 mt-3 leading-relaxed">
-                With dialogue: 0 = dialogue only, 1 = full original mixed in. Without dialogue: 0 = mute input track, 1 = keep input audio.
-              </div>
+              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
             </div>
 
             <div className="flex gap-2 mt-5 shrink-0">
-              <button onClick={handleSelectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium transition-all cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Select all</button>
-              <button onClick={handleDeselectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium transition-all cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Deselect all</button>
+              <button onClick={handleSelectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Select all</button>
+              <button onClick={handleDeselectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Deselect all</button>
             </div>
             
-            <div className="text-xs text-gray-400 font-bold mt-5 mb-2 flex justify-between">
-              <span>Scenes to process</span>
-              <span>({Object.values(checkedMergeScenes).filter(Boolean).length} / {parsedData.length} selected)</span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px]">
+            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px] mt-4">
               {parsedData.map((scene) => {
                 const isChecked = !!checkedMergeScenes[scene.scene_n];
                 const hasAiAudio = !!generatedAudios[scene.scene_n];
                 return (
-                  <div key={scene.scene_n} onClick={() => !isMerging && handleToggleMergeCheck(scene.scene_n)} className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#15151A] border-[#2A2A30] hover:border-gray-600'} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <div key={scene.scene_n} onClick={() => !isMerging && handleToggleMergeCheck(scene.scene_n)} className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#15151A] border-[#2A2A30]'} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">{isChecked ? <CheckSquare size={16} className="text-blue-400" /> : <Square size={16} className="text-gray-500" />}</div>
                       <div>
                         <div className={`font-bold text-[13px] ${isChecked ? 'text-blue-400' : 'text-gray-300'}`}>Scene {scene.scene_n}</div>
-                        <div className="text-[11px] text-gray-500 mt-1">
-                          {hasAiAudio ? 'Sẽ Merge Video Gốc + AI Audio' : 'Chưa có Audio (Pass qua Video Gốc)'}
-                        </div>
+                        <div className="text-[11px] text-gray-500 mt-1">{hasAiAudio ? 'Có AI Audio' : 'Pass qua Video Gốc'}</div>
                       </div>
                     </div>
-                    {hasAiAudio && <Mic size={16} className="text-purple-400" title="Có Audio AI" />}
                   </div>
                 );
               })}
@@ -748,41 +693,36 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             
             <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
               <button onClick={() => setIsMergeModalOpen(false)} disabled={isMerging} className="h-10 px-6 bg-transparent border border-gray-600 hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer disabled:opacity-50">Close</button>
-              <button onClick={handleStartMerge} disabled={isMerging} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:bg-blue-800">
-                {isMerging ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />}
-                {isMerging ? 'Processing...' : `Generate Output UI`}
+              <button onClick={handleStartMerge} disabled={isMerging} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md cursor-pointer flex items-center gap-2 disabled:opacity-50">
+                {isMerging ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} {isMerging ? 'Processing...' : `Generate Output`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* === MODAL GEN AUDIO BATCH === */}
+      {/* === MODAL BATCH GEN AUDIO === */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
             <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-purple-400 flex items-center gap-2"><Music size={18} /> Cấu hình sinh âm thanh đồng loạt</h3>
-            
             <div className="flex gap-2 mt-5 shrink-0">
-              <button onClick={handleSelectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium flex items-center gap-1 transition-all cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
-              <button onClick={handleDeselectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium flex items-center gap-1 transition-all cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
+              <button onClick={handleSelectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
+              <button onClick={handleDeselectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
             </div>
-            
-            <div className="text-xs text-gray-400 font-bold uppercase mt-5 mb-2 tracking-wider">Scenes chưa có audio ({filteredScenesForAudio.length})</div>
-            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-0">
+            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px] mt-4">
               {filteredScenesForAudio.length === 0 ? (
-                <div className="text-center text-gray-500 py-10 text-xs">Không có cảnh nào cần xử lý âm thanh.</div>
+                <div className="text-center text-gray-500 py-10 text-xs">Không có cảnh nào cần xử lý.</div>
               ) : (
                 filteredScenesForAudio.map((scene) => {
                   const isChecked = !!checkedScenes[scene.scene_n];
                   return (
-                    <div key={scene.scene_n} onClick={() => handleToggleCheck(scene.scene_n)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-purple-600/10 border-purple-500/50' : 'bg-[#15151A] border-[#2A2A30] hover:border-gray-600'}`}>
+                    <div key={scene.scene_n} onClick={() => handleToggleCheck(scene.scene_n)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-purple-600/10 border-purple-500/50' : 'bg-[#15151A] border-[#2A2A30]'}`}>
                       <div className="mt-0.5 shrink-0 text-purple-400">{isChecked ? <CheckSquare size={16} /> : <Square size={16} className="text-gray-500" />}</div>
                       <div className="space-y-1 min-w-0 text-xs">
                         <div className="font-bold text-[13px] text-blue-400">Scene {scene.scene_n}</div>
-                        <div className="text-gray-200 truncate leading-relaxed"><span className="text-gray-400 font-medium">Voiceover:</span> {scene.Voiceover}</div>
-                        <div className="text-gray-400 italic truncate"><span className="text-gray-500 font-medium font-normal">Dịch:</span> {scene.Translate || "N/A"}</div>
+                        <div className="text-gray-200 truncate leading-relaxed">Voiceover: {scene.Voiceover}</div>
                       </div>
                     </div>
                   );
@@ -791,7 +731,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             </div>
             <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-4 shrink-0">
               <button onClick={() => setIsModalOpen(false)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={handleStartBatchGen} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold shadow-md cursor-pointer">Bắt đầu Gen Audio</button>
+              <button onClick={handleStartBatchGen} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold cursor-pointer">Bắt đầu Gen</button>
             </div>
           </div>
         </div>
@@ -805,21 +745,18 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-green-400 flex items-center gap-2"><Download size={18} /> Tải Video Output (Đã Merge)</h3>
             
             {Object.keys(mergedVideos).length === 0 ? (
-              <div className="text-center text-gray-500 py-10 text-xs">
-                Chưa có video Output nào được tạo.<br/>Bạn hãy chạy "Merge All Videos" ở bảng điều khiển trước nhé!
-              </div>
+              <div className="text-center text-gray-500 py-10 text-xs">Chưa có video Output nào được tạo.<br/>Bạn hãy chạy "Merge Videos" trước nhé!</div>
             ) : (
               <>
                 <div className="flex gap-2 mt-5 shrink-0">
-                  <button onClick={handleSelectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium transition-all cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
-                  <button onClick={handleDeselectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium transition-all cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
+                  <button onClick={handleSelectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
+                  <button onClick={handleDeselectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
                 </div>
-                <div className="text-xs text-gray-400 font-bold uppercase mt-5 mb-2 tracking-wider">Chọn Output để xuất ({Object.keys(mergedVideos).length})</div>
-                <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-1.5 min-h-0">
+                <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-1.5 min-h-[160px] mt-4">
                   {parsedData.filter(scene => mergedVideos[scene.scene_n]).map((scene) => {
                     const isChecked = !!checkedExportScenes[scene.scene_n];
                     return (
-                      <div key={scene.scene_n} onClick={() => handleToggleExportCheck(scene.scene_n)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${isChecked ? 'bg-green-600/20 border-green-500/50 text-white' : 'bg-[#15151A] border-[#2A2A30] text-gray-300 hover:border-gray-600'}`}>
+                      <div key={scene.scene_n} onClick={() => handleToggleExportCheck(scene.scene_n)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${isChecked ? 'bg-green-600/20 border-green-500/50 text-white' : 'bg-[#15151A] border-[#2A2A30]'}`}>
                         {isChecked ? <CheckSquare size={16} className="text-green-400" /> : <Square size={16} className="text-gray-500" />}
                         <div className="font-bold text-[13px]">Scene {scene.scene_n} Output</div>
                       </div>
@@ -828,7 +765,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                 </div>
                 <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-4 shrink-0">
                   <button onClick={() => setIsExportModalOpen(false)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-                  <button onClick={handleDownloadVideos} className="h-10 px-6 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-md cursor-pointer">Tải Output Đã Chọn</button>
+                  <button onClick={handleDownloadVideos} className="h-10 px-6 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold cursor-pointer">Tải Output Đã Chọn</button>
                 </div>
               </>
             )}
@@ -848,15 +785,11 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                 <div className="text-gray-500 font-medium mb-2 flex items-center gap-1.5"><AlignLeft size={14} /> Voiceover:</div>
                 <p className="text-gray-200 leading-relaxed text-[13px] whitespace-pre-wrap">{activeGenModal.Voiceover || "N/A"}</p>
               </div>
-              <div className="bg-[#0E0E10] border border-[#2A2A30] rounded-xl p-4">
-                <div className="text-gray-500 font-medium mb-2 flex items-center gap-1.5"><Globe size={14} /> Translate:</div>
-                <p className="text-gray-400 italic leading-relaxed text-[13px] whitespace-pre-wrap">{activeGenModal.Translate || "N/A"}</p>
-              </div>
             </div>
 
             <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
-              <button onClick={() => setActiveGenModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer transition-colors">Hủy bỏ</button>
-              <button onClick={() => { handleGenAudio(activeGenModal.scene_n, activeGenModal.Voiceover); setActiveGenModal(null); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold shadow-md cursor-pointer flex items-center gap-2 transition-colors">
+              <button onClick={() => setActiveGenModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
+              <button onClick={() => { handleGenAudio(activeGenModal.scene_n, activeGenModal.Voiceover); setActiveGenModal(null); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2">
                 <Mic size={14} /> Generate
               </button>
             </div>

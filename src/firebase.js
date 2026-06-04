@@ -28,8 +28,19 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
-export const autoSaveToFirebase = async (parsedData, projectName = "Video Project") => {
-  const projectId = `proj_${Date.now()}`;
+// Sửa ở file firebase.js
+export const autoSaveToFirebase = async (data, projectName, script) => { // Thêm tham số script
+  // ... (code cũ)
+  const projectDoc = {
+    id: projectId,
+    name: projectName,
+    createdAt: Date.now(),
+    sceneCount: data.length,
+    estCost: cost,
+    data: data,
+    originalScript: script // 🚀 THÊM DÒNG NÀY ĐỂ LƯU KỊCH BẢN
+  };
+  // ...
   let uploadData = JSON.parse(JSON.stringify(parsedData)); 
 
   console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudinary...`);

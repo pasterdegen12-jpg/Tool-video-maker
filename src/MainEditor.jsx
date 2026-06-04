@@ -109,14 +109,19 @@ Kịch bản cần bóc tách: ${script}`;
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
 
-        // 🚀 LỆNH CẮT ĐÃ ĐƯỢC VÁ LỖI: 
-        // Đưa -ss lên trước -i để ép FFmpeg nhảy thẳng đến Keyframe cực nhanh.
-        // Dùng -t (duration) để đảm bảo thời lượng cắt ra luôn chuẩn xác, không bị 0.04s
+        // 🚀 LỆNH CẮT MỚI: CHÍNH XÁC 100% VÀ TỐI ƯU TỐC ĐỘ
+        // 1. -ss trước -i: Tua nhanh đến mốc thời gian
+        // 2. Không dùng '-c copy' chung chung nữa
+        // 3. Render lại video bằng 'libx264' + 'ultrafast' để chuẩn từng mili-giây mà vẫn nhẹ máy
+        // 4. '-c:a copy': Giữ nguyên âm thanh cho nhanh
+        
         await ffmpeg.exec([
           '-ss', startSec.toString(), 
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
-          '-c', 'copy', 
+          '-c:v', 'libx264', 
+          '-preset', 'ultrafast', 
+          '-c:a', 'copy', 
           outputName
         ]);
 
@@ -193,7 +198,7 @@ Kịch bản cần bóc tách: ${script}`;
               setIsSaving(true);
               try {
                 // 🚀 LƯU FIREBASE VÀ ĐỢI ĐẨY VIDEO LÊN CLOUDINARY
-                const savedProjectId = await autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString());
+                const savedProjectId = await autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString(), script);
                 if (savedProjectId) {
                    navigate(`/project/${savedProjectId}`); // 🚀 ĐỔI LINK TRÌNH DUYỆT
                 }
