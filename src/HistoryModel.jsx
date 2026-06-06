@@ -96,7 +96,7 @@ export default function HistoryModel() { // 🚀 ĐÃ BỎ onLoadProject
                   </button>
 
                   <h3 className="text-lg font-bold text-gray-100 pr-8 truncate" title={project.name}>
-                    {project.name}
+                    {project.projectName || project.name || "Dự án chưa đặt tên"}
                   </h3>
                   
                   <div className="flex flex-col gap-2 text-sm text-gray-400">
