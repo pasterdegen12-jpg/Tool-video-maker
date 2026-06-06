@@ -3,11 +3,11 @@ import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 // Cấu hình Firebase Database (Lưu kịch bản)
 const firebaseConfig = {
-  apiKey: "AIzaSyD1rPLXpBMOa4ci9qevr1m5U6w4SRxCv3Y",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "semicontent-e195b.firebaseapp.com",
-  projectId: "semicontent-e195b",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   messagingSenderId: "1082777610376",
-  appId: "1:1082777610376:web:4a6020b6e9590aebf9573d"
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
@@ -86,7 +86,7 @@ export const autoSaveToFirebase = async (data, projectName, script) => {
   // 🚀 ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO FIREBASE (Bao gồm cả Script)
   const projectDoc = {
     id: projectId,
-    name: projectName,
+    projectName: projectName, 
     createdAt: Date.now(),
     sceneCount: uploadData.length,
     estCost: cost,

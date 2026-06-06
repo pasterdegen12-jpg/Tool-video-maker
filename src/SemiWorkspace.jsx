@@ -2,15 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './firebase.js';
-import { FileText, Video, AlignLeft, Globe, Hash, Mic, Volume2, Music, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock, Maximize } from 'lucide-react';
+// 🚀 Đã thêm Pencil, Save vào import
+import { FileText, Video, AlignLeft, Globe, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock, Maximize, Pencil, Save } from 'lucide-react';
 
 export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { 
   const { projectId } = useParams();
+
+  // 🚀 STATE ĐẶT TÊN DỰ ÁN
+  const [projectName, setProjectName] = useState("Dự án chưa đặt tên");
+  const [isEditingProjectName, setIsEditingProjectName] = useState(false);
 
   const [parsedData, setParsedData] = useState([]); 
   const [originalScript, setOriginalScript] = useState(""); 
   const [isEditingScript, setIsEditingScript] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(true);
+
+  // 🚀 STATE SỬA SCENE LẺ
+  const [activeEditSceneModal, setActiveEditSceneModal] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
@@ -21,7 +29,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const [voiceCloneFile, setVoiceCloneFile] = useState(null);
   const [voiceCloneBase64, setVoiceCloneBase64] = useState(null);
   const [voiceCloneRefText, setVoiceCloneRefText] = useState("");
-  // 🚀 STATE MỚI CHO QWEN (Lưu file safetensors)
   const [qwenEmbeddingUrl, setQwenEmbeddingUrl] = useState(null);
 
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -55,13 +62,16 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         
         if (docSnap.exists()) {
           const projectInfo = docSnap.data();
+          
+          // 🚀 Load Tên Dự Án
+          if (projectInfo.projectName) setProjectName(projectInfo.projectName);
+
           setParsedData(projectInfo.data || []);
           if (projectInfo.originalScript) setOriginalScript(projectInfo.originalScript);
           if (projectInfo.generatedAudios) setGeneratedAudios(projectInfo.generatedAudios);
           if (projectInfo.mergedVideos) setMergedVideos(projectInfo.mergedVideos);
           if (projectInfo.voiceCloneRefText) setVoiceCloneRefText(projectInfo.voiceCloneRefText);
           
-          // 🚀 Load lại state safetensors từ Qwen nếu có
           if (projectInfo.qwenEmbeddingUrl) setQwenEmbeddingUrl(projectInfo.qwenEmbeddingUrl);
           
           if (projectInfo.voiceCloneBase64) {
@@ -80,6 +90,36 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     };
     fetchProjectData();
   }, [projectId]);
+
+  // 🚀 HÀM LƯU TÊN DỰ ÁN
+  const handleSaveProjectName = async () => {
+    if (!projectName.trim()) return;
+    setIsEditingProjectName(false);
+    try {
+      await updateProjectProgress(projectId, { projectName: projectName.trim() });
+    } catch (error) {
+      console.error("Lỗi lưu tên dự án:", error);
+    }
+  };
+
+  // 🚀 HÀM LƯU NỘI DUNG SCENE ĐÃ SỬA
+  const handleSaveSceneEdit = async () => {
+    try {
+      // Cập nhật state local
+      const updatedData = parsedData.map(scene =>
+          scene.scene_n === activeEditSceneModal.scene_n ? activeEditSceneModal : scene
+      );
+      setParsedData(updatedData);
+
+      // Cập nhật Firebase
+      await updateProjectProgress(projectId, { data: updatedData });
+
+      setActiveEditSceneModal(null);
+    } catch (error) {
+      console.error("Lỗi khi lưu scene:", error);
+      alert("Không thể lưu thay đổi: " + error.message);
+    }
+  };
 
   if (isDataLoading) {
     return (
@@ -139,7 +179,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     }
   };
 
-  // 🚀 TÍCH HỢP QWEN 3 TTS
   const handleGenAudio = async (sceneNo, scriptText) => {
     if (!scriptText || scriptText.trim() === '') return;
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
@@ -153,29 +192,17 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
       
-      // Qwen không cần prefix [S1]
       const formattedText = cleanText;
-      
       const isVoiceClone = !!qwenEmbeddingUrl;
       const endpoint = "https://queue.fal.run/fal-ai/qwen-3-tts/text-to-speech/1.7b";
 
       const payload = isVoiceClone 
-        ? { 
-            text: formattedText, 
-            speaker_voice_embedding_file_url: qwenEmbeddingUrl, 
-            reference_text: voiceCloneRefText.trim() 
-          }
-        : { 
-            text: formattedText,
-            voice: "Vivian" // Giọng Qwen mặc định nếu không upload clone
-          };
+        ? { text: formattedText, speaker_voice_embedding_file_url: qwenEmbeddingUrl, reference_text: voiceCloneRefText.trim() }
+        : { text: formattedText, voice: "Vivian" };
 
       const response = await fetch(endpoint, {
         method: "POST",
-        headers: { 
-            "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, 
-            "Content-Type": "application/json" 
-        },
+        headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
@@ -195,18 +222,14 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         while (attempts < maxAttempts) {
           attempts++;
           await new Promise(resolve => setTimeout(resolve, 2000));
-          const statusRes = await fetch(queueData.status_url, {
-            method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
-          });
+          const statusRes = await fetch(queueData.status_url, { method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` } });
           const statusJson = await statusRes.json();
           lastStatus = statusJson.status;
           
           if (lastStatus === "COMPLETED") {
             const finalLink = statusJson.response_url || queueData.response_url;
             if (finalLink) {
-                const finalRes = await fetch(finalLink, {
-                    method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }
-                });
+                const finalRes = await fetch(finalLink, { method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` } });
                 result = await finalRes.json(); 
             } else {
                 result = statusJson.payload || statusJson.data || statusJson;
@@ -240,7 +263,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   };
 
   const handleToggleCheck = (sceneNo) => setCheckedScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
-  
   const handleSelectAll = () => {
     const filtered = parsedData.filter(scene => !generatedAudios[scene.scene_n] && scene.Voiceover);
     const newChecked = {};
@@ -266,7 +288,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   };
 
   const handleToggleExportCheck = (sceneNo) => setCheckedExportScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
-  
   const handleSelectAllExport = () => {
     const newChecked = {};
     parsedData.forEach(scene => { if (mergedVideos[scene.scene_n]) newChecked[scene.scene_n] = true; });
@@ -290,7 +311,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   };
 
   const handleToggleMergeCheck = (sceneNo) => setCheckedMergeScenes(prev => ({ ...prev, [sceneNo]: !prev[sceneNo] }));
-  
   const handleSelectAllMerge = () => {
     const newChecked = {};
     parsedData.forEach(scene => { newChecked[scene.scene_n] = true; });
@@ -410,7 +430,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     }
   };
 
-  // 🚀 TÍCH HỢP QWEN CLONE VOICE
   const handleVoiceUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -430,7 +449,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       const audioCloudUrl = uploadDataRes.secure_url;
       setVoiceCloneBase64(audioCloudUrl);
 
-      // 1. Nhận diện giọng nói (Whisper)
       setVoiceCloneRefText("AI đang nhận diện Text...");
       const response = await fetch("https://fal.run/fal-ai/whisper", {
         method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
@@ -439,7 +457,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       const result = await response.json();
       const refText = result.text ? result.text.trim() : "Không nhận diện được giọng.";
 
-      // 2. Gọi Qwen Clone-Voice lấy Embedding (.safetensors)
       setVoiceCloneRefText("Đang trích xuất Voice Clone...");
       const cloneRes = await fetch("https://queue.fal.run/fal-ai/qwen-3-tts/clone-voice/1.7b", {
         method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
@@ -476,7 +493,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       setQwenEmbeddingUrl(embeddingUrl);
       setVoiceCloneRefText(refText || "Clone thành công!");
 
-      // Lưu 3 state: Cloudinary (phát audio trên UI) | Text (Whisper) | Embedding (Qwen Gen Audio)
       await updateProjectProgress(projectId, { 
         voiceCloneBase64: audioCloudUrl, 
         voiceCloneRefText: refText,
@@ -495,7 +511,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     setVoiceCloneUrl(null); 
     setVoiceCloneBase64(null);
     setVoiceCloneRefText(""); 
-    setQwenEmbeddingUrl(null); // Xóa embedding
+    setQwenEmbeddingUrl(null); 
     setIsTranscribing(false);
     if (fileInputRef.current) fileInputRef.current.value = null;
     await updateProjectProgress(projectId, { voiceCloneBase64: null, voiceCloneRefText: "", qwenEmbeddingUrl: null });
@@ -510,15 +526,8 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       <div className="fixed left-5 top-24 bottom-5 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[260px] hidden xl:flex">
         <div className="flex items-center justify-between text-blue-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-2 shrink-0">
           <div className="flex items-center gap-1.5"><FileText size={14} /> Kịch bản gốc</div>
-      
           {originalScript && !isEditingScript && (
-            <button 
-              onClick={() => setIsEditingScript(true)} 
-              className="text-purple-400 hover:text-purple-300 text-[10px] font-bold cursor-pointer"
-            >
-              Sửa
-            </button>
-      
+            <button onClick={() => setIsEditingScript(true)} className="text-purple-400 hover:text-purple-300 text-[10px] font-bold cursor-pointer">Sửa</button>
           )}
         </div>
         
@@ -527,14 +536,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             <textarea
               value={originalScript}
               onChange={(e) => setOriginalScript(e.target.value)}
-           
               placeholder="Dự án cũ chưa có kịch bản gốc, hãy paste vào đây..."
               className="flex-1 bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-xs text-gray-300 focus:outline-none focus:border-purple-500 resize-none font-mono custom-scrollbar"
             />
             <button
               onClick={async () => {
-                if (!originalScript ||
-                  originalScript.trim() === '') return alert("Vui lòng nhập nội dung!");
+                if (!originalScript || originalScript.trim() === '') return alert("Vui lòng nhập nội dung!");
                 try {
                   await updateProjectProgress(projectId, { originalScript: originalScript.trim() });
                   setIsEditingScript(false);
@@ -545,7 +552,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
               Lưu kịch bản
             </button>
           </div>
- 
         ) : (
           <div className="flex-1 overflow-y-auto pr-1 text-gray-300 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">
             {originalScript}
@@ -554,42 +560,72 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       </div>
 
       <div className="flex flex-col gap-5 w-full mx-auto pb-16 xl:pl-[280px] xl:pr-[240px]">
- 
+        
+        {/* 🚀 HEADER ĐẶT TÊN DỰ ÁN */}
+        <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-md flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {isEditingProjectName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()}
+                  className="bg-[#0E0E10] border border-blue-500 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none min-w-[300px]"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveProjectName}
+                  className="flex items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer"
+                >
+                  <Save size={14} /> Lưu
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 group">
+                <h1 className="text-xl font-bold text-white tracking-wide">{projectName}</h1>
+                <button
+                  onClick={() => setIsEditingProjectName(true)}
+                  className="text-gray-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                  title="Đổi tên dự án"
+                >
+                  <Pencil size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* BẢNG TỔNG QUAN */}
         <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-md">
           <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider mb-3 border-b border-[#2A2A30] pb-2">
             <LayoutDashboard size={14} /> Bảng tổng quan dự án
           </div>
           <div className="grid grid-cols-3 md:grid-cols-7 gap-4 text-center">
- 
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Total Scene</div>
               <div className="text-sm font-bold text-white mt-1">{totalScenes}</div>
             </div>
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Total Voice</div>
- 
               <div className="text-sm font-bold text-blue-400 mt-1">{totalVoice}</div>
             </div>
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Avg Duration</div>
               <div className="text-sm font-bold text-green-400 mt-1">{avgDuration}</div>
             </div>
-      
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Est Cost</div>
               <div className="text-sm font-bold text-yellow-500 mt-1">{estCost}</div>
             </div>
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Image Gen</div>
-      
               <div className="text-sm font-bold text-gray-300 mt-1">0 / {totalScenes}</div>
             </div>
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Audio Gen</div>
               <div className="text-sm font-bold text-purple-400 mt-1">{audioGenStatus}</div>
             </div>
-         
             <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
               <div className="text-[11px] text-gray-400 font-medium">Video Gen</div>
               <div className="text-sm font-bold text-orange-400 mt-1">0 / {totalScenes}</div>
@@ -599,7 +635,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
         {/* DANH SÁCH SCENE */}
         {parsedData.map((scene, index) => {
- 
           const isLoadingAudio = isGenerating[scene.scene_n];
           const isMergingThisScene = mergingScenes[scene.scene_n];
           const hasAudio = generatedAudios[scene.scene_n];
@@ -610,39 +645,32 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
               
               {/* CỘT VIDEO */}
               <div className="w-full md:w-[240px] flex flex-col gap-4 shrink-0">
-            
                 <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-[#2A2A30] shadow-sm video-wrapper">
                   <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
                     <div className="flex items-center gap-1.5 text-purple-400">
                       <Video size={13} /> 
-            
                       <span className="text-[10px] font-bold uppercase tracking-widest">Input</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">
                       <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-purple-400/70 hover:text-purple-300" title="Phóng to video"><Maximize size={12} /></button>
-         
                       <span className="text-[10px] font-medium">S_{scene.scene_n}</span>
                     </div>
                   </div>
                   <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
-                    
                     {scene.videoUrl ? (
                       <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     ) : (
                       <div className="text-center flex flex-col items-center gap-1.5 opacity-40"><Video size={18} className="text-gray-400" /></div>
-                
                     )}
                   </div>
                 </div>
 
                 {hasOutput && (
                   <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.1)] video-wrapper">
-                 
                     <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
                       <div className="flex items-center gap-1.5 text-green-400">
                         <CheckSquare size={13} /> 
                         <span className="text-[10px] font-bold uppercase tracking-widest">Output</span>
-        
                       </div>
                       <div className="flex items-center gap-2">
                         <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-green-400/70 hover:text-green-300" title="Phóng to video"><Maximize size={12} /></button>
@@ -650,20 +678,27 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                       </div>
                     </div>
                     <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
-           
                       <video src={hasOutput} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     </div>
                   </div>
                 )}
               </div>
-
               
               {/* CỘT THÔNG TIN */}
               <div className="flex-1 flex flex-col min-w-0">
+                {/* 🚀 NÚT SỬA SCENE NẰM Ở GÓC TRÊN BÊN PHẢI CỦA PHẦN INFO */}
+                <div className="flex justify-end mb-2 shrink-0">
+                  <button 
+                    onClick={() => setActiveEditSceneModal({...scene})} 
+                    className="text-[11px] font-semibold text-gray-400 hover:text-blue-400 flex items-center gap-1.5 bg-[#1A1A21] px-2.5 py-1.5 rounded-md border border-[#2A2A30] transition-colors cursor-pointer"
+                  >
+                    <Pencil size={12}/> Sửa thông tin cảnh
+                  </button>
+                </div>
+
                 <div className="space-y-3.5 flex-1">
                   <div className="flex gap-3 items-start text-sm">
                     <span className="text-gray-400 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1"><AlignLeft size={14} /> Voice:</span>
-       
                     <p className="text-gray-200 leading-relaxed bg-[#1A1A21] px-4 py-2.5 rounded-lg flex-1 border border-[#2A2A30] shadow-inner">{scene.Voiceover || "N/A"}</p>
                   </div>
                   <div className="flex gap-3 items-start text-sm">
@@ -672,7 +707,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   </div>
                   <div className="flex gap-6 text-[11px] pt-1 px-1 border-t border-[#2A2A30]/50 pt-3 mt-2">
                     <div className="flex items-center gap-1.5"><Clock size={13} className="text-gray-500"/> <span className="text-gray-500">Thời gian:</span><span className="text-green-400 font-bold bg-green-500/10 px-1.5 py-0.5 rounded">{scene.time_origin}</span></div>
-                  
                     <div className="flex items-center gap-1.5"><span className="text-gray-500">Số từ:</span><span className="text-blue-400 font-bold">{scene.Word_count || 0}</span></div>
                     <div className="flex items-center gap-1.5"><span className="text-gray-500">Giọng điệu:</span><span className="text-purple-400 font-bold">{scene.Tone_of_Voice || "Tự nhiên"}</span></div>
                   </div>
@@ -680,14 +714,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
                 {hasAudio && (
                   <div className="mt-3 bg-green-500/10 border border-green-500/30 p-2.5 rounded-xl flex items-center gap-3">
-                    
                     <Play size={16} className="text-green-400 shrink-0" />
                     <audio src={hasAudio} crossOrigin="anonymous" controls className="h-7 w-full [&::-webkit-media-controls-panel]:bg-[#1A1A21]" />
                   </div>
                 )}
 
                 <div className="flex flex-wrap items-center gap-3 bg-[#0A0A0C] p-2.5 rounded-xl border border-[#2A2A30] mt-4 shrink-0 shadow-inner">
-       
                   <button 
                     onClick={() => setActiveGenModal({ scene_n: scene.scene_n, Voiceover: scene.Voiceover, Translate: scene.Translate })} 
                     disabled={isLoadingAudio}
@@ -712,12 +744,10 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   {!hasOutput && !isMergingThisScene && (
                     <>
                       <div className="hidden md:block w-[1px] h-5 bg-[#2A2A30] shrink-0"></div>
-  
                       <span className="text-[11px] text-gray-500 flex-1 ml-1 italic hidden md:block">Bấm Merge để ghép Audio vào cảnh...</span>
                     </>
                   )}
                 </div>
-             
               </div>
             </div>
           );
@@ -745,7 +775,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         <div className="bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 flex flex-col gap-2 mt-2">
           <div className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex justify-between items-center mb-1">
             Voice Clone
-           
             {voiceCloneFile && (
               <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 cursor-pointer" title="Xóa file"><Trash2 size={13} /></button>
             )}
@@ -759,7 +788,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             </button>
           ) : (
             <div className="flex flex-col gap-2">
-           
               <span className="text-[10px] text-gray-300 truncate" title={voiceCloneFile.name}>{voiceCloneFile.name}</span>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-7 [&::-webkit-media-controls-panel]:bg-[#2A2A30]" />
               <div className="relative mt-1">
@@ -777,7 +805,58 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       </div>
 
-      
+      {/* 🚀 === MODAL CHỈNH SỬA SCENE (MỚI) === */}
+      {activeEditSceneModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-2xl shadow-2xl text-xs relative">
+                <button onClick={() => setActiveEditSceneModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
+                <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2">
+                  <Pencil size={16} /> Sửa thông tin - Scene {activeEditSceneModal.scene_n}
+                </h3>
+
+                <div className="mt-4 space-y-4">
+                    <div>
+                        <label className="text-gray-400 font-medium mb-1.5 block">Voiceover (Kịch bản sẽ được AI đọc):</label>
+                        <textarea
+                            value={activeEditSceneModal.Voiceover || ''}
+                            onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Voiceover: e.target.value}))}
+                            className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-gray-200 min-h-[100px] focus:outline-none focus:border-blue-500 custom-scrollbar"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-gray-400 font-medium mb-1.5 block">Translate (Bản dịch / Ghi chú):</label>
+                        <textarea
+                            value={activeEditSceneModal.Translate || ''}
+                            onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Translate: e.target.value}))}
+                            className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-gray-400 min-h-[80px] focus:outline-none focus:border-blue-500 custom-scrollbar"
+                        />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div>
+                            <label className="text-gray-400 font-medium mb-1 block">Thời gian:</label>
+                            <input type="text" value={activeEditSceneModal.time_origin || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, time_origin: e.target.value}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-gray-400 font-medium mb-1 block">Số từ:</label>
+                            <input type="number" value={activeEditSceneModal.Word_count || 0} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Word_count: Number(e.target.value)}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label className="text-gray-400 font-medium mb-1 block">Giọng điệu:</label>
+                            <input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Tone_of_Voice: e.target.value}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5">
+                    <button onClick={() => setActiveEditSceneModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy</button>
+                    <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2">
+                      <Save size={14}/> Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
       {/* === MODAL BATCH MERGE ALL === */}
       {isMergeModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
@@ -789,7 +868,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             <div className="mt-5 bg-[#0E0E10] border border-[#2A2A30] p-4 rounded-xl">
               <div className="flex justify-between items-center mb-3">
                 <span className="font-semibold text-gray-300">Input video original audio (mix)</span>
-           
                 <span className="text-gray-400 font-mono font-medium text-[11px]">{(globalMixVol / 100).toFixed(2)}</span>
               </div>
               <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
@@ -801,7 +879,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             </div>
             
             <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px] mt-4">
-           
               {parsedData.map((scene) => {
                 const isChecked = !!checkedMergeScenes[scene.scene_n];
                 const hasAiAudio = !!generatedAudios[scene.scene_n];
@@ -812,7 +889,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                       <div>
                         <div className={`font-bold text-[13px] ${isChecked ? 'text-blue-400' : 'text-gray-300'}`}>Scene {scene.scene_n}</div>
                         <div className="text-[11px] text-gray-500 mt-1">{hasAiAudio ? 'Có AI Audio' : 'Pass qua Video Gốc'}</div>
-   
                       </div>
                     </div>
                   </div>
@@ -831,35 +907,30 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* 🚀 === MODAL TÙY CHỈNH MERGE LẺ TỪNG CẢNH === */}
+      {/* === MODAL TÙY CHỈNH MERGE LẺ TỪNG CẢNH === */}
       {activeMergeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-     
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md flex flex-col shadow-2xl text-xs relative">
             <button onClick={() => setActiveMergeModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer transition-colors"><X size={18} /></button>
             <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2">
               <Merge size={18} /> Cấu hình Merge - Scene {activeMergeModal.scene_n}
             </h3>
-    
             <p className="text-gray-400 mt-3 leading-relaxed text-[11px]">Tùy chỉnh độ lớn âm thanh gốc của video trước khi ghép Audio AI vào.</p>
 
             <div className="mt-5 bg-[#0E0E10] border border-[#2A2A30] p-4 rounded-xl">
               <div className="flex justify-between items-center mb-3">
                 <span className="font-semibold text-gray-300">Input video original audio (mix)</span>
-    
                 <span className="text-blue-400 font-mono font-bold text-[13px]">{(singleMixVol / 100).toFixed(2)}</span>
               </div>
               <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
             </div>
 
             <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
-       
               <button onClick={() => setActiveMergeModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
               <button onClick={handleSingleSceneMergeConfirm} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2 shadow-lg">
                 <Merge size={14} /> Bắt đầu Merge
               </button>
             </div>
-       
           </div>
         </div>
       )}
@@ -884,7 +955,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                     <div key={scene.scene_n} onClick={() => handleToggleCheck(scene.scene_n)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-purple-600/10 border-purple-500/50' : 'bg-[#15151A] border-[#2A2A30]'}`}>
                       <div className="mt-0.5 shrink-0 text-purple-400">{isChecked ? <CheckSquare size={16} /> : <Square size={16} className="text-gray-500" />}</div>
                       <div className="space-y-1 min-w-0 text-xs">
- 
                         <div className="font-bold text-[13px] text-blue-400">Scene {scene.scene_n}</div>
                         <div className="text-gray-200 truncate leading-relaxed">Voiceover: {scene.Voiceover}</div>
                       </div>
@@ -896,7 +966,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
             <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-4 shrink-0">
               <button onClick={() => setIsModalOpen(false)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
               <button onClick={handleStartBatchGen} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold cursor-pointer">Bắt đầu Gen</button>
-   
             </div>
           </div>
         </div>
@@ -906,7 +975,6 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       {isExportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
-       
             <button onClick={() => setIsExportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
             <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-green-400 flex items-center gap-2"><Download size={18} /> Tải Video Output (Đã Merge)</h3>
             
@@ -919,13 +987,11 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   <button onClick={handleDeselectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
                 </div>
                 <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-1.5 min-h-[160px] mt-4">
-                 
                   {parsedData.filter(scene => mergedVideos[scene.scene_n]).map((scene) => {
                     const isChecked = !!checkedExportScenes[scene.scene_n];
                     return (
                       <div key={scene.scene_n} onClick={() => handleToggleExportCheck(scene.scene_n)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${isChecked ? 'bg-green-600/20 border-green-500/50 text-white' : 'bg-[#15151A] border-[#2A2A30]'}`}>
                         {isChecked ? <CheckSquare size={16} className="text-green-400" /> : <Square size={16} className="text-gray-500" />}
-                      
                         <div className="font-bold text-[13px]">Scene {scene.scene_n} Output</div>
                       </div>
                     );
