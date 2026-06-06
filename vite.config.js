@@ -11,7 +11,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
   },
-  // BẢO MẬT TRÌNH DUYỆT
+  // BẢO MẬT TRÌNH DUYỆT - Đã sửa chính tả
   server: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
