@@ -140,9 +140,23 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
 
   const totalScenes = parsedData.length;
   const totalVoice = parsedData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
-  const avgDuration = "00:05";
+  
+  // 🚀 1. SỬA LẠI: TÍNH THỜI GIAN TRUNG BÌNH DỰA TRÊN time_origin
+  const parseToSeconds = (timeStr) => {
+    if (!timeStr) return 0;
+    const parts = String(timeStr).split(':');
+    if (parts.length === 2) return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    if (parts.length === 3) return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+    return parseInt(timeStr, 10) || 0;
+  };
+  
+  const totalSeconds = parsedData.reduce((acc, scene) => acc + parseToSeconds(scene.time_origin), 0);
+  const avgSeconds = totalScenes > 0 ? Math.round(totalSeconds / totalScenes) : 0;
+  const avgDuration = `${Math.floor(avgSeconds / 60).toString().padStart(2, '0')}:${(avgSeconds % 60).toString().padStart(2, '0')}`;
 
-  const estCost = `$${(totalVoice * 0.01).toFixed(2)}`;
+  // 🚀 2. SỬA LẠI: TÍNH CHI PHÍ ($0.09 cho mỗi scene có voice)
+  const estCost = `$${(totalVoice * 0.09).toFixed(2)}`;
+
   const generatedCount = Object.keys(generatedAudios).length;
   const audioGenStatus = `${generatedCount} / ${totalVoice}`;
 

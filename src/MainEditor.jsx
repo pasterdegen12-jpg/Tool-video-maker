@@ -41,16 +41,25 @@ export default function MainEditor() { // 🚀 ĐÃ BỎ onComplete
 
     setIsParsing(true);
     try {
-      const promptText = `Trích xuất danh sách cảnh từ kịch bản dưới đây và trả về mảng JSON hợp lệ. 
-Mỗi object bắt buộc phải có ĐỦ các trường sau:
-- scene_n: Số thứ tự cảnh.
-- time_origin: BẮT BUỘC định dạng "mm:ss - mm:ss".
-- Voiceover: Lời thoại hoặc mô tả giọng đọc trong cảnh đó.
-- Translate: Bản dịch của Voiceover (nếu kịch bản không có, hãy tự dịch sang tiếng Anh hoặc để trống).
-- Word_count: Đếm số lượng từ của trường Voiceover.
-- Tone_of_Voice: Cảm xúc/giọng điệu yêu cầu (VD: Hào hứng, Trầm ấm, Quyết liệt...).
-- status: "pending".
-Kịch bản cần bóc tách: ${script}`;
+      // 🚀 PROMPT MỚI: DẠY AI CÁCH ĐỌC MỌI LOẠI FORMAT & BỎ QUA MARKDOWN (**)
+      const promptText = `Bạn là một chuyên gia bóc tách dữ liệu AI. Hãy đọc kịch bản bên dưới và trích xuất danh sách các cảnh (scene) thành một MẢNG JSON.
+LƯU Ý QUAN TRỌNG: Kịch bản đầu vào có thể viết tự do, chứa ký tự markdown (như **), hoặc ghi sai tên trường (VD: VO_Word_Count thay vì Word_count, Time thay vì Time_origin). Hãy bỏ qua các ký tự đặc biệt, phân tích theo ngữ nghĩa để lấy đúng dữ liệu.
+
+Mỗi object trong mảng BẮT BUỘC phải có ĐÚNG các trường sau:
+{
+  "scene_n": 1, // Trích xuất số thứ tự cảnh (chỉ ghi số)
+  "time_origin": "08:56 - 09:03", // Tìm phần Time_origin hoặc tương đương (BẮT BUỘC định dạng mm:ss - mm:ss)
+  "Voiceover": "Nội dung lời thoại", // Nếu trống hoặc N/A thì để chuỗi rỗng ""
+  "Translate": "Bản dịch", // Nếu để trống thì tự dịch Voiceover, nếu không có Voiceover thì để ""
+  "Word_count": 0, // Đếm số lượng từ của Voiceover (chỉ ghi số)
+  "Tone_of_Voice": "Tự nhiên", // Nếu không có thông tin thì mặc định ghi "Tự nhiên"
+  "status": "pending" // Bắt buộc ghi chuỗi "pending"
+}
+
+Quy tắc Tối thượng: CHỈ TRẢ VỀ DUY NHẤT 1 MẢNG JSON (Bắt đầu bằng [ và kết thúc bằng ]). KHÔNG ĐƯỢC GIẢI THÍCH HOẶC THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.
+
+Kịch bản cần bóc tách:
+${script}`;
       
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${randomKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -61,12 +70,19 @@ Kịch bản cần bóc tách: ${script}`;
       if (data.error) throw new Error(data.error.message);
       
       const rawText = data.candidates[0].content.parts[0].text;
-      const cleanJsonText = rawText.replace(/```json|```/gi, "").trim();
       
-      const parsedJson = JSON.parse(cleanJsonText);
+      // 🚀 BẮT LỖI THÔNG MINH: Dùng Regex tóm gọn mảng JSON, bất chấp AI có nói nhảm thêm ở ngoài
+      const jsonMatch = rawText.match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (!jsonMatch) {
+          console.error("Lỗi Regex bắt JSON. Dữ liệu thô từ AI:", rawText);
+          throw new Error("AI không thể nhận diện được cấu trúc từ kịch bản này. Hãy kiểm tra lại format.");
+      }
+      
+      const parsedJson = JSON.parse(jsonMatch[0]);
       setParsedData(Array.isArray(parsedJson) ? parsedJson : [parsedJson]);
       
     } catch (error) { 
+      console.error(error);
       alert("Lỗi AI: " + error.message); 
     } finally { 
       setIsParsing(false); 
