@@ -414,7 +414,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
     }
     setIsMerging(false);
     setIsMergeModalOpen(false);
-    alert("✅ Đã xử lý xong Batch Merge!");
+    alert("✅ Đã xử lý xong Merge All!");
   };
 
   const handleSingleSceneMergeConfirm = async () => {
@@ -578,7 +578,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
       </div>
 
       {/* 🚀 KHU VỰC CHÍNH ĐƯỢC NỚI RỘNG */}
-      <div className="flex flex-col gap-8 w-full max-w-[1100px] mx-auto pb-20 xl:pl-[310px] xl:pr-[290px]">
+      <div className="flex flex-col gap-8 w-full pb-20 px-6 xl:pl-[320px] xl:pr-[300px]">
         
         {/* HEADER ĐẶT TÊN DỰ ÁN (Minimalist) */}
         <div className="flex items-center justify-between pb-2 border-b border-white/5">
@@ -665,7 +665,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
               <div key={index} className="flex flex-col md:flex-row gap-8 bg-[#121214] hover:bg-[#18181b] p-6 rounded-2xl border border-white/5 hover:border-white/10 shadow-xl transition-all duration-300 group">
                 
                 {/* CỘT VIDEO */}
-                <div className="w-full md:w-[260px] flex flex-col gap-4 shrink-0">
+                <div className="w-full lg:w-[340px] xl:w-[380px] flex flex-col gap-4 shrink-0">
                   <div className="flex flex-col bg-black/40 rounded-xl p-2 border border-white/5 shadow-inner video-wrapper">
                     <div className="flex items-center justify-between pb-2 mb-2 px-1 border-b border-white/5">
                       <div className="flex items-center gap-1.5 text-zinc-300">
@@ -794,12 +794,12 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         <div className="w-full h-[1px] bg-white/5 my-1"></div>
 
         <button onClick={() => setIsModalOpen(true)} className="w-full h-10 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
-          <Music size={16} /> Batch Gen Audio
+          <Music size={16} /> Gen All Audio
         </button>
 
         <div className="bg-black/20 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
           <div className="text-[12px] font-bold text-zinc-300 flex justify-between items-center">
-            Voice Clone (Qwen)
+            Voice Clone 
             {voiceCloneFile && (
               <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 bg-red-400/10 p-1.5 rounded-md cursor-pointer transition-colors" title="Xóa file"><Trash2 size={14} /></button>
             )}
@@ -890,7 +890,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
           <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl relative">
             <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer"><X size={20} /></button>
-            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-blue-400 flex items-center gap-2"><Merge size={20} /> Batch Merge Videos</h3>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-blue-400 flex items-center gap-2"><Merge size={20} /> Merge All </h3>
             <p className="text-zinc-400 mt-4 text-sm">Tạo Video Output hàng loạt cho các Scene đã chọn.</p>
 
             <div className="mt-5 bg-black/40 border border-white/5 p-5 rounded-xl">
