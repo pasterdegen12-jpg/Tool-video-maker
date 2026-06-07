@@ -160,6 +160,7 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const generatedCount = Object.keys(generatedAudios).length;
   const audioGenStatus = `${generatedCount} / ${totalVoice}`;
 
+
   const forceDownloadVideo = async (url, filename) => {
     try {
       if (url.includes('cloudinary.com')) {
@@ -534,24 +535,28 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
   const filteredScenesForAudio = parsedData.filter(scene => !generatedAudios[scene.scene_n] && (scene.Voiceover && scene.Voiceover.trim() !== ''));
 
   return (
-    <div className="h-screen w-full bg-[#0E0E10] font-sans text-white p-4 overflow-y-auto relative">
+    <div className="h-screen w-full bg-[#09090B] font-sans text-gray-200 p-4 lg:p-6 overflow-y-auto relative selection:bg-blue-500/30 custom-scrollbar">
       
-      {/* 🚀 BẢNG KỊCH BẢN GỐC (LEFT PANEL) */}
-      <div className="fixed left-5 top-24 bottom-5 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[260px] hidden xl:flex">
-        <div className="flex items-center justify-between text-blue-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-2 shrink-0">
-          <div className="flex items-center gap-1.5"><FileText size={14} /> Kịch bản gốc</div>
+      {/* 🚀 BẢNG KỊCH BẢN GỐC (LEFT PANEL - FLOATING GLASS) */}
+      <div className="fixed left-6 top-24 bottom-6 bg-[#121214]/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex transition-all">
+        <div className="flex items-center justify-between border-b border-white/5 pb-3 shrink-0">
+          <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm">
+            <FileText size={16} className="text-blue-400" /> Kịch bản gốc
+          </div>
           {originalScript && !isEditingScript && (
-            <button onClick={() => setIsEditingScript(true)} className="text-purple-400 hover:text-purple-300 text-[10px] font-bold cursor-pointer">Sửa</button>
+            <button onClick={() => setIsEditingScript(true)} className="text-zinc-500 hover:text-blue-400 text-xs font-medium cursor-pointer transition-colors">
+              Chỉnh sửa
+            </button>
           )}
         </div>
         
         {(!originalScript || isEditingScript) ? (
-          <div className="flex-1 flex flex-col gap-2 min-h-0">
+          <div className="flex-1 flex flex-col gap-3 min-h-0">
             <textarea
               value={originalScript}
               onChange={(e) => setOriginalScript(e.target.value)}
               placeholder="Dự án cũ chưa có kịch bản gốc, hãy paste vào đây..."
-              className="flex-1 bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-xs text-gray-300 focus:outline-none focus:border-purple-500 resize-none font-mono custom-scrollbar"
+              className="flex-1 bg-black/20 border border-white/10 rounded-xl p-3.5 text-sm text-zinc-300 focus:outline-none focus:border-blue-500/50 resize-none font-mono custom-scrollbar transition-all"
             />
             <button
               onClick={async () => {
@@ -561,46 +566,47 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
                   setIsEditingScript(false);
                 } catch (err) { alert("Lỗi: " + err.message); }
               }}
-              className="w-full h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] rounded-lg cursor-pointer flex items-center justify-center shrink-0"
+              className="w-full h-10 bg-white text-black hover:bg-zinc-200 font-bold text-sm rounded-xl cursor-pointer flex items-center justify-center shrink-0 transition-all shadow-md"
             >
               Lưu kịch bản
             </button>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto pr-1 text-gray-300 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">
+          <div className="flex-1 overflow-y-auto pr-2 text-zinc-400 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">
             {originalScript}
           </div>
         )}
       </div>
 
-      <div className="flex flex-col gap-5 w-full mx-auto pb-16 xl:pl-[280px] xl:pr-[240px]">
+      {/* 🚀 KHU VỰC CHÍNH ĐƯỢC NỚI RỘNG */}
+      <div className="flex flex-col gap-8 w-full max-w-[1100px] mx-auto pb-20 xl:pl-[310px] xl:pr-[290px]">
         
-        {/* 🚀 HEADER ĐẶT TÊN DỰ ÁN */}
-        <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-md flex items-center justify-between">
+        {/* HEADER ĐẶT TÊN DỰ ÁN (Minimalist) */}
+        <div className="flex items-center justify-between pb-2 border-b border-white/5">
           <div className="flex items-center gap-3">
             {isEditingProjectName ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()}
-                  className="bg-[#0E0E10] border border-blue-500 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none min-w-[300px]"
+                  className="bg-transparent border-b-2 border-blue-500 px-1 py-1.5 text-2xl font-bold text-white focus:outline-none min-w-[300px]"
                   autoFocus
                 />
                 <button
                   onClick={handleSaveProjectName}
-                  className="flex items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-lg font-bold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-sm bg-white hover:bg-zinc-200 text-black px-4 py-2 rounded-lg font-bold transition-colors cursor-pointer"
                 >
-                  <Save size={14} /> Lưu
+                  <Save size={16} /> Lưu
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-3 group">
-                <h1 className="text-xl font-bold text-white tracking-wide">{projectName}</h1>
+                <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">{projectName}</h1>
                 <button
                   onClick={() => setIsEditingProjectName(true)}
-                  className="text-gray-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                  className="text-zinc-600 hover:text-zinc-300 opacity-0 group-hover:opacity-100 transition-all cursor-pointer bg-white/5 p-1.5 rounded-md"
                   title="Đổi tên dự án"
                 >
                   <Pencil size={16} />
@@ -610,299 +616,308 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
           </div>
         </div>
 
-        {/* BẢNG TỔNG QUAN */}
-        <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-md">
-          <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider mb-3 border-b border-[#2A2A30] pb-2">
-            <LayoutDashboard size={14} /> Bảng tổng quan dự án
+        {/* BẢNG TỔNG QUAN (Modern Stats Banner) */}
+        <div className="bg-[#121214] border border-white/5 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-30"></div>
+          <div className="flex items-center gap-2 text-zinc-400 font-semibold text-xs uppercase tracking-widest mb-6">
+            <LayoutDashboard size={14} /> Thống kê dự án
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-7 gap-4 text-center">
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Total Scene</div>
-              <div className="text-sm font-bold text-white mt-1">{totalScenes}</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 text-left">
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Total Scene</div>
+              <div className="text-2xl font-bold text-zinc-100">{totalScenes}</div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Total Voice</div>
-              <div className="text-sm font-bold text-blue-400 mt-1">{totalVoice}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Total Voice</div>
+              <div className="text-2xl font-bold text-blue-400">{totalVoice}</div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Avg Duration</div>
-              <div className="text-sm font-bold text-green-400 mt-1">{avgDuration}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Avg Duration</div>
+              <div className="text-2xl font-bold text-green-400">{avgDuration}</div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Est Cost</div>
-              <div className="text-sm font-bold text-yellow-500 mt-1">{estCost}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Est Cost</div>
+              <div className="text-2xl font-bold text-yellow-500">{estCost}</div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Image Gen</div>
-              <div className="text-sm font-bold text-gray-300 mt-1">0 / {totalScenes}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Image Gen</div>
+              <div className="text-xl font-semibold text-zinc-400 mt-1">0 <span className="text-sm text-zinc-600">/ {totalScenes}</span></div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Audio Gen</div>
-              <div className="text-sm font-bold text-purple-400 mt-1">{audioGenStatus}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Audio Gen</div>
+              <div className="text-xl font-semibold text-purple-400 mt-1">{audioGenStatus}</div>
             </div>
-            <div className="bg-[#0E0E10] p-2.5 rounded-lg border border-[#2A2A30]">
-              <div className="text-[11px] text-gray-400 font-medium">Video Gen</div>
-              <div className="text-sm font-bold text-orange-400 mt-1">0 / {totalScenes}</div>
+            <div>
+              <div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Video Gen</div>
+              <div className="text-xl font-semibold text-orange-400 mt-1">0 <span className="text-sm text-zinc-600">/ {totalScenes}</span></div>
             </div>
           </div>
         </div>
 
         {/* DANH SÁCH SCENE */}
-        {parsedData.map((scene, index) => {
-          const isLoadingAudio = isGenerating[scene.scene_n];
-          const isMergingThisScene = mergingScenes[scene.scene_n];
-          const hasAudio = generatedAudios[scene.scene_n];
-          const hasOutput = mergedVideos[scene.scene_n];
+        <div className="flex flex-col gap-6">
+          {parsedData.map((scene, index) => {
+            const isLoadingAudio = isGenerating[scene.scene_n];
+            const isMergingThisScene = mergingScenes[scene.scene_n];
+            const hasAudio = generatedAudios[scene.scene_n];
+            const hasOutput = mergedVideos[scene.scene_n];
 
-          return (
-            <div key={index} className="flex flex-col md:flex-row gap-6 bg-[#121216] hover:bg-[#16161B] p-5 rounded-2xl border border-[#2A2A30] hover:border-gray-600 shadow-lg transition-all items-stretch group">
-              
-              {/* CỘT VIDEO */}
-              <div className="w-full md:w-[240px] flex flex-col gap-4 shrink-0">
-                <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-[#2A2A30] shadow-sm video-wrapper">
-                  <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
-                    <div className="flex items-center gap-1.5 text-purple-400">
-                      <Video size={13} /> 
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Input</span>
+            return (
+              <div key={index} className="flex flex-col md:flex-row gap-8 bg-[#121214] hover:bg-[#18181b] p-6 rounded-2xl border border-white/5 hover:border-white/10 shadow-xl transition-all duration-300 group">
+                
+                {/* CỘT VIDEO */}
+                <div className="w-full md:w-[260px] flex flex-col gap-4 shrink-0">
+                  <div className="flex flex-col bg-black/40 rounded-xl p-2 border border-white/5 shadow-inner video-wrapper">
+                    <div className="flex items-center justify-between pb-2 mb-2 px-1 border-b border-white/5">
+                      <div className="flex items-center gap-1.5 text-zinc-300">
+                        <Video size={14} className="text-blue-400" /> 
+                        <span className="text-[11px] font-bold uppercase tracking-widest">Input</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-zinc-500">
+                        <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer" title="Phóng to video"><Maximize size={12} /></button>
+                        <span className="text-[11px] font-medium bg-white/5 px-2 py-0.5 rounded-full">S_{scene.scene_n}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-purple-400/70 hover:text-purple-300" title="Phóng to video"><Maximize size={12} /></button>
-                      <span className="text-[10px] font-medium">S_{scene.scene_n}</span>
+                    <div className="w-full aspect-video bg-black/50 rounded-lg overflow-hidden flex items-center justify-center relative">
+                      {scene.videoUrl ? (
+                        <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="text-center flex flex-col items-center gap-2 opacity-30"><Video size={20} className="text-zinc-500" /></div>
+                      )}
                     </div>
                   </div>
-                  <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
-                    {scene.videoUrl ? (
-                      <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="text-center flex flex-col items-center gap-1.5 opacity-40"><Video size={18} className="text-gray-400" /></div>
+
+                  {hasOutput && (
+                    <div className="flex flex-col bg-black/40 rounded-xl p-2 border border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.05)] video-wrapper relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-50"></div>
+                      <div className="flex items-center justify-between pb-2 mb-2 px-1 border-b border-white/5">
+                        <div className="flex items-center gap-1.5 text-green-400">
+                          <CheckSquare size={14} /> 
+                          <span className="text-[11px] font-bold uppercase tracking-widest">Output</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-zinc-500" title="Phóng to video"><Maximize size={12} /></button>
+                          <button onClick={() => forceDownloadVideo(hasOutput, `Scene_${scene.scene_n}_Output.mp4`)} className="text-[10px] font-bold text-green-950 bg-green-500 hover:bg-green-400 px-2 py-1 rounded-md transition-colors flex items-center gap-1 cursor-pointer shadow-sm"><Download size={12} /> Tải</button>
+                        </div>
+                      </div>
+                      <div className="w-full aspect-video bg-black/50 rounded-lg overflow-hidden flex items-center justify-center relative">
+                        <video src={hasOutput} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CỘT THÔNG TIN */}
+                <div className="flex-1 flex flex-col min-w-0">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-4 text-[12px]">
+                      <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-md text-zinc-300"><Clock size={14} className="text-zinc-500"/> {scene.time_origin}</div>
+                      <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-md text-zinc-300"><Hash size={14} className="text-zinc-500"/> {scene.Word_count || 0} từ</div>
+                      <div className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1 rounded-md text-purple-300"><Sliders size={14} className="text-purple-500/70"/> {scene.Tone_of_Voice || "Tự nhiên"}</div>
+                    </div>
+                    <button 
+                      onClick={() => setActiveEditSceneModal({...scene})} 
+                      className="text-[12px] font-medium text-zinc-500 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Pencil size={14}/> Sửa
+                    </button>
+                  </div>
+
+                  <div className="space-y-5 flex-1">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-zinc-500 font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5"><AlignLeft size={14} /> Voiceover</span>
+                      <p className="text-zinc-100 leading-relaxed text-[15px]">{scene.Voiceover || "N/A"}</p>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-zinc-500 font-semibold text-[11px] uppercase tracking-wider flex items-center gap-1.5"><Globe size={14} /> Translate</span>
+                      <p className="text-zinc-400 italic leading-relaxed text-[14px]">{scene.Translate || "N/A"}</p>
+                    </div>
+                  </div>
+
+                  {hasAudio && (
+                    <div className="mt-5 bg-white/5 border border-white/5 p-3 rounded-xl flex items-center gap-4 shadow-inner">
+                      <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0">
+                        <Play size={14} className="text-purple-400 ml-1" />
+                      </div>
+                      <audio src={hasAudio} crossOrigin="anonymous" controls className="h-8 w-full opacity-90 sepia-0 hue-rotate-0 invert-0 grayscale-0" />
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 pt-5 mt-5 border-t border-white/5 shrink-0">
+                    <button 
+                      onClick={() => setActiveGenModal({ scene_n: scene.scene_n, Voiceover: scene.Voiceover, Translate: scene.Translate })} 
+                      disabled={isLoadingAudio}
+                      className={`h-9 px-5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isLoadingAudio ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-white text-black hover:bg-zinc-200 shadow-md'}`}
+                    >
+                      {isLoadingAudio ? <Loader2 size={16} className="animate-spin" /> : <Mic size={16} />} 
+                      {isLoadingAudio ? 'Đang tạo...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio')}
+                    </button>
+                    
+                    <button 
+                      onClick={() => {
+                          setSingleMixVol(globalMixVol);
+                          setActiveMergeModal(scene);
+                      }} 
+                      disabled={isMergingThisScene || !scene.videoUrl}
+                      className={`h-9 px-5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isMergingThisScene || !scene.videoUrl ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-900/20'}`}
+                    >
+                      {isMergingThisScene ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} 
+                      {isMergingThisScene ? 'Đang Merge...' : (hasOutput ? 'Merge Lại' : 'Merge Video')}
+                    </button>
+
+                    {!hasOutput && !isMergingThisScene && (
+                      <span className="text-[12px] text-zinc-600 flex-1 ml-2 hidden md:block">Bấm Merge để ghép Audio vào cảnh...</span>
                     )}
                   </div>
                 </div>
-
-                {hasOutput && (
-                  <div className="flex flex-col bg-[#0A0A0C] rounded-xl p-2 border border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.1)] video-wrapper">
-                    <div className="flex items-center justify-between border-b border-[#2A2A30] pb-1.5 mb-1.5 px-1">
-                      <div className="flex items-center gap-1.5 text-green-400">
-                        <CheckSquare size={13} /> 
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Output</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={toggleFullscreen} className="hover:text-white transition-colors cursor-pointer text-green-400/70 hover:text-green-300" title="Phóng to video"><Maximize size={12} /></button>
-                        <button onClick={() => forceDownloadVideo(hasOutput, `Scene_${scene.scene_n}_Output.mp4`)} className="text-[9px] font-bold text-white bg-green-600 hover:bg-green-500 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"><Download size={10} /> Tải</button>
-                      </div>
-                    </div>
-                    <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
-                      <video src={hasOutput} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
-                    </div>
-                  </div>
-                )}
               </div>
-              
-              {/* CỘT THÔNG TIN */}
-              <div className="flex-1 flex flex-col min-w-0">
-                {/* 🚀 NÚT SỬA SCENE NẰM Ở GÓC TRÊN BÊN PHẢI CỦA PHẦN INFO */}
-                <div className="flex justify-end mb-2 shrink-0">
-                  <button 
-                    onClick={() => setActiveEditSceneModal({...scene})} 
-                    className="text-[11px] font-semibold text-gray-400 hover:text-blue-400 flex items-center gap-1.5 bg-[#1A1A21] px-2.5 py-1.5 rounded-md border border-[#2A2A30] transition-colors cursor-pointer"
-                  >
-                    <Pencil size={12}/> Sửa thông tin cảnh
-                  </button>
-                </div>
-
-                <div className="space-y-3.5 flex-1">
-                  <div className="flex gap-3 items-start text-sm">
-                    <span className="text-gray-400 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1"><AlignLeft size={14} /> Voice:</span>
-                    <p className="text-gray-200 leading-relaxed bg-[#1A1A21] px-4 py-2.5 rounded-lg flex-1 border border-[#2A2A30] shadow-inner">{scene.Voiceover || "N/A"}</p>
-                  </div>
-                  <div className="flex gap-3 items-start text-sm">
-                    <span className="text-gray-500 font-medium shrink-0 w-16 flex items-center gap-1.5 mt-1"><Globe size={14} /> Trans:</span>
-                    <p className="text-gray-400 italic leading-relaxed bg-[#0E0E10] px-4 py-2.5 rounded-lg flex-1 border border-[#1A1A21]">{scene.Translate || "N/A"}</p>
-                  </div>
-                  <div className="flex gap-6 text-[11px] pt-1 px-1 border-t border-[#2A2A30]/50 pt-3 mt-2">
-                    <div className="flex items-center gap-1.5"><Clock size={13} className="text-gray-500"/> <span className="text-gray-500">Thời gian:</span><span className="text-green-400 font-bold bg-green-500/10 px-1.5 py-0.5 rounded">{scene.time_origin}</span></div>
-                    <div className="flex items-center gap-1.5"><span className="text-gray-500">Số từ:</span><span className="text-blue-400 font-bold">{scene.Word_count || 0}</span></div>
-                    <div className="flex items-center gap-1.5"><span className="text-gray-500">Giọng điệu:</span><span className="text-purple-400 font-bold">{scene.Tone_of_Voice || "Tự nhiên"}</span></div>
-                  </div>
-                </div>
-
-                {hasAudio && (
-                  <div className="mt-3 bg-green-500/10 border border-green-500/30 p-2.5 rounded-xl flex items-center gap-3">
-                    <Play size={16} className="text-green-400 shrink-0" />
-                    <audio src={hasAudio} crossOrigin="anonymous" controls className="h-7 w-full [&::-webkit-media-controls-panel]:bg-[#1A1A21]" />
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center gap-3 bg-[#0A0A0C] p-2.5 rounded-xl border border-[#2A2A30] mt-4 shrink-0 shadow-inner">
-                  <button 
-                    onClick={() => setActiveGenModal({ scene_n: scene.scene_n, Voiceover: scene.Voiceover, Translate: scene.Translate })} 
-                    disabled={isLoadingAudio}
-                    className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isLoadingAudio ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 hover:text-purple-300'}`}
-                  >
-                    {isLoadingAudio ? <Loader2 size={14} className="animate-spin" /> : <Mic size={14} />} 
-                    {isLoadingAudio ? 'Đang tạo Audio...' : (hasAudio ? 'Gen Lại Audio' : 'Gen Audio')}
-                  </button>
-                  
-                  <button 
-                    onClick={() => {
-                        setSingleMixVol(globalMixVol);
-                        setActiveMergeModal(scene);
-                    }} 
-                    disabled={isMergingThisScene || !scene.videoUrl}
-                    className={`h-8 px-5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${isMergingThisScene || !scene.videoUrl ? 'bg-gray-600/20 text-gray-400 cursor-not-allowed' : 'bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:text-blue-300'}`}
-                  >
-                    {isMergingThisScene ? <Loader2 size={14} className="animate-spin" /> : <Merge size={14} />} 
-                    {isMergingThisScene ? 'Đang Merge...' : (hasOutput ? 'Merge Lại Video' : 'Merge Video')}
-                  </button>
-
-                  {!hasOutput && !isMergingThisScene && (
-                    <>
-                      <div className="hidden md:block w-[1px] h-5 bg-[#2A2A30] shrink-0"></div>
-                      <span className="text-[11px] text-gray-500 flex-1 ml-1 italic hidden md:block">Bấm Merge để ghép Audio vào cảnh...</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {/* BẢNG ĐIỀU KHIỂN CỐ ĐỊNH BÊN PHẢI */}
-      <div className="fixed right-5 top-24 bg-[#15151A] border border-[#2A2A30] rounded-xl p-4 shadow-2xl z-20 flex flex-col gap-3 w-[220px] hidden xl:flex">
-        <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-bold uppercase tracking-wider border-b border-[#2A2A30] pb-2">
-          <Sliders size={14} /> Bảng điều khiển
+      {/* 🚀 BẢNG ĐIỀU KHIỂN CỐ ĐỊNH BÊN PHẢI (FLOATING GLASS) */}
+      <div className="fixed right-6 top-24 bottom-6 bg-[#121214]/80 backdrop-blur-2xl border border-white/5 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex overflow-y-auto custom-scrollbar">
+        <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm border-b border-white/5 pb-3">
+          <Sliders size={16} className="text-purple-400" /> Bảng điều khiển
         </div>
         
-        <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-9 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer mt-1">
-          <Merge size={14} /> Batch Merge Videos
+        <div className="flex flex-col gap-2.5">
+          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-900/20 cursor-pointer">
+            <Merge size={16} /> Batch Merge All
+          </button>
+
+          <button onClick={() => setIsExportModalOpen(true)} className="w-full h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <Download size={16} /> Export Output
+          </button>
+        </div>
+
+        <div className="w-full h-[1px] bg-white/5 my-1"></div>
+
+        <button onClick={() => setIsModalOpen(true)} className="w-full h-10 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
+          <Music size={16} /> Batch Gen Audio
         </button>
 
-        <button onClick={() => setIsExportModalOpen(true)} className="w-full h-9 bg-[#2A2A30] hover:bg-gray-600 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer">
-          <Download size={14} /> Export Output
-        </button>
-
-        <button onClick={() => setIsModalOpen(true)} className="w-full h-9 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer mt-2">
-          <Music size={14} /> Batch Gen Audio
-        </button>
-
-        <div className="bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 flex flex-col gap-2 mt-2">
-          <div className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex justify-between items-center mb-1">
-            Voice Clone
+        <div className="bg-black/20 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
+          <div className="text-[12px] font-bold text-zinc-300 flex justify-between items-center">
+            Voice Clone (Qwen)
             {voiceCloneFile && (
-              <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 cursor-pointer" title="Xóa file"><Trash2 size={13} /></button>
+              <button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 bg-red-400/10 p-1.5 rounded-md cursor-pointer transition-colors" title="Xóa file"><Trash2 size={14} /></button>
             )}
           </div>
           
           <input type="file" accept="audio/mp3,audio/wav" ref={fileInputRef} onChange={handleVoiceUpload} className="hidden" />
           
           {!voiceCloneFile ? (
-            <button onClick={() => fileInputRef.current.click()} className="w-full h-8 border border-dashed border-gray-600 hover:border-purple-400 text-gray-400 hover:text-purple-400 rounded-md text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
-              <Upload size={13} /> Tải file MP3
+            <button onClick={() => fileInputRef.current.click()} className="w-full h-10 border border-dashed border-zinc-600 hover:border-purple-400 hover:bg-purple-500/5 text-zinc-400 hover:text-purple-400 rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer transition-all">
+              <Upload size={16} /> Tải file MP3 mẫu
             </button>
           ) : (
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] text-gray-300 truncate" title={voiceCloneFile.name}>{voiceCloneFile.name}</span>
-              <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-7 [&::-webkit-media-controls-panel]:bg-[#2A2A30]" />
-              <div className="relative mt-1">
+            <div className="flex flex-col gap-3">
+              <div className="text-[11px] text-zinc-400 bg-white/5 px-2.5 py-1.5 rounded-md truncate border border-white/5" title={voiceCloneFile.name}>{voiceCloneFile.name}</div>
+              <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 opacity-90" />
+              <div className="relative">
                 <input 
                   type="text" 
                   value={voiceCloneRefText}
                   onChange={(e) => setVoiceCloneRefText(e.target.value)}
                   disabled={isTranscribing}
-                  className={`w-full h-8 px-2 pr-7 bg-[#1A1A21] border border-[#2A2A30] rounded-md text-[11px] text-gray-300 focus:border-purple-500 focus:outline-none placeholder-gray-600 ${isTranscribing ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  placeholder="Nhập Text của file mẫu..."
+                  className={`w-full h-10 px-3 pr-8 bg-black/40 border border-white/10 rounded-xl text-sm text-zinc-200 focus:border-purple-500 focus:outline-none placeholder-zinc-600 transition-colors ${isTranscribing ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
-                {isTranscribing && <Loader2 size={13} className="absolute right-2 top-2 animate-spin text-purple-400" />}
+                {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-400" />}
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* 🚀 === MODAL CHỈNH SỬA SCENE (MỚI) === */}
+      {/* 🚀 === CÁC MODAL ĐƯỢC GIỮ NGUYÊN CSS CŨ (Chỉ chỉnh sửa nhẹ viền) === */}
+      
+      {/* MODAL SỬA SCENE */}
       {activeEditSceneModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-2xl shadow-2xl text-xs relative">
-                <button onClick={() => setActiveEditSceneModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
-                <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2">
-                  <Pencil size={16} /> Sửa thông tin - Scene {activeEditSceneModal.scene_n}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+            <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-2xl shadow-2xl relative">
+                <button onClick={() => setActiveEditSceneModal(null)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer transition-colors"><X size={20} /></button>
+                <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-zinc-100 flex items-center gap-2">
+                  <Pencil size={18} className="text-blue-400"/> Sửa thông tin - Scene {activeEditSceneModal.scene_n}
                 </h3>
 
-                <div className="mt-4 space-y-4">
+                <div className="mt-5 space-y-5">
                     <div>
-                        <label className="text-gray-400 font-medium mb-1.5 block">Voiceover (Kịch bản sẽ được AI đọc):</label>
+                        <label className="text-zinc-400 font-medium text-sm mb-2 block">Voiceover (Kịch bản sẽ được AI đọc):</label>
                         <textarea
                             value={activeEditSceneModal.Voiceover || ''}
                             onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Voiceover: e.target.value}))}
-                            className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-gray-200 min-h-[100px] focus:outline-none focus:border-blue-500 custom-scrollbar"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-zinc-200 min-h-[120px] focus:outline-none focus:border-blue-500 custom-scrollbar text-sm leading-relaxed"
                         />
                     </div>
                     <div>
-                        <label className="text-gray-400 font-medium mb-1.5 block">Translate (Bản dịch / Ghi chú):</label>
+                        <label className="text-zinc-400 font-medium text-sm mb-2 block">Translate (Bản dịch / Ghi chú):</label>
                         <textarea
-                            value={activeEditSceneModal.Translate || ''}
+                             value={activeEditSceneModal.Translate || ''}
                             onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Translate: e.target.value}))}
-                            className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-3 text-gray-400 min-h-[80px] focus:outline-none focus:border-blue-500 custom-scrollbar"
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-zinc-400 min-h-[80px] focus:outline-none focus:border-blue-500 custom-scrollbar text-sm leading-relaxed"
                         />
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <label className="text-gray-400 font-medium mb-1 block">Thời gian:</label>
-                            <input type="text" value={activeEditSceneModal.time_origin || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, time_origin: e.target.value}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                            <label className="text-zinc-400 font-medium text-sm mb-2 block">Thời gian:</label>
+                            <input type="text" value={activeEditSceneModal.time_origin || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, time_origin: e.target.value}))} className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-zinc-200 text-sm focus:border-blue-500 focus:outline-none" />
                         </div>
                         <div>
-                            <label className="text-gray-400 font-medium mb-1 block">Số từ:</label>
-                            <input type="number" value={activeEditSceneModal.Word_count || 0} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Word_count: Number(e.target.value)}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                            <label className="text-zinc-400 font-medium text-sm mb-2 block">Số từ:</label>
+                            <input type="number" value={activeEditSceneModal.Word_count || 0} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Word_count: Number(e.target.value)}))} className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-zinc-200 text-sm focus:border-blue-500 focus:outline-none" />
                         </div>
                         <div>
-                            <label className="text-gray-400 font-medium mb-1 block">Giọng điệu:</label>
-                            <input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Tone_of_Voice: e.target.value}))} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-2 text-gray-200 focus:border-blue-500 focus:outline-none" />
+                            <label className="text-zinc-400 font-medium text-sm mb-2 block">Giọng điệu:</label>
+                            <input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal(prev => ({...prev, Tone_of_Voice: e.target.value}))} className="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-zinc-200 text-sm focus:border-blue-500 focus:outline-none" />
                         </div>
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5">
-                    <button onClick={() => setActiveEditSceneModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy</button>
-                    <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2">
-                      <Save size={14}/> Lưu thay đổi
+                <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6">
+                    <button onClick={() => setActiveEditSceneModal(null)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy</button>
+                    <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-white hover:bg-zinc-200 text-black rounded-xl font-bold cursor-pointer flex items-center gap-2 transition-colors">
+                      <Save size={16}/> Lưu thay đổi
                     </button>
                 </div>
             </div>
         </div>
       )}
 
-      {/* === MODAL BATCH MERGE ALL === */}
+      {/* MODAL BATCH MERGE ALL */}
       {isMergeModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl text-xs relative">
-            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2"><Merge size={18} /> Batch Merge Videos</h3>
-            <p className="text-gray-400 mt-3 leading-relaxed text-[11px]">Tạo Video Output hàng loạt cho các Scene đã chọn.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl relative">
+            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer"><X size={20} /></button>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-blue-400 flex items-center gap-2"><Merge size={20} /> Batch Merge Videos</h3>
+            <p className="text-zinc-400 mt-4 text-sm">Tạo Video Output hàng loạt cho các Scene đã chọn.</p>
 
-            <div className="mt-5 bg-[#0E0E10] border border-[#2A2A30] p-4 rounded-xl">
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-semibold text-gray-300">Input video original audio (mix)</span>
-                <span className="text-gray-400 font-mono font-medium text-[11px]">{(globalMixVol / 100).toFixed(2)}</span>
+            <div className="mt-5 bg-black/40 border border-white/5 p-5 rounded-xl">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-semibold text-zinc-200 text-sm">Âm lượng video gốc (mix)</span>
+                <span className="text-blue-400 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded-md">{(globalMixVol / 100).toFixed(2)}</span>
               </div>
-              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
+              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
             </div>
 
-            <div className="flex gap-2 mt-5 shrink-0">
-              <button onClick={handleSelectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Select all</button>
-              <button onClick={handleDeselectAllMerge} disabled={isMerging} className="h-8 px-4 bg-[#2A2A30] border border-gray-600 hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white disabled:opacity-50">Deselect all</button>
+            <div className="flex gap-2 mt-6 shrink-0">
+              <button onClick={handleSelectAllMerge} disabled={isMerging} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors disabled:opacity-50">Chọn tất cả</button>
+              <button onClick={handleDeselectAllMerge} disabled={isMerging} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors disabled:opacity-50">Bỏ chọn</button>
             </div>
             
-            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px] mt-4">
+            <div className="flex-1 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/40 space-y-2 min-h-[160px] mt-4 custom-scrollbar">
               {parsedData.map((scene) => {
                 const isChecked = !!checkedMergeScenes[scene.scene_n];
                 const hasAiAudio = !!generatedAudios[scene.scene_n];
                 return (
-                  <div key={scene.scene_n} onClick={() => !isMerging && handleToggleMergeCheck(scene.scene_n)} className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-blue-600/10 border-blue-500/50' : 'bg-[#15151A] border-[#2A2A30]'} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5">{isChecked ? <CheckSquare size={16} className="text-blue-400" /> : <Square size={16} className="text-gray-500" />}</div>
+                  <div key={scene.scene_n} onClick={() => !isMerging && handleToggleMergeCheck(scene.scene_n)} className={`flex items-center justify-between p-4 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-blue-500/10 border-blue-500/30' : 'bg-transparent border-white/5 hover:border-white/10'} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <div className="flex items-start gap-4">
+                      <div className="mt-0.5">{isChecked ? <CheckSquare size={18} className="text-blue-400" /> : <Square size={18} className="text-zinc-600" />}</div>
                       <div>
-                        <div className={`font-bold text-[13px] ${isChecked ? 'text-blue-400' : 'text-gray-300'}`}>Scene {scene.scene_n}</div>
-                        <div className="text-[11px] text-gray-500 mt-1">{hasAiAudio ? 'Có AI Audio' : 'Pass qua Video Gốc'}</div>
+                        <div className={`font-bold text-sm ${isChecked ? 'text-blue-400' : 'text-zinc-200'}`}>Scene {scene.scene_n}</div>
+                        <div className="text-xs text-zinc-500 mt-1">{hasAiAudio ? 'Có AI Audio' : 'Pass qua Video Gốc'}</div>
                       </div>
                     </div>
                   </div>
@@ -910,110 +925,110 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
               })}
             </div>
             
-            <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
-              <button onClick={() => setIsMergeModalOpen(false)} disabled={isMerging} className="h-10 px-6 bg-transparent border border-gray-600 hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer disabled:opacity-50">Close</button>
-              <button onClick={handleStartMerge} disabled={isMerging} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md cursor-pointer flex items-center gap-2 disabled:opacity-50">
-                {isMerging ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} 
-                {isMerging ? 'Processing...' : `Generate Output`}
+            <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6 shrink-0">
+              <button onClick={() => setIsMergeModalOpen(false)} disabled={isMerging} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors disabled:opacity-50">Hủy</button>
+              <button onClick={handleStartMerge} disabled={isMerging} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer flex items-center gap-2 transition-colors disabled:opacity-50">
+                {isMerging ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} {isMerging ? 'Đang xử lý...' : `Bắt đầu Merge`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* === MODAL TÙY CHỈNH MERGE LẺ TỪNG CẢNH === */}
+      {/* MODAL TÙY CHỈNH MERGE LẺ TỪNG CẢNH */}
       {activeMergeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md flex flex-col shadow-2xl text-xs relative">
-            <button onClick={() => setActiveMergeModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer transition-colors"><X size={18} /></button>
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-blue-400 flex items-center gap-2">
-              <Merge size={18} /> Cấu hình Merge - Scene {activeMergeModal.scene_n}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-md flex flex-col shadow-2xl relative">
+            <button onClick={() => setActiveMergeModal(null)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer transition-colors"><X size={20} /></button>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-blue-400 flex items-center gap-2">
+              <Merge size={20} /> Cấu hình Merge - Scene {activeMergeModal.scene_n}
             </h3>
-            <p className="text-gray-400 mt-3 leading-relaxed text-[11px]">Tùy chỉnh độ lớn âm thanh gốc của video trước khi ghép Audio AI vào.</p>
+            
+            <p className="text-zinc-400 mt-4 text-sm leading-relaxed">Tùy chỉnh độ lớn âm thanh gốc của video trước khi ghép Audio AI vào.</p>
 
-            <div className="mt-5 bg-[#0E0E10] border border-[#2A2A30] p-4 rounded-xl">
-              <div className="flex justify-between items-center mb-3">
-                <span className="font-semibold text-gray-300">Input video original audio (mix)</span>
-                <span className="text-blue-400 font-mono font-bold text-[13px]">{(singleMixVol / 100).toFixed(2)}</span>
+            <div className="mt-5 bg-black/40 border border-white/5 p-5 rounded-xl">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-semibold text-zinc-200 text-sm">Âm lượng video gốc (mix)</span>
+                <span className="text-blue-400 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded-md">{(singleMixVol / 100).toFixed(2)}</span>
               </div>
-              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
+              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className="w-full h-1.5 bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-blue-500" />
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
-              <button onClick={() => setActiveMergeModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={handleSingleSceneMergeConfirm} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2 shadow-lg">
-                <Merge size={14} /> Bắt đầu Merge
+            <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6 shrink-0">
+              <button onClick={() => setActiveMergeModal(null)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy bỏ</button>
+              <button onClick={handleSingleSceneMergeConfirm} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer flex items-center gap-2 shadow-lg">
+                <Merge size={16} /> Bắt đầu Merge
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* === MODAL BATCH GEN AUDIO === */}
+      {/* MODAL BATCH GEN AUDIO */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-purple-400 flex items-center gap-2"><Music size={18} /> Cấu hình sinh âm thanh đồng loạt</h3>
-            <div className="flex gap-2 mt-5 shrink-0">
-              <button onClick={handleSelectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
-              <button onClick={handleDeselectAll} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl relative">
+            <button onClick={() => setIsModalOpen(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer"><X size={20} /></button>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-zinc-100 flex items-center gap-2"><Music size={20} /> Sinh âm thanh đồng loạt</h3>
+            <div className="flex gap-2 mt-6 shrink-0">
+              <button onClick={handleSelectAll} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors">Chọn tất cả</button>
+              <button onClick={handleDeselectAll} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors">Bỏ chọn</button>
             </div>
-            <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-2 min-h-[160px] mt-4">
+            <div className="flex-1 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/40 space-y-2 min-h-[160px] mt-4 custom-scrollbar">
               {filteredScenesForAudio.length === 0 ? (
-                <div className="text-center text-gray-500 py-10 text-xs">Không có cảnh nào cần xử lý.</div>
+                <div className="text-center text-zinc-500 py-10 text-sm">Không có cảnh nào cần xử lý.</div>
               ) : (
                 filteredScenesForAudio.map((scene) => {
                   const isChecked = !!checkedScenes[scene.scene_n];
                   return (
-                    <div key={scene.scene_n} onClick={() => handleToggleCheck(scene.scene_n)} className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-purple-600/10 border-purple-500/50' : 'bg-[#15151A] border-[#2A2A30]'}`}>
-                      <div className="mt-0.5 shrink-0 text-purple-400">{isChecked ? <CheckSquare size={16} /> : <Square size={16} className="text-gray-500" />}</div>
-                      <div className="space-y-1 min-w-0 text-xs">
-                        <div className="font-bold text-[13px] text-blue-400">Scene {scene.scene_n}</div>
-                        <div className="text-gray-200 truncate leading-relaxed">Voiceover: {scene.Voiceover}</div>
+                    <div key={scene.scene_n} onClick={() => handleToggleCheck(scene.scene_n)} className={`flex items-start gap-4 p-4 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-white/10 border-white/20' : 'bg-transparent border-white/5 hover:border-white/10'}`}>
+                      <div className="mt-0.5 shrink-0 text-white">{isChecked ? <CheckSquare size={18} /> : <Square size={18} className="text-zinc-600" />}</div>
+                      <div className="space-y-1.5 min-w-0 text-sm">
+                        <div className="font-bold text-zinc-200">Scene {scene.scene_n}</div>
+                        <div className="text-zinc-400 truncate leading-relaxed">Voiceover: {scene.Voiceover}</div>
                       </div>
                     </div>
                   );
                 })
               )}
             </div>
-            <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-4 shrink-0">
-              <button onClick={() => setIsModalOpen(false)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={handleStartBatchGen} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold cursor-pointer">Bắt đầu Gen</button>
+            <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6 shrink-0">
+              <button onClick={() => setIsModalOpen(false)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy bỏ</button>
+              <button onClick={handleStartBatchGen} className="h-10 px-6 bg-white hover:bg-zinc-200 text-black rounded-xl font-bold cursor-pointer transition-colors">Bắt đầu Gen</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* === MODAL EXPORT OUTPUT === */}
+      {/* MODAL EXPORT OUTPUT */}
       {isExportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl text-xs relative">
-            <button onClick={() => setIsExportModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><X size={18} /></button>
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-green-400 flex items-center gap-2"><Download size={18} /> Tải Video Output (Đã Merge)</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl relative">
+            <button onClick={() => setIsExportModalOpen(false)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer"><X size={20} /></button>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-green-400 flex items-center gap-2"><Download size={20} /> Tải Video Output</h3>
             
             {Object.keys(mergedVideos).length === 0 ? (
-              <div className="text-center text-gray-500 py-10 text-xs">Chưa có video Output nào được tạo.<br/>Bạn hãy chạy "Merge Videos" trước nhé!</div>
+              <div className="text-center text-zinc-500 py-10 text-sm">Chưa có video Output nào được tạo.<br/>Bạn hãy chạy "Merge Videos" trước nhé!</div>
             ) : (
               <>
-                <div className="flex gap-2 mt-5 shrink-0">
-                  <button onClick={handleSelectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Chọn tất cả</button>
-                  <button onClick={handleDeselectAllExport} className="h-8 px-4 bg-[#2A2A30] hover:bg-[#3A3A40] rounded-lg text-xs font-medium cursor-pointer text-gray-300 hover:text-white">Bỏ chọn tất cả</button>
+                <div className="flex gap-2 mt-6 shrink-0">
+                  <button onClick={handleSelectAllExport} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors">Chọn tất cả</button>
+                  <button onClick={handleDeselectAllExport} className="h-9 px-4 bg-white/5 hover:bg-white/10 rounded-lg text-sm font-medium cursor-pointer text-zinc-200 transition-colors">Bỏ chọn</button>
                 </div>
-                <div className="flex-1 overflow-y-auto border border-[#2A2A30] rounded-xl p-2.5 bg-[#0E0E10] space-y-1.5 min-h-[160px] mt-4">
+                <div className="flex-1 overflow-y-auto border border-white/5 rounded-xl p-3 bg-black/40 space-y-2 min-h-[160px] mt-4 custom-scrollbar">
                   {parsedData.filter(scene => mergedVideos[scene.scene_n]).map((scene) => {
                     const isChecked = !!checkedExportScenes[scene.scene_n];
                     return (
-                      <div key={scene.scene_n} onClick={() => handleToggleExportCheck(scene.scene_n)} className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer select-none ${isChecked ? 'bg-green-600/20 border-green-500/50 text-white' : 'bg-[#15151A] border-[#2A2A30]'}`}>
-                        {isChecked ? <CheckSquare size={16} className="text-green-400" /> : <Square size={16} className="text-gray-500" />}
-                        <div className="font-bold text-[13px]">Scene {scene.scene_n} Output</div>
+                      <div key={scene.scene_n} onClick={() => handleToggleExportCheck(scene.scene_n)} className={`flex items-center gap-4 p-4 rounded-xl border transition-all cursor-pointer select-none ${isChecked ? 'bg-green-500/10 border-green-500/30' : 'bg-transparent border-white/5 hover:border-white/10'}`}>
+                        {isChecked ? <CheckSquare size={18} className="text-green-400" /> : <Square size={18} className="text-zinc-600" />}
+                        <div className={`font-bold text-sm ${isChecked ? 'text-green-400' : 'text-zinc-200'}`}>Scene {scene.scene_n} Output</div>
                       </div>
                     );
                   })}
                 </div>
-                <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-4 shrink-0">
-                  <button onClick={() => setIsExportModalOpen(false)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-                  <button onClick={handleDownloadVideos} className="h-10 px-6 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold cursor-pointer">Tải Output Đã Chọn</button>
+                <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6 shrink-0">
+                  <button onClick={() => setIsExportModalOpen(false)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy bỏ</button>
+                  <button onClick={handleDownloadVideos} className="h-10 px-6 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold cursor-pointer transition-colors">Tải Output Đã Chọn</button>
                 </div>
               </>
             )}
@@ -1021,24 +1036,24 @@ export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* === MODAL GEN AUDIO LẺ === */}
+      {/* MODAL GEN AUDIO LẺ */}
       {activeGenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#15151A] border border-[#2A2A30] rounded-2xl p-6 w-full max-w-md flex flex-col shadow-2xl text-xs relative">
-            <button onClick={() => setActiveGenModal(null)} className="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer transition-colors"><X size={18} /></button>
-            <h3 className="text-base font-bold border-b border-[#2A2A30] pb-3 text-purple-400 flex items-center gap-2"><Mic size={18} /> Audio - Scene {activeGenModal.scene_n}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#121214] border border-white/10 rounded-2xl p-7 w-full max-w-md flex flex-col shadow-2xl relative">
+            <button onClick={() => setActiveGenModal(null)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer transition-colors"><X size={20} /></button>
+            <h3 className="text-lg font-bold border-b border-white/10 pb-4 text-zinc-100 flex items-center gap-2"><Mic size={20} /> Audio - Scene {activeGenModal.scene_n}</h3>
             
-            <div className="mt-5 space-y-4">
-              <div className="bg-[#0E0E10] border border-[#2A2A30] rounded-xl p-4">
-                <div className="text-gray-500 font-medium mb-2 flex items-center gap-1.5"><AlignLeft size={14} /> Voiceover:</div>
-                <p className="text-gray-200 leading-relaxed text-[13px] whitespace-pre-wrap">{activeGenModal.Voiceover || "N/A"}</p>
+            <div className="mt-6 space-y-5">
+              <div className="bg-black/40 border border-white/5 rounded-xl p-5">
+                <div className="text-zinc-500 font-semibold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5"><AlignLeft size={14} /> Voiceover</div>
+                <p className="text-zinc-200 leading-relaxed text-[14px] whitespace-pre-wrap">{activeGenModal.Voiceover || "N/A"}</p>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-[#2A2A30] pt-4 mt-5 shrink-0">
-              <button onClick={() => setActiveGenModal(null)} className="h-10 px-6 bg-[#2A2A30] hover:bg-[#3A3A40] text-gray-300 rounded-lg font-semibold cursor-pointer">Hủy bỏ</button>
-              <button onClick={() => { handleGenAudio(activeGenModal.scene_n, activeGenModal.Voiceover); setActiveGenModal(null); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-bold cursor-pointer flex items-center gap-2">
-                <Mic size={14} /> Generate
+            <div className="flex justify-end gap-3 border-t border-white/10 pt-5 mt-6 shrink-0">
+              <button onClick={() => setActiveGenModal(null)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy bỏ</button>
+              <button onClick={() => { handleGenAudio(activeGenModal.scene_n, activeGenModal.Voiceover); setActiveGenModal(null); }} className="h-10 px-6 bg-white hover:bg-zinc-200 text-black rounded-xl font-bold cursor-pointer flex items-center gap-2 transition-colors">
+                <Mic size={16} /> Generate
               </button>
             </div>
           </div>
