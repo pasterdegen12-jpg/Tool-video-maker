@@ -3,8 +3,7 @@ import { useParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from './firebase.js';
 // 🚀 Đã thêm Pencil, Save vào import
-import { FileText, Video, AlignLeft, Globe, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock, Maximize, Pencil, Save, Music } from 'lucide-react';
-
+import { FileText, Video, AlignLeft, Globe, Hash, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Play, Clock, Maximize, Pencil, Save, Music } from 'lucide-react';
 export default function SemiWorkspace({ ffmpeg, isFfmpegReady }) { 
   const { projectId } = useParams();
 
