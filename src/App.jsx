@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'; // 🚀 IMPORT ROUTER
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import MainEditor from './MainEditor';
-import SemiWorkspace from './SemiWorkspace';
+import Workspace from './Workspace/Workspace';
 import HistoryModel from './HistoryModel';
 import { LayoutTemplate, PlaySquare, History, Loader2 } from 'lucide-react';
 import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/clerk-react";
@@ -13,7 +13,7 @@ import wasmURL from './ffmpeg-core.wasm?url';
 
 export default function App() {
   const navigate = useNavigate();
-  const location = useLocation(); // Dùng để xác định đang ở link nào
+  const location = useLocation(); 
   
   const ffmpegRef = useRef(new FFmpeg());
   const [isFfmpegLoaded, setIsFfmpegLoaded] = useState(false);
@@ -59,7 +59,7 @@ export default function App() {
               onClick={() => navigate('/')}
               className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${currentPath === '/' ? 'bg-[#2A2A30] text-blue-400' : 'text-gray-400 hover:text-white'}`}
             >
-              <PlaySquare size={16} /> Tab Chính (Làm Video)
+              <PlaySquare size={16} /> Import
             </button>
             <button 
               onClick={() => navigate('/history')}
@@ -70,7 +70,7 @@ export default function App() {
             <button 
               className={`px-4 py-2 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${currentPath.includes('/project') ? 'bg-[#2A2A30] text-green-400' : 'text-gray-400 hover:text-white'}`}
             >
-              <LayoutTemplate size={16} /> Tab Chuyên Gia
+              <LayoutTemplate size={16} /> StoryBoard
             </button>
           </div>
           <div className="flex items-center">
@@ -79,12 +79,12 @@ export default function App() {
         </div>
 
         <div className="flex-1 overflow-hidden relative">
-          {/* 🚀 QUẢN LÝ COMPONENT THEO URL ROUTER */}
           <Routes>
-            <Route path="/" element={<MainEditor />} />
+            <Route path="/" element={<MainEditor ffmpeg={ffmpegRef.current} isFfmpegLoaded={isFfmpegLoaded} />} />
             <Route path="/history" element={<HistoryModel />} />
+            {/* 🚀 ĐÃ SỬA SemiWorkspace THÀNH Workspace Ở ĐÂY */}
             <Route path="/project/:projectId" element={
-              <SemiWorkspace ffmpeg={ffmpegRef.current} isFfmpegReady={isFfmpegLoaded} />
+              <Workspace ffmpeg={ffmpegRef.current} isFfmpegReady={isFfmpegLoaded} />
             } />
           </Routes>
         </div>

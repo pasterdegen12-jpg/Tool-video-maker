@@ -29,7 +29,7 @@ const withTimeout = (promise, ms, errorMessage) => {
 };
 
 // 🚀 HÀM ĐÃ ĐƯỢC DỌN DẸP SẠCH LỖI VÀ TÍCH HỢP LƯU KỊCH BẢN
-export const autoSaveToFirebase = async (data, projectName, script) => { 
+export const autoSaveToFirebase = async (data, projectName, script, characters = []) => {
   const projectId = "proj_" + Date.now();
   let uploadData = JSON.parse(JSON.stringify(data)); 
 
@@ -48,13 +48,13 @@ export const autoSaveToFirebase = async (data, projectName, script) => {
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
         formData.append('resource_type', 'video');
         
-        // Ép Cloudinary phải xong trong 90 giây/video
+        // 🚀 ĐÃ SỬA TẠI ĐÂY: Nới lỏng thời gian chờ lên 10 phút (600000ms)
         const uploadRes = await withTimeout(
           fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
             method: 'POST', body: formData
           }),
-          90000, 
-          `Cloudinary upload bị kẹt quá 90s cho Scene ${scene.scene_n}`
+          600000, // <--- 10 phút
+          `Cloudinary upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` // <--- Sửa lại text cảnh báo
         );
         
         const uploadDataRes = await uploadRes.json();
@@ -86,12 +86,14 @@ export const autoSaveToFirebase = async (data, projectName, script) => {
   // 🚀 ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO FIREBASE (Bao gồm cả Script)
   const projectDoc = {
     id: projectId,
-    projectName: projectName, 
+    projectName: projectName || "Dự án chưa đặt tên", 
     createdAt: Date.now(),
     sceneCount: uploadData.length,
     estCost: cost,
     data: uploadData,
-    originalScript: script // 🚀 Lưu kịch bản để hiển thị bảng bên trái
+    originalScript: script,
+    characters: characters,
+    projectType: projectType || 'full-ai' // 🚀 THÊM DÒNG NÀY ĐỂ WORKSPACE NHẬN DIỆN ĐƯỢC
   };
 
   // 🚀 LƯU VÀO FIREBASE

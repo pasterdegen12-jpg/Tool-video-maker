@@ -1,135 +1,204 @@
-import React, { useState, useRef } from 'react';
-import { FileText, Upload, Scissors, ArrowRight, CheckCircle2, Loader2, Download } from 'lucide-react';
-import { FFmpeg } from '@ffmpeg/ffmpeg';
+import React, { useState, useRef, useEffect } from 'react';
+import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2 } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/util';
-import { useNavigate } from 'react-router-dom'; // 🚀 THÊM ROUTER ĐIỀU HƯỚNG
+import { useNavigate } from 'react-router-dom';
 
 import { autoSaveToFirebase } from './firebase.js'; 
 
-// GỌI NGƯỜI NHÀ
-import coreURL from './ffmpeg-core.js?url';
-import wasmURL from './ffmpeg-core.wasm?url';
-
-export default function MainEditor() { // 🚀 ĐÃ BỎ onComplete
-  const navigate = useNavigate(); // 🚀 KHỞI TẠO ROUTER
+export default function MainEditor({ ffmpeg, isFfmpegLoaded }) { 
+  const navigate = useNavigate(); 
 
   const [script, setScript] = useState('');
-  const [parsedData, setParsedData] = useState(null);
-  const [isParsing, setIsParsing] = useState(false);
   const [videoFile, setVideoFile] = useState(null);
-  const [isCutting, setIsCutting] = useState(false);
-  const [cutComplete, setCutComplete] = useState(false);
-  const [isSaving, setIsSaving] = useState(false); // 🚀 THÊM STATE CHỜ LƯU ĐỂ TRÁNH SPAM NÚT CHUYỂN TRANG
+  
+  const [isLocked, setIsLocked] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState('');
+  const [cutProgress, setCutProgress] = useState({ current: 0, total: 0 });
+  const [showVideoPopup, setShowVideoPopup] = useState(false);
 
   const fileInputRef = useRef(null);
-  const ffmpegRef = useRef(new FFmpeg());
+  const blobUrlsRef = useRef([]);
 
-  const handleParseScript = async () => {
-    if (!script) return alert("Vui lòng nhập kịch bản!");
-    
-    const geminiKeys = [
-      import.meta.env.VITE_GEMINI_KEY_1,
-      import.meta.env.VITE_GEMINI_KEY_2,
-      import.meta.env.VITE_GEMINI_KEY_3
-    ].filter(Boolean);
-
-    if (geminiKeys.length === 0) {
-      return alert("Bạn chưa dán API Key Gemini nào trong file .env!");
-    }
-
-    const randomKey = geminiKeys[Math.floor(Math.random() * geminiKeys.length)];
-
-    setIsParsing(true);
-    try {
-      // 🚀 PROMPT MỚI: DẠY AI CÁCH ĐỌC MỌI LOẠI FORMAT & BỎ QUA MARKDOWN (**)
-      const promptText = `Bạn là một chuyên gia bóc tách dữ liệu AI. Hãy đọc kịch bản bên dưới và trích xuất danh sách các cảnh (scene) thành một MẢNG JSON.
-LƯU Ý QUAN TRỌNG: Kịch bản đầu vào có thể viết tự do, chứa ký tự markdown (như **), hoặc ghi sai tên trường (VD: VO_Word_Count thay vì Word_count, Time thay vì Time_origin). Hãy bỏ qua các ký tự đặc biệt, phân tích theo ngữ nghĩa để lấy đúng dữ liệu.
-
-Mỗi object trong mảng BẮT BUỘC phải có ĐÚNG các trường sau:
-{
-  "scene_n": 1, // Trích xuất số thứ tự cảnh (chỉ ghi số)
-  "time_origin": "08:56 - 09:03", // Tìm phần Time_origin hoặc tương đương (BẮT BUỘC định dạng mm:ss - mm:ss)
-  "Voiceover": "Nội dung lời thoại", // Nếu trống hoặc N/A thì để chuỗi rỗng ""
-  "Translate": "Bản dịch", // Nếu để trống thì tự dịch Voiceover, nếu không có Voiceover thì để ""
-  "Word_count": 0, // Đếm số lượng từ của Voiceover (chỉ ghi số)
-  "Tone_of_Voice": "Tự nhiên", // Nếu không có thông tin thì mặc định ghi "Tự nhiên"
-  "status": "pending" // Bắt buộc ghi chuỗi "pending"
-}
-
-Quy tắc Tối thượng: CHỈ TRẢ VỀ DUY NHẤT 1 MẢNG JSON (Bắt đầu bằng [ và kết thúc bằng ]). KHÔNG ĐƯỢC GIẢI THÍCH HOẶC THÊM BẤT KỲ VĂN BẢN NÀO KHÁC.
-
-Kịch bản cần bóc tách:
-${script}`;
-      
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${randomKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }], generationConfig: { response_mime_type: "application/json" } })
-      });
-      
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      
-      const rawText = data.candidates[0].content.parts[0].text;
-      
-      // 🚀 BẮT LỖI THÔNG MINH: Dùng Regex tóm gọn mảng JSON, bất chấp AI có nói nhảm thêm ở ngoài
-      const jsonMatch = rawText.match(/\[\s*\{[\s\S]*\}\s*\]/);
-      if (!jsonMatch) {
-          console.error("Lỗi Regex bắt JSON. Dữ liệu thô từ AI:", rawText);
-          throw new Error("AI không thể nhận diện được cấu trúc từ kịch bản này. Hãy kiểm tra lại format.");
-      }
-      
-      const parsedJson = JSON.parse(jsonMatch[0]);
-      setParsedData(Array.isArray(parsedJson) ? parsedJson : [parsedJson]);
-      
-    } catch (error) { 
-      console.error(error);
-      alert("Lỗi AI: " + error.message); 
-    } finally { 
-      setIsParsing(false); 
-    }
-  };
+  // Dọn dẹp RAM (Memory Leak) khi chuyển trang
+  useEffect(() => {
+    return () => {
+      blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const handleFileUpload = (e) => e.target.files[0] && setVideoFile(e.target.files[0]);
 
-  const handleCutVideo = async () => {
-    if (!parsedData || !videoFile) return;
-    setIsCutting(true);
-    const ffmpeg = ffmpegRef.current;
-
-    ffmpeg.on('log', ({ message }) => console.log(">> [FFmpeg]:", message));
+  // ==========================================
+  // 🚀 LUỒNG 1: FULL AI
+  // ==========================================
+  const handleFullAIWorkflow = async () => {
+    if (!script) return alert("Vui lòng nhập kịch bản!");
+    
+    setIsLocked(true);
+    setLoadingStatus('Đang bóc tách kịch bản Full AI...');
     
     try {
-      if (!ffmpeg.loaded) {
-        await ffmpeg.load({
-          coreURL: coreURL,
-          wasmURL: wasmURL,
-        });
+      const parsedData = await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
+Quy tắc xử lý kịch bản:
+1. Trong kịch bản, phần "Character" thường chứa cả Tên và Mô tả. Hãy tách riêng: Đưa mô tả (VD: 30s Hispanic female...) vào mảng "characters", còn ở mảng "scenes", trường "Character" chỉ ghi ngắn gọn Tên nhân vật (VD: Plaintiff).
+2. Dữ liệu từ "Dialogue" phải được chuyển thành "Voiceover". Dữ liệu từ "Tone" chuyển thành "Tone_of_Voice".
+3. Tự tính số từ của lời thoại điền vào "Word_count".
+
+Cấu trúc JSON BẮT BUỘC:
+{
+  "characters": [
+    { "id": "char_1", "name": "Plaintiff", "description": "30s Hispanic female, looking devastated and exhausted...", "voiceTone": "emotional, fast-paced" }
+  ],
+  "scenes": [
+    { "scene_n": 1, "Context": "Nguyên đơn uất nghẹn...", "Camera": "tight eye-level close-up", "Action": "serious, keeping head still...", "Character": "Plaintiff", "Voiceover": "We were just walking...", "Translate": "Chúng tôi chỉ đang đi...", "Tone_of_Voice": "emotional, fast-paced", "Word_count": 25, "status": "pending" }
+  ]
+}
+
+KHÔNG thêm markdown \`\`\`json. CHỈ TRẢ VỀ ĐÚNG CẤU TRÚC JSON ĐÓ.
+Kịch bản: ${script}`);
+
+      setLoadingStatus('Đang khởi tạo Workspace (Lưu Database)...');
+      
+      const savedProjectId = await autoSaveToFirebase(
+        parsedData.scenes, 
+        "Dự án Full AI - " + new Date().toLocaleTimeString(), 
+        script, 
+        parsedData.characters,
+        "full-ai" // 🚀 ĐÃ BỔ SUNG: Báo cho Firebase biết đây là luồng Full AI
+      );
+
+      if (savedProjectId) {
+        navigate(`/project/${savedProjectId}`, { state: { characters: parsedData.characters } });
+      } else {
+        throw new Error("Không thể lưu Firebase");
       }
 
+    } catch (error) {
+      console.error(error);
+      setIsLocked(false);
+      alert("Đã xảy ra lỗi trong quá trình xử lý!");
+    }
+  };
+
+  // ==========================================
+  // 🚀 LUỒNG 2: SEMI CONTENT
+  // ==========================================
+  const handleSemiWorkflow = async () => {
+    if (!script) return alert("Vui lòng nhập kịch bản!");
+    if (!videoFile) {
+      setShowVideoPopup(true);
+      return;
+    }
+
+    setIsLocked(true);
+    setLoadingStatus('Đang trích xuất mốc thời gian (Semi)...');
+
+    try {
+      const parsedData = await callGeminiAPI(`Bạn là chuyên gia trích xuất dữ liệu. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
+LƯU Ý TỐI QUAN TRỌNG: 
+1. Kịch bản có thể có "Time" và "Time_origin". Bạn BẮT BUỘC phải lấy CHÍNH XÁC giá trị của "Time_origin" (VD: "03:12 - 03:20") đưa vào trường "time_origin" của JSON. Nếu lấy sai, hệ thống sẽ bị lỗi.
+2. Tự tính số từ của "Voiceover" điền vào "Word_count".
+3. Không cần phân tích nhân vật, mảng "characters" để rỗng [].
+
+Cấu trúc JSON BẮT BUỘC:
+{
+  "characters": [], 
+  "scenes": [
+    { "scene_n": 1, "time_origin": "03:12 - 03:20", "Footage": "Cảnh sát lạnh lùng...", "Effect": "Metal handcuffs clicking", "Character": "", "Voiceover": "You can't play the victim...", "Translate": "Bạn không thể đóng vai...", "Tone_of_Voice": "Tự nhiên", "Word_count": 15, "status": "pending" }
+  ]
+}
+
+KHÔNG thêm markdown \`\`\`json. CHỈ TRẢ VỀ ĐÚNG CẤU TRÚC JSON ĐÓ.
+Kịch bản: ${script}`);
+
+      await performCutVideo(parsedData);
+
+    } catch (error) {
+      console.error(error);
+      setIsLocked(false);
+      alert("Đã xảy ra lỗi khi bóc tách kịch bản!");
+    }
+  };
+
+  const callGeminiAPI = async (promptText) => {
+    const geminiKeys = [import.meta.env.VITE_GEMINI_KEY_1, import.meta.env.VITE_GEMINI_KEY_2, import.meta.env.VITE_GEMINI_KEY_3].filter(Boolean);
+    if (geminiKeys.length === 0) throw new Error("Chưa cấu hình API Key");
+    
+    for (let i = 0; i < geminiKeys.length; i++) {
+      try {
+        console.log(`Đang thử gọi Gemini API với Key số ${i + 1}...`);
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKeys[i]}`, {
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            contents: [{ parts: [{ text: promptText }] }], 
+            generationConfig: { response_mime_type: "application/json", temperature: 0 } 
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          const errMsg = data.error.message.toLowerCase();
+          if (response.status === 429 || response.status === 503 || errMsg.includes('exhausted') || errMsg.includes('overloaded') || errMsg.includes('demand')) {
+             console.warn(`Key ${i + 1} đang quá tải, chuyển sang Key tiếp theo...`);
+             continue; 
+          }
+          throw new Error(data.error.message); 
+        }
+        
+        const rawText = data.candidates[0].content.parts[0].text;
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) throw new Error("Lỗi cấu trúc trả về từ AI.");
+        
+        const parsedJson = JSON.parse(jsonMatch[0]);
+        if (!parsedJson.scenes) parsedJson.scenes = [];
+        if (!parsedJson.characters) parsedJson.characters = [];
+        
+        return parsedJson;
+
+      } catch (err) {
+        if (i === geminiKeys.length - 1) {
+          throw new Error("Tất cả API Key hiện đều đang bị quá tải. Vui lòng chờ 1 phút rồi thử lại!");
+        }
+      }
+    }
+  };
+
+  const performCutVideo = async (parsedData) => {
+    try {
+      setLoadingStatus('Đang kiểm tra lõi xử lý Video...');
+      if (!isFfmpegLoaded) {
+        alert("Hệ thống đang nạp lõi Video ở nền, vui lòng đợi vài giây rồi thử lại!");
+        setIsLocked(false);
+        return;
+      }
+
+      setLoadingStatus('Đang đọc file video gốc...');
       await ffmpeg.writeFile('input_video.mp4', await fetchFile(videoFile));
       
-      const updatedData = [...parsedData];
-      for (let i = 0; i < updatedData.length; i++) {
-        const scene = updatedData[i];
+      const updatedScenes = [...parsedData.scenes];
+      const validScenes = updatedScenes.filter(s => s.time_origin && s.time_origin.includes('-'));
+      
+      setCutProgress({ current: 0, total: validScenes.length });
+
+      for (let i = 0; i < updatedScenes.length; i++) {
+        const scene = updatedScenes[i];
+        if(!scene.time_origin || !scene.time_origin.includes('-')) continue;
+
+        setCutProgress(prev => ({ ...prev, current: prev.current + 1 }));
+        setLoadingStatus(`Đang render Video cảnh ${scene.scene_n}...`);
+
         const [start, end] = scene.time_origin.split('-').map(s => s.trim());
         const outputName = `scene_${scene.scene_n}.mp4`;
-        
-        // 🚀 THỦ THUẬT XỬ LÝ THỜI GIAN: Đổi mm:ss ra giây để cắt mượt hơn
         const timeToSeconds = (timeStr) => {
           const parts = timeStr.split(':');
           if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
           if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
           return parseFloat(timeStr);
         };
-
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
-
-        // 🚀 LỆNH CẮT MỚI: CHÍNH XÁC 100% VÀ TỐI ƯU TỐC ĐỘ
-        // 1. -ss trước -i: Tua nhanh đến mốc thời gian
-        // 2. Không dùng '-c copy' chung chung nữa
-        // 3. Render lại video bằng 'libx264' + 'ultrafast' để chuẩn từng mili-giây mà vẫn nhẹ máy
-        // 4. '-c:a copy': Giữ nguyên âm thanh cho nhanh
         
         await ffmpeg.exec([
           '-ss', startSec.toString(), 
@@ -137,106 +206,142 @@ ${script}`;
           '-t', duration.toString(), 
           '-c:v', 'libx264', 
           '-preset', 'ultrafast', 
+          '-crf', '23',
+          '-tune', 'fastdecode', 
           '-c:a', 'copy', 
           outputName
         ]);
 
         const data = await ffmpeg.readFile(outputName);
-        scene.videoUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        
+        const blobUrl = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        blobUrlsRef.current.push(blobUrl);
+        
+        scene.videoUrl = blobUrl;
         scene.status = 'cut';
       }
-
-      setParsedData(updatedData);
-      setCutComplete(true);
       
-      // Đã gỡ bỏ tính năng auto-redirect rườm rà ở đây để User tự kiểm tra và ấn nút "Hoàn tất"
+      setLoadingStatus('Đang đồng bộ Video lên mây (Vui lòng chờ)...');
+      
+      const savedProjectId = await autoSaveToFirebase(
+        updatedScenes, 
+        "Dự án Semi - " + new Date().toLocaleTimeString(), 
+        script, 
+        parsedData.characters || [],
+        "semi" // 🚀 ĐÃ BỔ SUNG: Báo cho Firebase biết đây là luồng Semi
+      );
+
+      if (savedProjectId) {
+        navigate(`/project/${savedProjectId}`, { state: { characters: parsedData.characters } });
+      } else {
+        throw new Error("Không thể lưu Firebase");
+      }
 
     } catch (error) {
-      console.error("❌ LỖI:", error);
-      alert("Lỗi khi cắt video! F12 xem chi tiết.");
-    } finally {
-      setIsCutting(false);
-    }
+      console.error(error); 
+      setIsLocked(false);
+      alert("Lỗi khi xử lý video hoặc tải lên Cloud!");
+    } 
   };
 
   return (
-    <div className="flex h-screen w-full font-sans bg-[#0E0E10] p-6 gap-6 overflow-hidden text-white">
+    <div className="flex h-screen w-full font-sans bg-[#0E0E10] p-8 gap-8 overflow-hidden text-white items-center justify-center relative">
       
-      <div className="flex-1 bg-[#15151A] border border-[#2A2A30] rounded-xl p-6 flex flex-col shadow-lg min-h-0">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 shrink-0"><FileText className="text-blue-500" /> 1. Xử lý Kịch bản</h2>
-        <textarea value={script} onChange={(e) => setScript(e.target.value)} className="w-full h-40 bg-[#0E0E10] border border-[#2A2A30] rounded-lg p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-500 resize-none mb-4 shrink-0" placeholder="Nhập kịch bản..."></textarea>
-        <button onClick={handleParseScript} disabled={isParsing} className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white py-2.5 rounded-lg font-semibold flex justify-center items-center gap-2 mb-6 cursor-pointer shrink-0">
-          {isParsing ? <><Loader2 size={18} className="animate-spin" /> Đang bóc tách...</> : 'Bóc tách Dữ liệu bằng AI'}
-        </button>
-
-        {parsedData && (
-          <div className="flex-1 border border-[#2A2A30] rounded-lg overflow-y-auto min-h-0 bg-[#0E0E10]">
-            <table className="w-full text-sm text-left text-gray-400">
-              <thead className="text-xs text-gray-300 uppercase bg-[#1E1E24] border-b border-[#2A2A30] sticky top-0 z-10">
-                <tr><th className="px-4 py-3">Cảnh</th><th className="px-4 py-3">Thời gian</th><th className="px-4 py-3 text-center">Trạng thái</th></tr>
-              </thead>
-              <tbody>
-                {parsedData.map((scene, index) => (
-                  <tr key={index} className="border-b border-[#2A2A30] last:border-0 hover:bg-[#1A1A1F]">
-                    <td className="px-4 py-3 font-medium text-white">Scene {scene.scene_n}</td>
-                    <td className="px-4 py-3 font-mono text-blue-400">{scene.time_origin}</td>
-                    <td className="px-4 py-3 text-center">
-                      {scene.status === 'cut' ? (
-                        <a href={scene.videoUrl} download={`Scene_${scene.scene_n}.mp4`} className="inline-flex items-center gap-1 text-green-500 bg-green-500/10 hover:bg-green-500/20 px-3 py-1.5 rounded text-xs transition-colors font-bold cursor-pointer"><Download size={14} /> Tải về</a>
-                      ) : <span className="text-gray-600 text-xs">Chờ cắt...</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      <div className="w-[400px] flex flex-col gap-6 shrink-0">
-        <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-6 flex flex-col shadow-lg shrink-0">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Upload className="text-purple-500" /> 2. Nguồn Video</h2>
-          <input type="file" accept="video/mp4" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
-          <div onClick={() => fileInputRef.current.click()} className={`w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all mb-4 ${videoFile ? 'border-purple-500 bg-purple-500/10' : 'border-[#2A2A30] bg-[#0E0E10] hover:border-gray-500'}`}>
-            {videoFile ? <><CheckCircle2 className="text-purple-500 mb-2" size={30} /><span className="text-purple-400 font-medium break-all px-4 text-center">Đã tải: {videoFile.name}</span></> : <><Upload className="text-gray-500 mb-2" size={30} /><span className="text-gray-400 text-sm">Click tải Video</span></>}
-          </div>
-          <button onClick={handleCutVideo} disabled={!parsedData || !videoFile || isCutting || cutComplete} className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 text-white py-3 rounded-lg font-bold flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(147,51,234,0.3)] disabled:shadow-none cursor-pointer">
-            {isCutting ? <><Loader2 size={18} className="animate-spin" /> Đang cắt video...</> : cutComplete ? <><CheckCircle2 size={18} /> Cắt thành công</> : <><Scissors size={18} /> Cắt Video</>}
-          </button>
+      <div className="w-full max-w-4xl bg-[#15151A] border border-[#2A2A30] rounded-2xl p-8 flex flex-col shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">Khởi tạo Dự án Video</h1>
+          <p className="text-gray-400 text-sm">Nhập kịch bản và chọn luồng làm việc phù hợp với nhu cầu của bạn.</p>
         </div>
 
-        <div className={`flex-1 bg-[#15151A] border rounded-xl p-6 flex flex-col justify-center items-center text-center transition-all duration-500 min-h-0 ${cutComplete ? 'border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.15)]' : 'border-[#2A2A30] opacity-50'}`}>
-          <h2 className="text-xl font-bold mb-2">3. Hoàn tất</h2>
-          <p className="text-sm text-gray-400 mb-6">Dữ liệu đã sẵn sàng. Hệ thống sẽ tạo một Project Workspace riêng để bạn biên tập chi tiết.</p>
-          
-          <button 
-            onClick={async () => {
-              setIsSaving(true);
-              try {
-                // 🚀 LƯU FIREBASE VÀ ĐỢI ĐẨY VIDEO LÊN CLOUDINARY
-                const savedProjectId = await autoSaveToFirebase(parsedData, "Video Project - " + new Date().toLocaleTimeString(), script);
-                if (savedProjectId) {
-                   navigate(`/project/${savedProjectId}`); // 🚀 ĐỔI LINK TRÌNH DUYỆT
-                }
-              } catch(err) {
-                console.error("Lỗi đồng bộ:", err);
-                alert("Lỗi tải lên mây! Bạn hãy thử lại.");
-              } finally {
-                setIsSaving(false);
-              }
-            }} 
-            disabled={!cutComplete || isSaving} 
-            className="bg-green-600 hover:bg-green-500 disabled:bg-gray-700 text-white px-6 py-3 rounded-xl font-bold transition-all flex justify-center items-center gap-2 w-full cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isSaving ? (
-              <><Loader2 size={18} className="animate-spin" /> Đang tải video lên mây...</>
-            ) : (
-              <>Vào Project Workspace <ArrowRight size={18} /></>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-col gap-3">
+            <label className="text-sm font-bold text-gray-300 flex items-center gap-2"><FileText size={16} className="text-blue-500"/> Kịch bản chi tiết</label>
+            <textarea 
+              value={script} 
+              onChange={(e) => setScript(e.target.value)} 
+              className="w-full h-[250px] bg-[#0E0E10] border border-[#2A2A30] rounded-xl p-4 text-sm text-gray-300 focus:outline-none focus:border-blue-500 resize-none custom-scrollbar" 
+              placeholder="Paste kịch bản của bạn vào đây..."
+            ></textarea>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-bold text-gray-300 flex items-center gap-2"><Film size={16} className="text-purple-500"/> Nguồn Video (Chỉ dành cho Semi-Mode)</label>
+              <input type="file" accept="video/mp4" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
+              <div 
+                onClick={() => fileInputRef.current.click()} 
+                className={`w-full h-[100px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all ${videoFile ? 'border-purple-500 bg-purple-500/10' : 'border-[#2A2A30] bg-[#0E0E10] hover:border-gray-500'}`}
+              >
+                {videoFile ? (
+                  <><CheckCircle2 className="text-purple-500 mb-2" size={24} /><span className="text-purple-400 font-medium break-all px-4 text-center text-sm">Đã tải: {videoFile.name}</span></>
+                ) : (
+                  <><Upload className="text-gray-500 mb-2" size={24} /><span className="text-gray-400 text-sm">Bấm để tải video gốc</span></>
+                )}
+              </div>
+            </div>
+
+            <div className="w-full h-[1px] bg-[#2A2A30]"></div>
+
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={handleFullAIWorkflow} 
+                className="w-full bg-white hover:bg-gray-200 text-black py-3.5 rounded-xl font-black flex justify-center items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] uppercase tracking-wide"
+              >
+                <Wand2 size={20} className="text-blue-600" /> TẠO VIDEO (FULL AI)
+              </button>
+              
+              <button 
+                onClick={handleSemiWorkflow} 
+                className="w-full bg-white hover:bg-gray-200 text-black py-3.5 rounded-xl font-black flex justify-center items-center gap-2 transition-all cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] uppercase tracking-wide"
+              >
+                <Scissors size={20} className="text-purple-600" /> CẮT VIDEO (SEMI-CONTENT)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {isLocked && (
+        <div className="fixed inset-0 bg-[#0E0E10]/90 z-[9999] flex flex-col items-center justify-center backdrop-blur-md">
+          <div className="bg-[#15151A] border border-[#2A2A30] p-8 rounded-2xl shadow-2xl flex flex-col items-center max-w-md w-full text-center">
+            <Loader2 size={50} className="animate-spin text-blue-500 mb-6" />
+            <h2 className="text-xl font-bold text-white mb-2">{loadingStatus}</h2>
+            <p className="text-sm text-gray-400 mb-6">Vui lòng giữ nguyên màn hình, quá trình này có thể mất vài phút.</p>
+            
+            {cutProgress.total > 0 && (
+              <div className="w-full">
+                <div className="flex justify-between text-xs font-bold text-blue-400 mb-2">
+                  <span>Tiến độ cắt Video</span>
+                  <span>{cutProgress.current} / {cutProgress.total}</span>
+                </div>
+                <div className="w-full bg-[#2A2A30] rounded-full h-2.5 overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-300 ease-out" 
+                    style={{ width: `${(cutProgress.current / cutProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             )}
-          </button>
-          
+          </div>
         </div>
-      </div>
+      )}
+
+      {showVideoPopup && (
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#15151A] border border-[#2A2A30] p-6 rounded-xl shadow-2xl max-w-sm w-full text-center transform transition-all scale-100">
+             <Film className="w-14 h-14 text-yellow-500 mx-auto mb-4" />
+             <h3 className="text-xl font-bold text-white mb-2">Chưa tải Video gốc</h3>
+             <p className="text-gray-400 mb-6 text-sm leading-relaxed">Tải video lên để cắt!.</p>
+             <button 
+                onClick={() => setShowVideoPopup(false)} 
+                className="bg-yellow-600 hover:bg-yellow-500 text-white w-full py-2.5 rounded-lg font-bold transition-colors cursor-pointer"
+             >
+                Đã hiểu
+             </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
