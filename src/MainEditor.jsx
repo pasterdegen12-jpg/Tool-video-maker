@@ -200,14 +200,15 @@ Kịch bản: ${script}`);
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
         
-       await ffmpeg.exec([
-          '-ss', startSec.toString(),
-          '-use_wallclock_as_timestamps', '1',
+        await ffmpeg.exec([
+          '-ss', startSec.toString(), 
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
-          '-c', 'copy',                  // 🚀 Copy trực tiếp nguyên bản, bỏ qua bước render lại
-          '-map', '0',
-          '-avoid_negative_ts', 'make_zero',
+          '-c:v', 'libx264', 
+          '-preset', 'ultrafast', 
+          '-crf', '23',
+          '-tune', 'fastdecode', 
+          '-c:a', 'copy', 
           outputName
         ]);
 
