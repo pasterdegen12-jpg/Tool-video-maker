@@ -200,15 +200,14 @@ Kịch bản: ${script}`);
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
         
-        await ffmpeg.exec([
+       await ffmpeg.exec([
           '-ss', startSec.toString(), 
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
-          '-c:v', 'libx264', 
-          '-preset', 'ultrafast', 
-          '-crf', '23',
-          '-tune', 'fastdecode', 
-          '-c:a', 'copy', 
+          '-c', 'copy',                  // 🚀 Copy trực tiếp nguyên bản, bỏ qua bước render lại
+          '-avoid_negative_ts', 'make_zero', // 🔒 Cờ khóa đồng bộ: Ép hình và tiếng xuất phát đúng giây số 0
+          '-map', '0:v',                 // Lấy hình ảnh
+          '-map', '0:a?',                // Lấy âm thanh (dấu ? để không báo lỗi nếu video vô tình không có tiếng)
           outputName
         ]);
 
