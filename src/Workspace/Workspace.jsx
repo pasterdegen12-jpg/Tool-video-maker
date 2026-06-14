@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
-import { db, updateProjectProgress, CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET } from '../firebase.js';
+import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
 import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe } from 'lucide-react';
 
-import SetupTab from './SetupTab';
-import StoryboardTab from './StoryboardTab';
+import SetupTab from './SetupTab.jsx';
+import StoryboardTab from './StoryboardTab.jsx';
 
 export default function Workspace({ ffmpeg, isFfmpegReady }) { 
   const { projectId } = useParams(); 
@@ -52,7 +52,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
   const frameInputRef = useRef(null);
   const avatarInputRef = useRef(null);
   
-  // 🚀 Bổ sung Ref để SetupTab có thể bấm tải Voice nhân vật
   const charVoiceInputRef = useRef(null); 
   const activeUploadIdRef = useRef(null); 
 
@@ -118,14 +117,13 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, imageUrl: tempUrl } : c));
   };
 
-  // 🚀 Hàm hứng sự kiện tải Voice riêng cho nhân vật
   const handleCharVoiceUpload = (e) => {
     const file = e.target.files[0];
     const charId = activeUploadIdRef.current;
     if (!file || !charId) return;
     const tempUrl = URL.createObjectURL(file);
     setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, voiceUrl: tempUrl, voiceFileName: file.name } : c));
-    e.target.value = null; // reset
+    e.target.value = null; 
   };
 
   const handleDeleteScene = (scene_n) => {
@@ -149,6 +147,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
+  // 🚀 ĐÃ SỬA: Thay thế Cloudinary bằng Cloudflare R2
   const processMergeSingleScene = async (scene, volValue) => {
     const videoUrl = scene.videoUrl || scene.startFrameUrl;
     const aiAudioUrl = generatedAudios[scene.scene_n];
@@ -182,16 +181,34 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
 
         const outData = await ffmpeg.readFile(outName);
         const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
-        const formData = new FormData();
-        formData.append('file', outBlob);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        formData.append('resource_type', 'video');
-
+        
+        // BẮT ĐẦU UPLOAD LÊN R2
         try {
-          const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, { method: 'POST', body: formData });
-          const uploadDataRes = await uploadRes.json();
-          if (uploadDataRes.secure_url) finalUrl = uploadDataRes.secure_url;
-        } catch(err) { finalUrl = URL.createObjectURL(outBlob); }
+          const uniqueFileName = `project_${projectId}/merged_scene_${scene.scene_n}_${Date.now()}.mp4`;
+          const urlRes = await fetch('/api/get-upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: uniqueFileName, fileType: 'video/mp4' })
+          });
+          const { uploadUrl } = await urlRes.json();
+
+          if (uploadUrl) {
+            const uploadRes = await fetch(uploadUrl, {
+              method: 'PUT',
+              body: outBlob,
+              headers: { 'Content-Type': 'video/mp4' }
+            });
+            
+            if (uploadRes.ok) {
+              finalUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+            } else {
+              throw new Error("Lỗi đẩy lên R2");
+            }
+          }
+        } catch(err) { 
+          console.error("Lỗi upload R2 (Dùng tạm file Local):", err);
+          finalUrl = URL.createObjectURL(outBlob); 
+        }
         
         try { await ffmpeg.deleteFile(inVid); } catch(e){}
         try { await ffmpeg.deleteFile('image.jpg'); } catch(e){}
@@ -309,16 +326,37 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     } catch (error) { console.error(error); } finally { setMergingScenes(prev => ({ ...prev, [scene.scene_n]: false })); }
   };
 
+  // 🚀 ĐÃ SỬA: Thay thế Cloudinary bằng Cloudflare R2
   const handleVoiceUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     setVoiceCloneFile(file); setVoiceCloneUrl(URL.createObjectURL(file)); setIsTranscribing(true);
     try {
-      setVoiceCloneRefText("Đang tải lên Cloudinary..."); 
-      const formData = new FormData(); formData.append('file', file); formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); formData.append('resource_type', 'auto');
-      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, { method: 'POST', body: formData });
-      const uploadDataRes = await uploadRes.json();
-      const audioCloudUrl = uploadDataRes.secure_url; setVoiceCloneBase64(audioCloudUrl);
+      setVoiceCloneRefText("Đang tải lên Cloudflare R2..."); 
+      
+      const fileExt = file.name.split('.').pop() || 'mp3';
+      const uniqueFileName = `project_${projectId}/voice_clone_${Date.now()}.${fileExt}`;
+      const fileType = file.type || 'audio/mpeg';
+
+      // 1. Xin link R2
+      const urlRes = await fetch('/api/get-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: uniqueFileName, fileType: fileType })
+      });
+      const { uploadUrl } = await urlRes.json();
+      if (!uploadUrl) throw new Error("Không lấy được Link kết nối Cloudflare");
+
+      // 2. Upload âm thanh lên R2
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': fileType }
+      });
+      if (!uploadRes.ok) throw new Error("Upload Voice thất bại");
+
+      const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+      setVoiceCloneBase64(audioCloudUrl); // Tái sử dụng state cũ
 
       setVoiceCloneRefText("Đang nhận diện Text (Whisper)...");
       const response = await fetch("https://fal.run/fal-ai/whisper", { method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ audio_url: audioCloudUrl }) });
@@ -340,6 +378,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         }
       } else { embeddingUrl = cloneQueueData?.speaker_embedding?.url; }
       if (!embeddingUrl) throw new Error("Lỗi embedding file.");
+      
       setQwenEmbeddingUrl(embeddingUrl); setVoiceCloneRefText(refText || "Clone thành công!");
       await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: refText, qwenEmbeddingUrl: embeddingUrl });
     } catch (error) { console.error(error); setVoiceCloneRefText("Lỗi xử lý. Thử lại."); } finally { setIsTranscribing(false); }
@@ -352,14 +391,23 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     await updateProjectProgress(projectId, { voiceCloneBase64: null, voiceCloneRefText: "", qwenEmbeddingUrl: null });
   };
 
+  // 🚀 ĐÃ SỬA: Tối ưu tải Video từ R2 bằng Fetch Blob
   const forceDownloadVideo = async (url, filename) => { 
       try {
-        if (url.includes('cloudinary.com')) {
-          const downloadUrl = url.replace('/upload/', `/upload/fl_attachment:${filename.replace(/\.[^/.]+$/, "")}/`);
-          const a = document.createElement('a'); a.href = downloadUrl; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); return;
-        }
-        const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-      } catch (error) { console.error(error); }
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a'); 
+        a.href = blobUrl; 
+        a.download = filename; 
+        document.body.appendChild(a); 
+        a.click(); 
+        a.remove(); 
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000); 
+      } catch (error) { 
+        console.error("Lỗi khi ép tải, mở link trực tiếp:", error); 
+        window.open(url, '_blank');
+      }
   };
 
   const handleDownloadVideos = async () => { 
@@ -378,7 +426,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     }
   };
 
-  // 🚀 TÍNH TOÁN DATA STATS BANNER
   const totalScenes = parsedData.length;
   const totalVoice = filteredScenesForAudio.length;
   const parseToSeconds = (timeStr) => {
@@ -413,7 +460,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
 
       <input type="file" accept="image/*" ref={frameInputRef} className="hidden" onChange={handleStartFrameUpload} />
       <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
-      {/* 🚀 Input phụ trách Upload File Voice Nhân Vật riêng */}
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
       <div className="flex flex-col gap-6 w-full pb-20 px-4 xl:pl-[310px] xl:pr-[290px]">
@@ -437,7 +483,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           </div>
         </div>
 
-        {/* 🚀 BẢNG THỐNG KÊ (Khôi phục toàn bộ Data cũ) */}
         <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl p-6 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-30"></div>
           <div className="flex items-center gap-2 text-zinc-400 font-semibold text-xs uppercase tracking-widest mb-6"><LayoutDashboard size={14} /> Thống kê dự án</div>
@@ -461,7 +506,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
       <div className="fixed right-6 top-24 bottom-6 bg-[#121214] border border-[#2A2A30] rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex overflow-y-auto custom-scrollbar">
         <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm border-b border-[#2A2A30] pb-3"><Sliders size={16} className="text-purple-400" /> Bảng điều khiển</div>
         <div className="flex flex-col gap-2.5">
-          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"><Merge size={16} /> Batch Merge All</button>
+          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"><Merge size={16} /> Merge All</button>
           <button onClick={() => setIsExportModalOpen(true)} className="w-full h-10 bg-[#0A0A0C] border border-[#2A2A30] hover:border-white/20 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"><Download size={16} /> Export Output</button>
         </div>
         <div className="w-full h-[1px] bg-[#2A2A30] my-1"></div>
@@ -485,7 +530,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       </div>
 
-      {/* MODAL SỬA SCENE CHÍNH */}
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative">
@@ -521,7 +565,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* MODAL BATCH GEN AUDIO */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
@@ -560,7 +603,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* MODAL BATCH MERGE ALL */}
       {isMergeModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
@@ -603,7 +645,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
 
-      {/* MODAL EXPORT OUTPUT */}
       {isExportModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
@@ -647,7 +688,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
       
-      {/* MODAL GEN AUDIO LẺ VÀ ĐÓNG LUÔN */}
       {activeGenModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-md p-7 shadow-2xl relative">
@@ -667,7 +707,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
       
-      {/* MODAL XÁC NHẬN MERGE LẺ */}
       {activeMergeModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-sm p-7 shadow-2xl flex flex-col items-center relative">
