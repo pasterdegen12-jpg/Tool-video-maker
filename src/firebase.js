@@ -28,8 +28,8 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
-// 🚀 HÀM ĐÃ ĐƯỢC DỌN DẸP SẠCH LỖI VÀ TÍCH HỢP LƯU KỊCH BẢN
-export const autoSaveToFirebase = async (data, projectName, script, characters = []) => {
+// 🚀 ĐÃ SỬA DÒNG NÀY: Thêm tham số projectType = 'full-ai' vào cuối cùng
+export const autoSaveToFirebase = async (data, projectName, script, characters = [], projectType = 'full-ai') => {
   const projectId = "proj_" + Date.now();
   let uploadData = JSON.parse(JSON.stringify(data)); 
 
@@ -48,13 +48,13 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
         formData.append('resource_type', 'video');
         
-        // 🚀 ĐÃ SỬA TẠI ĐÂY: Nới lỏng thời gian chờ lên 10 phút (600000ms)
+        // Nới lỏng thời gian chờ lên 10 phút (600000ms)
         const uploadRes = await withTimeout(
           fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
             method: 'POST', body: formData
           }),
-          600000, // <--- 10 phút
-          `Cloudinary upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` // <--- Sửa lại text cảnh báo
+          600000, 
+          `Cloudinary upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` 
         );
         
         const uploadDataRes = await uploadRes.json();
@@ -83,7 +83,7 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
   const totalVoice = uploadData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
   const cost = totalVoice * 0.01;
 
-  // 🚀 ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO FIREBASE (Bao gồm cả Script)
+  // 🚀 ĐÓNG GÓI DỮ LIỆU ĐỂ LƯU VÀO FIREBASE
   const projectDoc = {
     id: projectId,
     projectName: projectName || "Dự án chưa đặt tên", 
@@ -93,7 +93,7 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
     data: uploadData,
     originalScript: script,
     characters: characters,
-    projectType: projectType || 'full-ai' // 🚀 THÊM DÒNG NÀY ĐỂ WORKSPACE NHẬN DIỆN ĐƯỢC
+    projectType: projectType // 🚀 Workspace sẽ đọc trường này để rẽ nhánh UI
   };
 
   // 🚀 LƯU VÀO FIREBASE
@@ -111,10 +111,9 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
   }
 };
 
-// 🚀 HÀM MỚI: Cập nhật tiến độ dự án (Lưu Audio, Video Output, Voice Clone)
+// 🚀 Cập nhật tiến độ dự án (Lưu Audio, Video Output, Voice Clone)
 export const updateProjectProgress = async (projectId, updates) => {
   try {
-    // { merge: true } giúp chỉ cập nhật những phần có thay đổi, giữ nguyên kịch bản cũ
     await setDoc(doc(db, "projects", projectId), updates, { merge: true });
     console.log(`✅ Đã lưu trữ tiến độ (Audio/Video/Voice) lên Firebase!`);
   } catch (error) {
