@@ -1,7 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 
-// Cấu hình Firebase Database (Lưu kịch bản)
+// ==========================================
+// CẤU HÌNH FIREBASE DATABASE (Lưu kịch bản)
+// ==========================================
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: "semicontent-e195b.firebaseapp.com",
@@ -13,12 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// ==========================================
-// CẤU HÌNH CLOUDINARY (Lưu file Video)
-// ==========================================
-export const CLOUDINARY_CLOUD_NAME = "djjvtqnjv"; 
-export const CLOUDINARY_UPLOAD_PRESET = "video-maker-upload"; 
-
 // 🚀 HÀM ÉP TIMEOUT: Bắt buộc dừng và văng lỗi nếu chạy quá lâu
 const withTimeout = (promise, ms, errorMessage) => {
   let timeoutId;
@@ -28,45 +24,64 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
-// 🚀 ĐÃ SỬA DÒNG NÀY: Thêm tham số projectType = 'full-ai' vào cuối cùng
+// ==========================================
+// HÀM LƯU DỰ ÁN & UPLOAD VIDEO LÊN CLOUDFLARE R2
+// ==========================================
 export const autoSaveToFirebase = async (data, projectName, script, characters = [], projectType = 'full-ai') => {
   const projectId = "proj_" + Date.now();
   let uploadData = JSON.parse(JSON.stringify(data)); 
 
-  console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudinary...`);
+  console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudflare R2...`);
   
-  // BẮN TOÀN BỘ VIDEO LÊN MÂY (ĐA LUỒNG)
+  // BẮN TOÀN BỘ VIDEO LÊN MÂY R2 (ĐA LUỒNG)
   const uploadPromises = uploadData.map(async (scene, i) => {
     if (scene.videoUrl && scene.videoUrl.startsWith('blob:')) {
       try {
-        console.log(`-> Đang tải Scene ${scene.scene_n} lên Cloudinary...`);
+        console.log(`-> Đang xin quyền tải Scene ${scene.scene_n}...`);
         const response = await fetch(scene.videoUrl);
         const blob = await response.blob();
         
-        const formData = new FormData();
-        formData.append('file', blob);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        formData.append('resource_type', 'video');
-        
-        // Nới lỏng thời gian chờ lên 10 phút (600000ms)
-        const uploadRes = await withTimeout(
-          fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
-            method: 'POST', body: formData
+        // 1. Tạo tên file độc nhất cho cảnh này
+        const uniqueFileName = `${projectId}/scene_${scene.scene_n}_${Date.now()}.mp4`;
+
+        // 2. Gọi Vercel API để xin Link Upload (dùng 1 lần)
+        const urlRes = await withTimeout(
+          fetch('/api/get-upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName: uniqueFileName, fileType: 'video/mp4' })
           }),
-          600000, 
-          `Cloudinary upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` 
+          15000, 
+          "Vercel API không phản hồi khi xin link upload"
         );
         
-        const uploadDataRes = await uploadRes.json();
-        if (uploadDataRes.secure_url) {
-           uploadData[i].videoUrl = uploadDataRes.secure_url;
+        const { uploadUrl } = await urlRes.json();
+        if (!uploadUrl) throw new Error("Server không cấp được Link Upload R2");
+
+        console.log(`-> Đang đẩy Scene ${scene.scene_n} thẳng lên Cloudflare R2...`);
+
+        // 3. Đẩy thẳng cục Video lên Cloudflare qua phương thức PUT
+        const uploadRes = await withTimeout(
+          fetch(uploadUrl, {
+            method: 'PUT', 
+            body: blob,
+            headers: { 'Content-Type': 'video/mp4' } 
+          }),
+          600000, // Cho phép tối đa 10 phút y như cũ
+          `Cloudflare upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` 
+        );
+        
+        if (uploadRes.ok) {
+           // 4. Ráp link Public VITE_R2_PUBLIC_URL với tên file để ra link xem trực tiếp
+           const finalVideoUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+           uploadData[i].videoUrl = finalVideoUrl;
            console.log(`✅ [THÀNH CÔNG] Đã upload xong Scene ${scene.scene_n}!`);
         } else {
-           throw new Error(JSON.stringify(uploadDataRes));
+           throw new Error(`Cloudflare trả về mã lỗi: ${uploadRes.status}`);
         }
       } catch (error) {
         console.error(`❌ [LỖI TẢI LÊN] Scene ${scene.scene_n}:`, error.message);
-        throw new Error(`Scene ${scene.scene_n} tải lên thất bại: ${error.message}`);
+        throw new Error(`Scene ${scene.scene_n} tải lên R2 thất bại: ${error.message}`);
       }
     }
   });
@@ -93,7 +108,7 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
     data: uploadData,
     originalScript: script,
     characters: characters,
-    projectType: projectType // 🚀 Workspace sẽ đọc trường này để rẽ nhánh UI
+    projectType: projectType 
   };
 
   // 🚀 LƯU VÀO FIREBASE
