@@ -201,13 +201,13 @@ Kịch bản: ${script}`);
         const duration = timeToSeconds(end) - startSec;
         
        await ffmpeg.exec([
-          '-ss', startSec.toString(), 
+          '-ss', startSec.toString(),
+          '-use_wallclock_as_timestamps', '1',
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
           '-c', 'copy',                  // 🚀 Copy trực tiếp nguyên bản, bỏ qua bước render lại
-          '-avoid_negative_ts', 'make_zero', // 🔒 Cờ khóa đồng bộ: Ép hình và tiếng xuất phát đúng giây số 0
-          '-map', '0:v',                 // Lấy hình ảnh
-          '-map', '0:a?',                // Lấy âm thanh (dấu ? để không báo lỗi nếu video vô tình không có tiếng)
+          '-map', '0',
+          '-avoid_negative_ts', 'make_zero',
           outputName
         ]);
 
