@@ -176,7 +176,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
           await ffmpeg.exec(['-loop', '1', '-i', 'image.jpg', '-i', inAud, '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-pix_fmt', 'yuv420p', outName]);
         } else {
-          // 🚀 BẢN VÁ: Dùng fetchFile để nạp video và audio thẳng vào RAM ảo thay vì phình to JS Heap
           await ffmpeg.writeFile(inVid, await fetchFile(videoUrl));
           await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
           let exitCode = -1;
@@ -450,7 +449,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
   return (
     <div className={`h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300 ${darkMode ? 'bg-[#09090B] text-gray-200' : 'bg-zinc-100 text-zinc-900'}`}>
       
-      {/* 🚀 CỘT TRÁI: KỊCH BẢN GỐC (FLOATING CARD) */}
+      {/* 🚀 CỘT TRÁI: KỊCH BẢN GỐC */}
       <div className={`fixed left-6 top-24 bottom-6 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex transition-all duration-300 border ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}><FileText size={16} className="text-blue-500" /> Kịch bản gốc</div>
@@ -459,7 +458,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         {(!originalScript || isEditingScript) ? (
           <div className="flex-1 flex flex-col gap-3 min-h-0 animate-in fade-in zoom-in-95 duration-200">
             <textarea value={originalScript} onChange={(e) => setOriginalScript(e.target.value)} placeholder="Paste kịch bản..." className={`flex-1 rounded-xl p-3.5 text-sm custom-scrollbar focus:outline-none focus:ring-2 focus:ring-blue-500/50 border transition-all resize-none ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-300' : 'bg-zinc-50 border-zinc-300 text-zinc-800'}`} />
-            <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className={`w-full h-10 font-bold text-sm rounded-xl cursor-pointer transition-all shadow-md ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}>Lưu kịch bản</button>
+            {/* 🚀 ĐÃ SỬA: Màu xanh dương */}
+            <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className={`w-full h-10 font-bold text-sm rounded-xl cursor-pointer transition-all shadow-md text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-500 hover:bg-blue-600'}`}>Lưu kịch bản</button>
           </div>
         ) : ( <div className={`flex-1 overflow-y-auto pr-2 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar animate-in fade-in duration-200 ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{originalScript}</div> )}
       </div>
@@ -468,7 +468,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
       <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
-      {/* 🚀 CỘT GIỮA: TRUNG TÂM LÀM VIỆC */}
+      {/* 🚀 CỘT GIỮA */}
       <div className="flex flex-col gap-6 w-full pb-20 px-0 xl:pl-[310px] xl:pr-[290px]">
         
         {/* Thanh Header & Tabs */}
@@ -476,7 +476,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           {isEditingProjectName ? (
             <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4">
               <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()} className={`border-b-2 border-blue-500 px-1 py-1.5 text-2xl font-bold focus:outline-none min-w-[300px] bg-transparent ${darkMode ? 'text-white' : 'text-black'}`} autoFocus />
-              <button onClick={handleSaveProjectName} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold shadow-md transition-colors cursor-pointer ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}><Save size={16} /> Lưu</button>
+              {/* 🚀 ĐÃ SỬA: Màu xanh dương */}
+              <button onClick={handleSaveProjectName} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold shadow-md transition-colors cursor-pointer ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-500 text-white hover:bg-blue-600'}`}><Save size={16} /> Lưu</button>
             </div>
           ) : (
             <div className="flex items-center gap-3 group">
@@ -493,7 +494,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           </div>
         </div>
 
-        {/* Bảng Thống kê (Stats Card) */}
+        {/* Bảng Thống kê */}
         <div className={`border rounded-2xl p-6 shadow-lg relative overflow-hidden transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30]' : 'bg-white border-zinc-200'}`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-40"></div>
           <div className={`flex items-center gap-2 font-semibold text-xs uppercase tracking-widest mb-6 ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}><LayoutDashboard size={14} /> Thống kê dự án</div>
@@ -515,10 +516,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         {activeTab === 'storyboard' && <StoryboardTab parsedData={parsedData} generatedAudios={generatedAudios} isGenerating={isGenerating} mergingScenes={mergingScenes} mergedVideos={mergedVideos} setActiveEditSceneModal={setActiveEditSceneModal} frameInputRef={frameInputRef} activeUploadIdRef={activeUploadIdRef} setActiveGenModal={setActiveGenModal} handleDeleteScene={handleDeleteScene} globalMixVol={globalMixVol} setSingleMixVol={setSingleMixVol} setActiveMergeModal={setActiveMergeModal} forceDownloadVideo={forceDownloadVideo} projectType={projectType} darkMode={darkMode} />}
       </div>
 
-      {/* 🚀 CỘT PHẢI: BẢNG ĐIỀU KHIỂN (FLOATING CARD) */}
+      {/* 🚀 CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}
       <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         
-        {/* Header Bảng Điều Khiển + Nút Chuyển Mode */}
         <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-black'}`}>
             <Sliders size={16} className="text-purple-500" /> Bảng điều khiển
@@ -533,17 +533,20 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
         
         <div className="flex flex-col gap-3">
-          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer"><Merge size={16} /> Merge Toàn bộ</button>
+          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer"><Merge size={16} /> Merge All</button>
         </div>
         
         <div className={`w-full h-[1px] my-1 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}><Music size={16} /> Batch Gen Audio</button>
+        {/* 🚀 ĐÃ SỬA: Nút Gen Audio đổi sang Gradient Tím hồng */}
+        <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
+          <Music size={16} /> Gen All Audio
+        </button>
         
         {/* Khu vực Upload Voice Clone */}
         <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
           <div className={`text-[12px] font-bold flex justify-between items-center ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>
-            Global Voice Clone 
+            Voice Clone 
             {voiceCloneFile && (<button onClick={handleRemoveVoice} className="text-red-500 hover:text-red-400 bg-red-500/10 p-1.5 rounded cursor-pointer transition-colors"><Trash2 size={14} /></button>)}
           </div>
           <input type="file" accept="audio/mp3,audio/wav" ref={fileInputRef} onChange={handleVoiceUpload} className="hidden" />
@@ -562,7 +565,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
 
         <div className="flex-1"></div>
-        <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 border rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-white hover:border-white/30 hover:bg-white/5' : 'bg-zinc-50 border-zinc-300 text-zinc-900 hover:border-zinc-400 hover:bg-zinc-100'}`}><Download size={16} /> Xuất File (Export)</button>
+        {/* 🚀 ĐÃ SỬA: Nút Xuất File đổi sang Tone Xanh lá dịu mắt */}
+        <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
+          <Download size={16} /> Xuất File (Export)
+        </button>
       </div>
 
       {/* 🚀 MODAL: SỬA SCENE */}
@@ -622,10 +628,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
             <button onClick={() => setIsModalOpen(false)} className={`absolute top-4 right-4 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
             <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Music className="text-blue-500"/> Batch Gen Audio</h2>
+              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Music className="text-purple-500"/> Batch Gen Audio</h2>
             </div>
             <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
-              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer transition-colors border border-blue-500/20">Chọn tất cả</button>
+              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white rounded-lg cursor-pointer transition-colors border border-purple-500/20">Chọn tất cả</button>
               <button onClick={() => setCheckedScenes({})} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
@@ -634,8 +640,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
                     <div className={`text-center py-10 text-sm ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>Không có cảnh nào chứa lời thoại.</div>
                 ) : (
                     filteredScenesForAudio.map((scene) => (
-                      <div key={scene.scene_n} onClick={() => setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b cursor-pointer transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${checkedScenes[scene.scene_n] ? (darkMode ? 'bg-blue-900/20' : 'bg-blue-50') : (darkMode ? 'hover:bg-white/5' : 'hover:bg-zinc-50')}`}>
-                        <div className="mt-1 shrink-0">{checkedScenes[scene.scene_n] ? <CheckSquare className="text-blue-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
+                      <div key={scene.scene_n} onClick={() => setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b cursor-pointer transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${checkedScenes[scene.scene_n] ? (darkMode ? 'bg-purple-900/20' : 'bg-purple-50') : (darkMode ? 'hover:bg-white/5' : 'hover:bg-zinc-50')}`}>
+                        <div className="mt-1 shrink-0">{checkedScenes[scene.scene_n] ? <CheckSquare className="text-purple-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                         <div className="flex-1 min-w-0 text-sm space-y-1.5">
                           <div className="flex items-center gap-2">
                             <span className={`font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>Scene {scene.scene_n}</span>
@@ -649,7 +655,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
               </div>
             </div>
             <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <button onClick={handleStartBatchGen} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex justify-center items-center gap-2"><Mic size={18}/> Bắt đầu Gen Audio</button>
+              <button onClick={handleStartBatchGen} className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex justify-center items-center gap-2"><Mic size={18}/> Bắt đầu Gen Audio</button>
             </div>
           </div>
         </div>
@@ -661,17 +667,17 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
             <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
             <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Merge className="text-purple-500"/> Batch Merge Video</h2>
+              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Merge className="text-blue-500"/> Batch Merge Video</h2>
             </div>
             <div className={`px-6 py-5 border-b ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
               <div className="flex justify-between items-center mb-3">
                 <span className={`font-semibold text-sm ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>Âm lượng video gốc (Mix)</span>
-                <span className="text-purple-600 font-mono font-bold bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20">{(globalMixVol / 100).toFixed(2)}</span>
+                <span className="text-blue-600 font-mono font-bold bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20">{(globalMixVol / 100).toFixed(2)}</span>
               </div>
-              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-purple-500 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
+              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-500 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
             </div>
             <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
-              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white rounded-lg cursor-pointer border border-purple-500/20 transition-colors">Chọn tất cả (có Video/Ảnh)</button>
+              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer border border-blue-500/20 transition-colors">Chọn tất cả (có Video/Ảnh)</button>
               <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
@@ -680,11 +686,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
                   const isEligible = (scene.videoUrl || scene.startFrameUrl);
                   const isChecked = !!checkedMergeScenes[scene.scene_n];
                   return (
-                    <div key={scene.scene_n} onClick={() => !isMerging && isEligible && setCheckedMergeScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${!isEligible ? (darkMode ? 'opacity-50 cursor-not-allowed bg-black/20' : 'opacity-50 cursor-not-allowed bg-zinc-100') : (isChecked ? (darkMode ? 'bg-purple-500/10' : 'bg-purple-50') : (darkMode ? 'hover:bg-white/5 cursor-pointer' : 'hover:bg-zinc-50 cursor-pointer'))} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      <div className="shrink-0">{isChecked ? <CheckSquare className="text-purple-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
+                    <div key={scene.scene_n} onClick={() => !isMerging && isEligible && setCheckedMergeScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${!isEligible ? (darkMode ? 'opacity-50 cursor-not-allowed bg-black/20' : 'opacity-50 cursor-not-allowed bg-zinc-100') : (isChecked ? (darkMode ? 'bg-blue-500/10' : 'bg-blue-50') : (darkMode ? 'hover:bg-white/5 cursor-pointer' : 'hover:bg-zinc-50 cursor-pointer'))} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <div className="shrink-0">{isChecked ? <CheckSquare className="text-blue-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                       <div className="flex-1 min-w-0 text-sm">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`font-bold ${isChecked ? 'text-purple-600' : (darkMode ? 'text-zinc-200' : 'text-zinc-900')}`}>Scene {scene.scene_n}</span>
+                          <span className={`font-bold ${isChecked ? 'text-blue-600' : (darkMode ? 'text-zinc-200' : 'text-zinc-900')}`}>Scene {scene.scene_n}</span>
                           {!isEligible && <span className="text-[10px] font-bold text-red-600 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Thiếu Input</span>}
                         </div>
                         <div className={`text-xs ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>{generatedAudios[scene.scene_n] ? 'Âm thanh: Có AI Audio + Nhạc nền' : 'Âm thanh: Chỉ lấy âm thanh Video gốc'}</div>
@@ -695,7 +701,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
               </div>
             </div>
             <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <button onClick={handleStartMerge} disabled={isMerging || Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]).length === 0} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all">
+              <button onClick={handleStartMerge} disabled={isMerging || Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]).length === 0} className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all">
                 {isMerging ? <Loader2 size={18} className="animate-spin" /> : <Merge size={18} />} {isMerging ? 'Đang xử lý...' : `Bắt đầu Merge Video`}
               </button>
             </div>
@@ -752,7 +758,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-md p-7 shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
             <button onClick={() => setActiveGenModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20} /></button>
-            <h3 className={`text-lg font-bold border-b pb-4 flex items-center gap-2 ${darkMode ? 'text-zinc-100 border-white/10' : 'text-black border-zinc-200'}`}><Mic size={20} className="text-blue-500" /> Audio - Scene {activeGenModal.scene_n}</h3>
+            <h3 className={`text-lg font-bold border-b pb-4 flex items-center gap-2 ${darkMode ? 'text-zinc-100 border-white/10' : 'text-black border-zinc-200'}`}><Mic size={20} className="text-purple-500" /> Audio - Scene {activeGenModal.scene_n}</h3>
             <div className="mt-6 space-y-5">
               <div className={`border rounded-xl p-5 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
                 <div className={`font-semibold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}><AlignLeft size={14} /> {isSemi ? 'Voiceover' : 'Dialogue'}</div>
@@ -761,7 +767,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
             </div>
             <div className={`flex justify-end gap-3 pt-5 mt-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
               <button onClick={() => setActiveGenModal(null)} className={`h-10 px-6 rounded-xl font-medium cursor-pointer transition-colors ${darkMode ? 'bg-transparent hover:bg-white/5 text-zinc-300' : 'bg-transparent hover:bg-zinc-100 text-zinc-700'}`}>Hủy bỏ</button>
-              <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
+              <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded }) {
     if (!script) return alert("Vui lòng nhập kịch bản!");
     
     setIsLocked(true);
-    setLoadingStatus('Đang bóc tách kịch bản Full AI...');
+    setLoadingStatus('Đang bóc tách kịch bản GEN AI...');
     
     try {
       const parsedData = await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
@@ -193,6 +193,11 @@ Kịch bản: ${script}`);
       
       setCutProgress({ current: 0, total: validScenes.length });
 
+      // 🚀 TÍNH TOÁN LÕI CPU CỦA MÁY NGƯỜI DÙNG
+      const userCores = navigator.hardwareConcurrency || 4;
+      // Dành khoảng 80% sức mạnh CPU cho FFmpeg, giữ lại 1-2 lõi để tab trình duyệt không bị đơ giật
+      const threadsToUse = Math.max(1, Math.floor(userCores * 0.8));
+
       for (let i = 0; i < updatedScenes.length; i++) {
         const scene = updatedScenes[i];
         if(!scene.time_origin || !scene.time_origin.includes('-')) continue;
@@ -211,10 +216,12 @@ Kịch bản: ${script}`);
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
         
+        // 🚀 ĐƯA BIẾN THREADS VÀO LỆNH THỰC THI CỦA FFMPEG
         await ffmpeg.exec([
           '-ss', startSec.toString(), 
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
+          '-threads', threadsToUse.toString(), // <-- ÉP CHẠY ĐA LUỒNG TẠI ĐÂY
           '-c:v', 'libx264', 
           '-preset', 'ultrafast', 
           '-crf', '23',
@@ -313,14 +320,14 @@ Kịch bản: ${script}`);
               value={script} 
               onChange={(e) => setScript(e.target.value)} 
               className={`w-full h-[280px] border rounded-xl p-5 text-[15px] placeholder:text-zinc-500 focus:outline-none transition-all resize-none custom-scrollbar shadow-inner ${darkMode ? 'bg-[#09090B] border-white/10 text-zinc-300 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10' : 'bg-zinc-50 border-zinc-300 text-zinc-800 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10'}`} 
-              placeholder="Dán kịch bản chi tiết của bạn vào đây..."
+              placeholder="Dán kịch bản chi tiết vào đây..."
             ></textarea>
           </div>
 
           <div className="flex flex-col justify-between gap-6">
             <div className="flex flex-col gap-3">
               <label className={`text-sm font-bold flex items-center gap-2 ${darkMode ? 'text-zinc-200' : 'text-zinc-700'}`}>
-                <Film size={18} className="text-purple-400"/> Nguồn Video <span className="text-zinc-500 font-normal ml-1">(Chỉ dành cho Semi-Mode)</span>
+                <Film size={18} className="text-purple-400"/> Nguồn Video <span className="text-zinc-500 font-normal ml-1">(Chỉ dành cho Semi-Content)</span>
               </label>
               <input type="file" accept="video/mp4" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
               <div 
@@ -342,7 +349,7 @@ Kịch bản: ${script}`);
                     <div className={`p-3 rounded-full transition-colors ${darkMode ? 'bg-white/5 group-hover:bg-purple-500/10' : 'bg-zinc-200/60 group-hover:bg-purple-100'}`}>
                       <Upload size={24} />
                     </div>
-                    <span className="text-sm font-medium">Bấm để tải video gốc lên</span>
+                    <span className="text-sm font-medium">Bấm để tải video gốc lên (Max 500Mb)</span>
                   </div>
                 )}
               </div>
@@ -368,7 +375,7 @@ Kịch bản: ${script}`);
                 className={`${buttonBaseClass} ${darkMode ? 'hover:shadow-blue-500/5 hover:border-blue-500/30' : 'hover:border-blue-500/60 hover:bg-blue-50/10'}`}
               >
                 <Wand2 size={20} className="relative z-10 text-blue-500 group-hover:rotate-12 transition-transform duration-300" /> 
-                <span className="relative z-10 tracking-wide">TẠO VIDEO (FULL AI)</span>
+                <span className="relative z-10 tracking-wide">TẠO VIDEO (GEN AI)</span>
               </button>
             </div>
           </div>

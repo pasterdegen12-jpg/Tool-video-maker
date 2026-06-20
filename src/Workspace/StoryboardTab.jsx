@@ -76,12 +76,12 @@ export default function StoryboardTab({
             <div className="flex-1 flex flex-col min-w-0">
               <div className="flex justify-between items-start mb-5">
                 <div className="flex items-center gap-3 text-[12px]">
-                  {/* 🚀 BỎ TONE KHỎI TRÊN CÙNG */}
                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-sm font-medium border ${darkMode ? 'bg-white/5 border-white/5 text-zinc-300' : 'bg-zinc-100 border-zinc-200 text-zinc-700'}`}>
                     <Clock size={14} className="text-zinc-500"/> {scene.time_origin || scene.Time || "00:00"}
                   </div>
                 </div>
-                <button onClick={() => setActiveEditSceneModal({...scene})} className={`text-[12px] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer px-3 py-1.5 rounded-lg border shadow-sm ${darkMode ? 'text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 border-white/5' : 'text-zinc-600 hover:text-zinc-900 bg-white hover:bg-zinc-100 border-zinc-200'}`}>
+                {/* 🚀 ĐÃ SỬA: Làm chìm nút Sửa Scene, chỉ nổi lên khi hover */}
+                <button onClick={() => setActiveEditSceneModal({...scene})} className={`text-[12px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer px-3 py-1.5 rounded-lg border ${darkMode ? 'text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white' : 'text-zinc-500 border-zinc-200 hover:bg-zinc-100 hover:text-zinc-900'}`}>
                   <Pencil size={14}/> Sửa Scene
                 </button>
               </div>
@@ -130,14 +130,12 @@ export default function StoryboardTab({
                         </div>
                     </div>
 
-                    {/* 🚀 ĐÃ ĐƯA TONE XUỐNG DƯỚI DIALOGUE */}
                     <div className="flex flex-col gap-2">
                       <span className={`font-bold text-[11px] uppercase tracking-widest flex items-center gap-1.5 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}><AlignLeft size={14} /> Dialogue</span>
                       <div className={`border p-4 rounded-xl shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
                         <p className={`leading-relaxed text-[15px] font-medium ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}>{scene.Dialogue || scene.Voiceover || "N/A"}</p>
                       </div>
                       
-                      {/* TONE HIỂN THỊ Ở ĐÂY */}
                       <div className={`mt-1 flex items-center gap-1.5 text-[13px] font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
                         <Mic size={14} /> Tone giọng: <span className={darkMode ? 'text-zinc-300 font-normal' : 'text-zinc-700 font-normal'}>{scene.Tone_of_Voice || "Tự nhiên"}</span>
                       </div>
@@ -160,35 +158,56 @@ export default function StoryboardTab({
                 </div>
               )}
 
-              {/* DÀN NÚT BẤM */}
+              {/* DÀN NÚT BẤM DƯỚI CÙNG */}
               <div className={`flex flex-wrap items-center gap-3 pt-6 mt-6 border-t shrink-0 ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-200'}`}>
                 
                 {!isSemi ? (
                   <>
-                    <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-sm ${darkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/5' : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-300'}`}>
+                    <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                         <ImageIcon size={14} /> Tải Nền
                     </button>
-                    <button onClick={() => alert("Tính năng Gen Video AI đang phát triển")} className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${darkMode ? 'bg-green-600/20 hover:bg-green-600 border-green-500/30 text-green-400 hover:text-white' : 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700'}`}>
+                    <button onClick={() => alert("Tính năng Gen Video AI đang phát triển")} className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}>
                         <Film size={14} /> Gen Video (AI)
                     </button>
                   </>
                 ) : (
-                  <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-sm ${darkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/5' : 'bg-white hover:bg-zinc-100 text-zinc-700 border-zinc-300'}`}>
+                  <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                       <ImageIcon size={14} /> Tải Ảnh Nền
                   </button>
                 )}
 
-                <button onClick={() => setActiveGenModal({ scene_n: scene.scene_n, textToGen: isSemi ? scene.Voiceover : (scene.Dialogue || scene.Voiceover) })} disabled={isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover)} className={`h-9 px-5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 shadow-sm border ${isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover) ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border-[#2A2A30] cursor-not-allowed' : 'bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed') : (darkMode ? 'bg-white text-black hover:bg-zinc-200 border-transparent' : 'bg-zinc-900 text-white hover:bg-zinc-800 border-transparent')}`}>
+                <button 
+                  onClick={() => setActiveGenModal({ scene_n: scene.scene_n, textToGen: isSemi ? scene.Voiceover : (scene.Dialogue || scene.Voiceover) })} 
+                  disabled={isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover)} 
+                  className={`h-9 px-5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer shrink-0 shadow-md ${
+                    isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover) 
+                      ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border border-[#2A2A30] cursor-not-allowed shadow-none' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none') 
+                      : (darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 border-transparent hover:shadow-purple-500/25' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 border-transparent hover:shadow-purple-500/25')
+                  }`}
+                >
                   {isLoadingAudio ? <Loader2 size={16} className="animate-spin" /> : <Mic size={16} />} Gen Audio
                 </button>
 
-                <button onClick={() => { setSingleMixVol(globalMixVol); setActiveMergeModal(scene); }} disabled={isMergingThisScene || (!scene.videoUrl && !scene.startFrameUrl)} className={`h-9 px-5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 shadow-md border ${isMergingThisScene || (!scene.videoUrl && !scene.startFrameUrl) ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border-[#2A2A30] cursor-not-allowed' : 'bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed') : 'bg-blue-600 hover:bg-blue-500 text-white border-transparent'}`}>
+                <button 
+                  onClick={() => { setSingleMixVol(globalMixVol); setActiveMergeModal(scene); }} 
+                  disabled={isMergingThisScene || (!scene.videoUrl && !scene.startFrameUrl)} 
+                  className={`h-9 px-5 rounded-lg text-sm font-bold flex items-center gap-2 transition-all duration-300 cursor-pointer shrink-0 shadow-md ${
+                    isMergingThisScene || (!scene.videoUrl && !scene.startFrameUrl) 
+                      ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border border-[#2A2A30] cursor-not-allowed shadow-none' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none') 
+                      : (darkMode ? 'text-white bg-gradient-to-r from-blue-700/80 to-indigo-700/80 hover:from-blue-600 hover:to-indigo-600 border-transparent hover:shadow-blue-500/25' : 'text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 border-transparent hover:shadow-blue-500/25')
+                  }`}
+                >
                   {isMergingThisScene ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} Merge Video
                 </button>
                 
                 <div className="flex-1"></div>
                 
-                <button onClick={() => handleDeleteScene(scene.scene_n)} className={`h-9 w-9 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${darkMode ? 'text-zinc-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border-transparent hover:border-red-500/20' : 'text-zinc-500 hover:text-red-600 bg-white hover:bg-red-50 border-zinc-200 hover:border-red-200 shadow-sm'}`} title="Xóa Cảnh">
+                {/* 🚀 ĐÃ SỬA: Nút xóa trở nên hiền hòa, chỉ đỏ lên khi hover */}
+                <button 
+                  onClick={() => handleDeleteScene(scene.scene_n)} 
+                  className={`h-9 w-9 flex items-center justify-center rounded-lg border transition-all duration-300 cursor-pointer ${darkMode ? 'border-transparent text-zinc-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20' : 'border-transparent text-zinc-400 hover:bg-red-50 hover:text-red-600 hover:border-red-200'}`} 
+                  title="Xóa Cảnh"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>
