@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import MainEditor from './MainEditor';
-import Workspace from './Workspace';
+// 🚀 ĐÃ SỬA LẠI ĐƯỜNG DẪN IMPORT CHUẨN XÁC
+import Workspace from './Workspace/Workspace';
 import HistoryModel from './HistoryModel';
 import { LayoutTemplate, PlaySquare, History, Loader2, Sun, Moon } from 'lucide-react';
 import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/clerk-react";
@@ -59,7 +60,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <h1 className="font-bold text-xl tracking-wide bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">AI Video Maker</h1>
             {!isFfmpegLoaded ? (
-              <span className="flex items-center gap-1 text-[10px] text-yellow-600 bg-yellow-500/10 px-2 py-1 rounded-full"><Loader2 size={12} className="animate-spin" /> Đang nạp lõi Video...</span>
+              <span className="flex items-center gap-1 text-[10px] text-yellow-600 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20"><Loader2 size={12} className="animate-spin" /> Đang nạp lõi Video...</span>
             ) : (
               <span className="text-[10px] text-green-600 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">Sẵn sàng</span>
             )}
@@ -100,7 +101,6 @@ export default function App() {
 
         <div className="flex-1 overflow-hidden relative">
           <Routes>
-            {/* TRUYỀN PROPS DARKMODE XUỐNG CÁC TRANG CON */}
             <Route path="/" element={<MainEditor ffmpeg={ffmpegRef.current} isFfmpegLoaded={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
             <Route path="/history" element={<HistoryModel darkMode={darkMode} />} />
             <Route path="/project/:projectId" element={<Workspace ffmpeg={ffmpegRef.current} isFfmpegReady={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
