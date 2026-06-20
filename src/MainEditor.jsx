@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { autoSaveToFirebase } from './firebase.js'; 
 
-export default function MainEditor({ ffmpeg, isFfmpegLoaded }) { 
+export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMode }) { 
   const navigate = useNavigate(); 
 
   const [script, setScript] = useState('');
@@ -15,16 +15,6 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded }) {
   const [loadingStatus, setLoadingStatus] = useState('');
   const [cutProgress, setCutProgress] = useState({ current: 0, total: 0 });
   const [showVideoPopup, setShowVideoPopup] = useState(false);
-  
-  // 🚀 ĐỒNG BỘ TRẠNG THÁI BẰNG LOCALSTORAGE CHO CẢ MAIN VÀ WORKSPACE
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('app-theme');
-    return savedTheme ? savedTheme === 'dark' : true;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('app-theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
 
   const fileInputRef = useRef(null);
   const blobUrlsRef = useRef([]);

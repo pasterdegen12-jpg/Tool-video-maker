@@ -8,7 +8,7 @@ import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSqua
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
 
-export default function Workspace({ ffmpeg, isFfmpegReady }) { 
+export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode }) { 
   const { projectId } = useParams(); 
   const location = useLocation();
 
@@ -16,16 +16,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
   const [projectName, setProjectName] = useState("Dự án chưa đặt tên");
   const [projectType, setProjectType] = useState("full-ai"); 
   const [isEditingProjectName, setIsEditingProjectName] = useState(false);
-  
-  // 🚀 LƯU TRẠNG THÁI GLOBAL BẰNG LOCALSTORAGE
-  const [darkMode, setDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('app-theme');
-    return savedTheme ? savedTheme === 'dark' : true;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('app-theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
 
   const [parsedData, setParsedData] = useState([]); 
   const [projectCharacters, setProjectCharacters] = useState([]); 
