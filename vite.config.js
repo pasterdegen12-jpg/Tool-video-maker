@@ -7,12 +7,19 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  // BẢO VỆ FFMPEG: Cấm Vite can thiệp làm hỏng cấu trúc file
   optimizeDeps: {
     exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
   },
-  // BẢO MẬT TRÌNH DUYỆT - Đã sửa chính tả
   server: {
+    host: true, 
+    port: process.env.PORT ? parseInt(process.env.PORT) : 5173,
+    
+    // 🚀 BỔ SUNG KHỐI NÀY ĐỂ FIX LỖI WEBSOCKET
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+    },
+    
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",

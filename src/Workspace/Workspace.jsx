@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
-import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe } from 'lucide-react';
+import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon } from 'lucide-react';
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
@@ -17,6 +17,16 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
   const [projectType, setProjectType] = useState("full-ai"); 
   const [isEditingProjectName, setIsEditingProjectName] = useState(false);
   
+  // 🚀 LƯU TRẠNG THÁI GLOBAL BẰNG LOCALSTORAGE
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('app-theme');
+    return savedTheme ? savedTheme === 'dark' : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   const [parsedData, setParsedData] = useState([]); 
   const [projectCharacters, setProjectCharacters] = useState([]); 
   const [originalScript, setOriginalScript] = useState(""); 
@@ -147,7 +157,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
-  // 🚀 ĐÃ SỬA: Thay thế Cloudinary bằng Cloudflare R2
   const processMergeSingleScene = async (scene, volValue) => {
     const videoUrl = scene.videoUrl || scene.startFrameUrl;
     const aiAudioUrl = generatedAudios[scene.scene_n];
@@ -167,8 +176,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
           await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
           await ffmpeg.exec(['-loop', '1', '-i', 'image.jpg', '-i', inAud, '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-pix_fmt', 'yuv420p', outName]);
         } else {
-          await ffmpeg.writeFile(inVid, new Uint8Array(await (await fetch(videoUrl)).arrayBuffer()));
-          await ffmpeg.writeFile(inAud, new Uint8Array(await (await fetch(aiAudioUrl)).arrayBuffer()));
+          // 🚀 BẢN VÁ: Dùng fetchFile để nạp video và audio thẳng vào RAM ảo thay vì phình to JS Heap
+          await ffmpeg.writeFile(inVid, await fetchFile(videoUrl));
+          await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
           let exitCode = -1;
           if (volValue == 0) {
             try { exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]); } catch (e) { exitCode = 1; }
@@ -182,7 +192,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         const outData = await ffmpeg.readFile(outName);
         const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
         
-        // BẮT ĐẦU UPLOAD LÊN R2
         try {
           const uniqueFileName = `project_${projectId}/merged_scene_${scene.scene_n}_${Date.now()}.mp4`;
           const urlRes = await fetch('/api/get-upload-url', {
@@ -326,7 +335,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     } catch (error) { console.error(error); } finally { setMergingScenes(prev => ({ ...prev, [scene.scene_n]: false })); }
   };
 
-  // 🚀 ĐÃ SỬA: Thay thế Cloudinary bằng Cloudflare R2
   const handleVoiceUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -338,7 +346,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
       const uniqueFileName = `project_${projectId}/voice_clone_${Date.now()}.${fileExt}`;
       const fileType = file.type || 'audio/mpeg';
 
-      // 1. Xin link R2
       const urlRes = await fetch('/api/get-upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -347,7 +354,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
       const { uploadUrl } = await urlRes.json();
       if (!uploadUrl) throw new Error("Không lấy được Link kết nối Cloudflare");
 
-      // 2. Upload âm thanh lên R2
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         body: file,
@@ -356,7 +362,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
       if (!uploadRes.ok) throw new Error("Upload Voice thất bại");
 
       const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
-      setVoiceCloneBase64(audioCloudUrl); // Tái sử dụng state cũ
+      setVoiceCloneBase64(audioCloudUrl); 
 
       setVoiceCloneRefText("Đang nhận diện Text (Whisper)...");
       const response = await fetch("https://fal.run/fal-ai/whisper", { method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ audio_url: audioCloudUrl }) });
@@ -391,7 +397,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
     await updateProjectProgress(projectId, { voiceCloneBase64: null, voiceCloneRefText: "", qwenEmbeddingUrl: null });
   };
 
-  // 🚀 ĐÃ SỬA: Tối ưu tải Video từ R2 bằng Fetch Blob
   const forceDownloadVideo = async (url, filename) => { 
       try {
         const response = await fetch(url);
@@ -440,181 +445,234 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
   const avgDuration = `${Math.floor(avgSeconds / 60).toString().padStart(2, '0')}:${(avgSeconds % 60).toString().padStart(2, '0')}`;
   const estCost = `$${(totalVoice * 0.09).toFixed(2)}`;
 
-  if (isDataLoading) return <div className="flex h-screen items-center justify-center bg-[#0E0E10] text-blue-400 font-bold"><Loader2 className="animate-spin mr-2"/> Đang tải Workspace...</div>;
+  if (isDataLoading) return <div className="flex h-screen items-center justify-center bg-[#09090B] text-blue-500 font-bold"><Loader2 className="animate-spin mr-2"/> Đang tải Workspace...</div>;
 
   return (
-    <div className="h-screen w-full bg-[#09090B] font-sans text-gray-200 p-4 lg:p-6 overflow-y-auto relative custom-scrollbar">
+    <div className={`h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300 ${darkMode ? 'bg-[#09090B] text-gray-200' : 'bg-zinc-100 text-zinc-900'}`}>
       
-      <div className="fixed left-6 top-24 bottom-6 bg-[#121214] border border-[#2A2A30] rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex">
-        <div className="flex items-center justify-between border-b border-[#2A2A30] pb-3 shrink-0">
-          <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm"><FileText size={16} className="text-blue-400" /> Kịch bản gốc</div>
-          {originalScript && !isEditingScript && <button onClick={() => setIsEditingScript(true)} className="text-zinc-500 hover:text-blue-400 text-xs font-medium cursor-pointer">Chỉnh sửa</button>}
+      {/* 🚀 CỘT TRÁI: KỊCH BẢN GỐC (FLOATING CARD) */}
+      <div className={`fixed left-6 top-24 bottom-6 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex transition-all duration-300 border ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+        <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+          <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}><FileText size={16} className="text-blue-500" /> Kịch bản gốc</div>
+          {originalScript && !isEditingScript && <button onClick={() => setIsEditingScript(true)} className="text-zinc-500 hover:text-blue-500 text-xs font-medium cursor-pointer transition-colors">Chỉnh sửa</button>}
         </div>
         {(!originalScript || isEditingScript) ? (
-          <div className="flex-1 flex flex-col gap-3 min-h-0">
-            <textarea value={originalScript} onChange={(e) => setOriginalScript(e.target.value)} placeholder="Paste kịch bản..." className="flex-1 bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3.5 text-sm custom-scrollbar focus:outline-none focus:border-blue-500" />
-            <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className="w-full h-10 bg-white text-black hover:bg-zinc-200 font-bold text-sm rounded-xl cursor-pointer">Lưu kịch bản</button>
+          <div className="flex-1 flex flex-col gap-3 min-h-0 animate-in fade-in zoom-in-95 duration-200">
+            <textarea value={originalScript} onChange={(e) => setOriginalScript(e.target.value)} placeholder="Paste kịch bản..." className={`flex-1 rounded-xl p-3.5 text-sm custom-scrollbar focus:outline-none focus:ring-2 focus:ring-blue-500/50 border transition-all resize-none ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-300' : 'bg-zinc-50 border-zinc-300 text-zinc-800'}`} />
+            <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className={`w-full h-10 font-bold text-sm rounded-xl cursor-pointer transition-all shadow-md ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}>Lưu kịch bản</button>
           </div>
-        ) : ( <div className="flex-1 overflow-y-auto pr-2 text-zinc-400 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar">{originalScript}</div> )}
+        ) : ( <div className={`flex-1 overflow-y-auto pr-2 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar animate-in fade-in duration-200 ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{originalScript}</div> )}
       </div>
 
       <input type="file" accept="image/*" ref={frameInputRef} className="hidden" onChange={handleStartFrameUpload} />
       <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
-      <div className="flex flex-col gap-6 w-full pb-20 px-4 xl:pl-[310px] xl:pr-[290px]">
-        <div className="flex items-center justify-between pb-2 border-b border-[#2A2A30]">
+      {/* 🚀 CỘT GIỮA: TRUNG TÂM LÀM VIỆC */}
+      <div className="flex flex-col gap-6 w-full pb-20 px-0 xl:pl-[310px] xl:pr-[290px]">
+        
+        {/* Thanh Header & Tabs */}
+        <div className={`flex items-center justify-between pb-3 border-b pt-2 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           {isEditingProjectName ? (
-            <div className="flex items-center gap-3">
-              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()} className="bg-transparent border-b-2 border-blue-500 px-1 py-1.5 text-2xl font-bold text-white focus:outline-none min-w-[300px]" autoFocus />
-              <button onClick={handleSaveProjectName} className="flex items-center gap-1.5 text-sm bg-white hover:bg-zinc-200 text-black px-4 py-2 rounded-lg font-bold"><Save size={16} /> Lưu</button>
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4">
+              <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()} className={`border-b-2 border-blue-500 px-1 py-1.5 text-2xl font-bold focus:outline-none min-w-[300px] bg-transparent ${darkMode ? 'text-white' : 'text-black'}`} autoFocus />
+              <button onClick={handleSaveProjectName} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold shadow-md transition-colors cursor-pointer ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}><Save size={16} /> Lưu</button>
             </div>
           ) : (
             <div className="flex items-center gap-3 group">
-              <h1 className="text-3xl font-bold text-zinc-100 tracking-tight">{projectName}</h1>
-              <button onClick={() => setIsEditingProjectName(true)} className="text-zinc-600 hover:text-zinc-300 opacity-0 group-hover:opacity-100 bg-white/5 p-1.5 rounded-md"><Pencil size={16} /></button>
+              <h1 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{projectName}</h1>
+              <button onClick={() => setIsEditingProjectName(true)} className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-md transition-all cursor-pointer ${darkMode ? 'text-zinc-500 hover:text-zinc-300 hover:bg-white/10' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'}`}><Pencil size={16} /></button>
             </div>
           )}
-          <div className="flex bg-[#121214] border border-[#2A2A30] rounded-lg p-1 shadow-inner">
-              <button onClick={() => setActiveTab('storyboard')} className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-bold transition-all ${activeTab === 'storyboard' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}><Film size={16}/> Storyboard</button>
+          
+          <div className={`flex border rounded-lg p-1 shadow-inner ${darkMode ? 'bg-[#121214] border-[#2A2A30]' : 'bg-white border-zinc-200'}`}>
+              <button onClick={() => setActiveTab('storyboard')} className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-bold transition-all cursor-pointer ${activeTab === 'storyboard' ? 'bg-blue-600 text-white shadow-md' : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-zinc-600 hover:text-black')}`}><Film size={16}/> Storyboard</button>
               {!isSemi && (
-                <button onClick={() => setActiveTab('setup')} className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-bold transition-all ${activeTab === 'setup' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}><Users size={16}/> Setup Nhân vật</button>
+                <button onClick={() => setActiveTab('setup')} className={`flex items-center gap-2 px-5 py-2 rounded-md text-sm font-bold transition-all cursor-pointer ${activeTab === 'setup' ? 'bg-purple-600 text-white shadow-md' : (darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-zinc-600 hover:text-black')}`}><Users size={16}/> Setup Nhân vật</button>
               )}
           </div>
         </div>
 
-        <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl p-6 shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-30"></div>
-          <div className="flex items-center gap-2 text-zinc-400 font-semibold text-xs uppercase tracking-widest mb-6"><LayoutDashboard size={14} /> Thống kê dự án</div>
+        {/* Bảng Thống kê (Stats Card) */}
+        <div className={`border rounded-2xl p-6 shadow-lg relative overflow-hidden transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30]' : 'bg-white border-zinc-200'}`}>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-40"></div>
+          <div className={`flex items-center gap-2 font-semibold text-xs uppercase tracking-widest mb-6 ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}><LayoutDashboard size={14} /> Thống kê dự án</div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 text-left">
-            <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Total Scene</div><div className="text-2xl font-bold text-zinc-100">{totalScenes}</div></div>
-            <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Total Voice</div><div className="text-2xl font-bold text-blue-400">{totalVoice}</div></div>
+            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Scene</div><div className={`text-2xl font-bold ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{totalScenes}</div></div>
+            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Voice</div><div className="text-2xl font-bold text-blue-500">{totalVoice}</div></div>
             {isSemi && (
-              <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Avg Duration</div><div className="text-2xl font-bold text-green-400">{avgDuration}</div></div>
+              <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Avg Duration</div><div className="text-2xl font-bold text-green-500">{avgDuration}</div></div>
             )}
-            <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Est Cost</div><div className="text-2xl font-bold text-yellow-500">{estCost}</div></div>
-            <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Audio Gen</div><div className="text-xl font-semibold text-purple-400 mt-1">{Object.keys(generatedAudios).length} <span className="text-sm text-zinc-600">/ {totalVoice}</span></div></div>
-            <div><div className="text-[11px] text-zinc-500 font-medium uppercase tracking-wider mb-1">Video Gen</div><div className="text-xl font-semibold text-orange-400 mt-1">{Object.keys(mergedVideos).length} <span className="text-sm text-zinc-600">/ {totalScenes}</span></div></div>
+            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Est Cost</div><div className="text-2xl font-bold text-yellow-500">{estCost}</div></div>
+            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Audio Gen</div><div className="text-xl font-semibold text-purple-500 mt-1">{Object.keys(generatedAudios).length} <span className={`text-sm ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalVoice}</span></div></div>
+            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Video Gen</div><div className="text-xl font-semibold text-orange-500 mt-1">{Object.keys(mergedVideos).length} <span className={`text-sm ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalScenes}</span></div></div>
           </div>
         </div>
 
-        {activeTab === 'setup' && !isSemi && <SetupTab projectCharacters={projectCharacters} setProjectCharacters={setProjectCharacters} parsedData={parsedData} setParsedData={setParsedData} handleDeleteCharacter={handleDeleteCharacter} avatarInputRef={avatarInputRef} charVoiceInputRef={charVoiceInputRef} activeUploadIdRef={activeUploadIdRef} />}
-        {activeTab === 'storyboard' && <StoryboardTab parsedData={parsedData} generatedAudios={generatedAudios} isGenerating={isGenerating} mergingScenes={mergingScenes} mergedVideos={mergedVideos} setActiveEditSceneModal={setActiveEditSceneModal} frameInputRef={frameInputRef} activeUploadIdRef={activeUploadIdRef} setActiveGenModal={setActiveGenModal} handleDeleteScene={handleDeleteScene} globalMixVol={globalMixVol} setSingleMixVol={setSingleMixVol} setActiveMergeModal={setActiveMergeModal} forceDownloadVideo={forceDownloadVideo} projectType={projectType} />}
+        {/* NỘI DUNG TABS */}
+        {activeTab === 'setup' && !isSemi && <SetupTab projectCharacters={projectCharacters} setProjectCharacters={setProjectCharacters} parsedData={parsedData} setParsedData={setParsedData} handleDeleteCharacter={handleDeleteCharacter} avatarInputRef={avatarInputRef} charVoiceInputRef={charVoiceInputRef} activeUploadIdRef={activeUploadIdRef} darkMode={darkMode} />}
+        {activeTab === 'storyboard' && <StoryboardTab parsedData={parsedData} generatedAudios={generatedAudios} isGenerating={isGenerating} mergingScenes={mergingScenes} mergedVideos={mergedVideos} setActiveEditSceneModal={setActiveEditSceneModal} frameInputRef={frameInputRef} activeUploadIdRef={activeUploadIdRef} setActiveGenModal={setActiveGenModal} handleDeleteScene={handleDeleteScene} globalMixVol={globalMixVol} setSingleMixVol={setSingleMixVol} setActiveMergeModal={setActiveMergeModal} forceDownloadVideo={forceDownloadVideo} projectType={projectType} darkMode={darkMode} />}
       </div>
 
-      <div className="fixed right-6 top-24 bottom-6 bg-[#121214] border border-[#2A2A30] rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex overflow-y-auto custom-scrollbar">
-        <div className="flex items-center gap-2 text-zinc-100 font-semibold text-sm border-b border-[#2A2A30] pb-3"><Sliders size={16} className="text-purple-400" /> Bảng điều khiển</div>
-        <div className="flex flex-col gap-2.5">
-          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"><Merge size={16} /> Merge All</button>
-          <button onClick={() => setIsExportModalOpen(true)} className="w-full h-10 bg-[#0A0A0C] border border-[#2A2A30] hover:border-white/20 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"><Download size={16} /> Export Output</button>
-        </div>
-        <div className="w-full h-[1px] bg-[#2A2A30] my-1"></div>
-        <button onClick={() => setIsModalOpen(true)} className="w-full h-10 bg-white text-black hover:bg-zinc-200 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg"><Music size={16} /> Batch Gen Audio</button>
+      {/* 🚀 CỘT PHẢI: BẢNG ĐIỀU KHIỂN (FLOATING CARD) */}
+      <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         
-        <div className="bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-4 flex flex-col gap-3">
-          <div className="text-[12px] font-bold text-zinc-300 flex justify-between items-center">Global Voice Clone {voiceCloneFile && (<button onClick={handleRemoveVoice} className="text-red-400 hover:text-red-300 bg-red-400/10 p-1.5 rounded"><Trash2 size={14} /></button>)}</div>
+        {/* Header Bảng Điều Khiển + Nút Chuyển Mode */}
+        <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+          <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-black'}`}>
+            <Sliders size={16} className="text-purple-500" /> Bảng điều khiển
+          </div>
+          <button 
+            onClick={() => setDarkMode(!darkMode)}
+            className={`p-1.5 rounded-lg border transition-all duration-300 cursor-pointer shadow-sm ${darkMode ? 'bg-[#1A1A1F] border-white/10 text-yellow-400 hover:bg-[#222228]' : 'bg-zinc-50 border-zinc-200 text-purple-600 hover:bg-zinc-100'}`}
+            title={darkMode ? "Chuyển sang Chế độ sáng" : "Chuyển sang Chế độ tối"}
+          >
+            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
+        </div>
+        
+        <div className="flex flex-col gap-3">
+          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer"><Merge size={16} /> Merge Toàn bộ</button>
+        </div>
+        
+        <div className={`w-full h-[1px] my-1 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
+        
+        <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'}`}><Music size={16} /> Batch Gen Audio</button>
+        
+        {/* Khu vực Upload Voice Clone */}
+        <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
+          <div className={`text-[12px] font-bold flex justify-between items-center ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>
+            Global Voice Clone 
+            {voiceCloneFile && (<button onClick={handleRemoveVoice} className="text-red-500 hover:text-red-400 bg-red-500/10 p-1.5 rounded cursor-pointer transition-colors"><Trash2 size={14} /></button>)}
+          </div>
           <input type="file" accept="audio/mp3,audio/wav" ref={fileInputRef} onChange={handleVoiceUpload} className="hidden" />
           {!voiceCloneFile ? (
-            <button onClick={() => fileInputRef.current.click()} className="w-full h-10 border border-dashed border-[#2A2A30] hover:border-purple-400 text-zinc-400 hover:text-purple-400 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors"><Upload size={16} /> Tải file MP3</button>
+            <button onClick={() => fileInputRef.current.click()} className={`w-full h-11 border border-dashed rounded-xl text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer ${darkMode ? 'border-[#2A2A30] hover:border-purple-400 text-zinc-400 hover:text-purple-400' : 'border-zinc-300 hover:border-purple-600 text-zinc-700 hover:text-purple-700 hover:bg-purple-50'}`}><Upload size={16} /> Tải file MP3</button>
           ) : (
-            <div className="flex flex-col gap-3">
-              <div className="text-[11px] text-zinc-400 truncate">{voiceCloneFile.name}</div>
+            <div className="flex flex-col gap-3 animate-in fade-in duration-300">
+              <div className={`text-[11px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 custom-audio" />
               <div className="relative">
-                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} disabled={isTranscribing} className={`w-full h-10 px-3 bg-[#121214] border border-[#2A2A30] focus:border-purple-500 focus:outline-none rounded-xl text-sm text-zinc-200 ${isTranscribing ? 'opacity-50' : ''}`} placeholder="Nhập Text mẫu..." />
-                {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-400" />}
+                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} disabled={isTranscribing} className={`w-full h-10 px-3 border focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded-xl text-sm transition-all ${isTranscribing ? 'opacity-50' : ''} ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-900'}`} placeholder="Nhập Text mẫu..." />
+                {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
               </div>
             </div>
           )}
         </div>
+
+        <div className="flex-1"></div>
+        <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 border rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-white hover:border-white/30 hover:bg-white/5' : 'bg-zinc-50 border-zinc-300 text-zinc-900 hover:border-zinc-400 hover:bg-zinc-100'}`}><Download size={16} /> Xuất File (Export)</button>
       </div>
 
+      {/* 🚀 MODAL: SỬA SCENE */}
       {activeEditSceneModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative">
-            <button onClick={() => setActiveEditSceneModal(null)} className="absolute top-5 right-5 text-gray-500 hover:text-white cursor-pointer"><X size={20}/></button>
-            <h2 className="text-xl font-bold text-white mb-6 border-b border-[#2A2A30] pb-4 flex items-center gap-2">Sửa thông tin - Scene {activeEditSceneModal.scene_n}</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => setActiveEditSceneModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <h2 className={`text-xl font-bold mb-6 border-b pb-4 flex items-center gap-2 ${darkMode ? 'text-white border-white/10' : 'text-black border-zinc-200'}`}>Sửa thông tin - Scene {activeEditSceneModal.scene_n}</h2>
+            
             <div className="flex flex-col gap-5 overflow-y-auto pr-2 custom-scrollbar">
               {isSemi ? (
                 <>
-                  <div className="flex flex-col gap-2"><label className="text-sm font-bold text-blue-400">Footage (Cảnh quay)</label><textarea value={activeEditSceneModal.Footage || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Footage: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 h-24 resize-none custom-scrollbar" /></div>
-                  <div className="flex flex-col gap-2"><label className="text-sm font-bold text-white">Voiceover (Lời thoại)</label><textarea value={activeEditSceneModal.Voiceover || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Voiceover: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-gray-500 h-24 resize-none custom-scrollbar" /></div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-blue-500">Footage (Cảnh quay)</label>
+                    <textarea value={activeEditSceneModal.Footage || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Footage: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 h-24 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Voiceover (Lời thoại)</label>
+                    <textarea value={activeEditSceneModal.Voiceover || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Voiceover: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/50 h-24 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} />
+                  </div>
                 </>
               ) : (
                 <>
-                  <div className="flex flex-col gap-2"><label className="text-sm font-bold text-purple-400">Context (Bối cảnh)</label><textarea value={activeEditSceneModal.Context || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Context: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-purple-500 h-20 resize-none custom-scrollbar" /></div>
+                  <div className="flex flex-col gap-2"><label className="text-sm font-bold text-purple-500">Context (Bối cảnh)</label><textarea value={activeEditSceneModal.Context || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Context: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 h-20 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} /></div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-green-400">Camera (Góc máy)</label><textarea value={activeEditSceneModal.Camera || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Camera: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-green-500 h-20 resize-none custom-scrollbar" /></div>
-                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-orange-400">Action (Hành động)</label><textarea value={activeEditSceneModal.Action || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Action: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-orange-500 h-20 resize-none custom-scrollbar" /></div>
+                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-green-500">Camera (Góc máy)</label><textarea value={activeEditSceneModal.Camera || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Camera: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/50 h-20 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} /></div>
+                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-orange-500">Action (Hành động)</label><textarea value={activeEditSceneModal.Action || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Action: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 h-20 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} /></div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-blue-400">Character (Nhân vật)</label><input type="text" value={activeEditSceneModal.Character || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Character: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500" /></div>
-                    <div className="flex flex-col gap-2"><label className="text-sm font-bold text-blue-400">Tone (Giọng điệu)</label><input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Tone_of_Voice: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500" /></div>
+                  
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-blue-500">Character (Nhân vật)</label>
+                    <input type="text" value={activeEditSceneModal.Character || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Character: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} />
                   </div>
-                  <div className="flex flex-col gap-2"><label className="text-sm font-bold text-white">Dialogue (Thoại)</label><textarea value={activeEditSceneModal.Dialogue || activeEditSceneModal.Voiceover || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Dialogue: e.target.value, Voiceover: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-gray-500 h-24 resize-none custom-scrollbar" /></div>
+                  <div className="flex flex-col gap-2">
+                    <label className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Dialogue (Thoại)</label>
+                    <textarea value={activeEditSceneModal.Dialogue || activeEditSceneModal.Voiceover || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Dialogue: e.target.value, Voiceover: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/50 h-24 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-bold text-blue-500">Tone (Giọng điệu)</label>
+                    <input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Tone_of_Voice: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`} />
+                  </div>
                 </>
               )}
-              <div className="flex flex-col gap-2"><label className="text-sm font-bold text-gray-400">Translate (Bản dịch)</label><textarea value={activeEditSceneModal.Translate || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Translate: e.target.value})} className="w-full bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-3 text-sm text-gray-400 focus:outline-none focus:border-gray-500 h-16 resize-none custom-scrollbar" /></div>
+              <div className="flex flex-col gap-2"><label className={`text-sm font-bold ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>Translate (Bản dịch)</label><textarea value={activeEditSceneModal.Translate || ''} onChange={(e) => setActiveEditSceneModal({...activeEditSceneModal, Translate: e.target.value})} className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-500/50 h-16 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-400' : 'bg-zinc-50 border-zinc-300 text-zinc-700'}`} /></div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-[#2A2A30] shrink-0">
-              <button onClick={() => setActiveEditSceneModal(null)} className="h-10 px-6 rounded-xl font-bold text-gray-400 hover:text-white bg-transparent hover:bg-white/5 cursor-pointer transition-colors">Hủy</button>
-              <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer transition-colors">Lưu thay đổi</button>
+            <div className={`flex justify-end gap-3 mt-6 pt-5 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <button onClick={() => setActiveEditSceneModal(null)} className={`h-10 px-6 rounded-xl font-bold cursor-pointer transition-colors ${darkMode ? 'text-zinc-400 hover:text-white hover:bg-white/5' : 'text-zinc-600 hover:text-black hover:bg-zinc-100'}`}>Hủy</button>
+              <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors">Lưu thay đổi</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* 🚀 MODAL: BATCH GEN AUDIO */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
-            <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white cursor-pointer"><X size={20}/></button>
-            <div className="p-6 border-b border-[#2A2A30] shrink-0">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2"><Music className="text-blue-400"/> Batch Gen Audio</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => setIsModalOpen(false)} className={`absolute top-4 right-4 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Music className="text-blue-500"/> Batch Gen Audio</h2>
             </div>
-            <div className="px-6 py-3 border-b border-[#2A2A30] flex gap-3 shrink-0 bg-[#0A0A0C]">
-              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer transition-colors">Chọn tất cả</button>
-              <button onClick={() => setCheckedScenes({})} className="px-4 py-1.5 text-xs font-bold bg-[#121214] border border-[#2A2A30] text-gray-400 hover:text-white rounded-lg cursor-pointer transition-colors">Bỏ chọn</button>
+            <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
+              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer transition-colors border border-blue-500/20">Chọn tất cả</button>
+              <button onClick={() => setCheckedScenes({})} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
               <div className="flex flex-col">
                 {filteredScenesForAudio.length === 0 ? (
-                    <div className="text-center text-zinc-500 py-10 text-sm">Không có cảnh nào chứa lời thoại.</div>
+                    <div className={`text-center py-10 text-sm ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>Không có cảnh nào chứa lời thoại.</div>
                 ) : (
                     filteredScenesForAudio.map((scene) => (
-                      <div key={scene.scene_n} onClick={() => setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b border-[#2A2A30] cursor-pointer transition-colors ${checkedScenes[scene.scene_n] ? 'bg-blue-900/10' : 'hover:bg-white/5'}`}>
-                        <div className="mt-1 shrink-0">{checkedScenes[scene.scene_n] ? <CheckSquare className="text-blue-500" size={20} /> : <Square className="text-gray-600" size={20} />}</div>
+                      <div key={scene.scene_n} onClick={() => setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b cursor-pointer transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${checkedScenes[scene.scene_n] ? (darkMode ? 'bg-blue-900/20' : 'bg-blue-50') : (darkMode ? 'hover:bg-white/5' : 'hover:bg-zinc-50')}`}>
+                        <div className="mt-1 shrink-0">{checkedScenes[scene.scene_n] ? <CheckSquare className="text-blue-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                         <div className="flex-1 min-w-0 text-sm space-y-1.5">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-zinc-200">Scene {scene.scene_n}</span>
-                            {generatedAudios[scene.scene_n] && <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">Đã có Audio</span>}
+                            <span className={`font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>Scene {scene.scene_n}</span>
+                            {generatedAudios[scene.scene_n] && <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">Đã có Audio</span>}
                           </div>
-                          <div className="text-zinc-400 truncate leading-relaxed">{isSemi ? 'Voiceover: ' : 'Dialogue: '} {getTextToGen(scene)}</div>
+                          <div className={`truncate leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}>{isSemi ? 'Voiceover: ' : 'Dialogue: '} {getTextToGen(scene)}</div>
                         </div>
                       </div>
                     ))
                 )}
               </div>
             </div>
-            <div className="p-6 border-t border-[#2A2A30] shrink-0">
-              <button onClick={handleStartBatchGen} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer transition-colors"><Mic size={18} className="inline mr-2"/> Bắt đầu Gen</button>
+            <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <button onClick={handleStartBatchGen} className="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex justify-center items-center gap-2"><Mic size={18}/> Bắt đầu Gen Audio</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* 🚀 MODAL: BATCH MERGE VIDEO */}
       {isMergeModalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
-            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className="absolute top-5 right-5 text-gray-500 hover:text-white cursor-pointer"><X size={20}/></button>
-            <div className="p-6 border-b border-[#2A2A30] shrink-0"><h2 className="text-xl font-bold text-white flex items-center gap-2"><Merge className="text-purple-400"/> Batch Merge Video</h2></div>
-            <div className="px-6 py-5 bg-[#0A0A0C] border-b border-[#2A2A30]">
-              <div className="flex justify-between items-center mb-3"><span className="font-semibold text-zinc-200 text-sm">Âm lượng video gốc (mix)</span><span className="text-purple-400 font-mono font-bold bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20">{(globalMixVol / 100).toFixed(2)}</span></div>
-              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className="w-full h-1.5 bg-[#2A2A30] rounded-lg cursor-pointer accent-purple-500" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Merge className="text-purple-500"/> Batch Merge Video</h2>
             </div>
-            <div className="px-6 py-3 border-b border-[#2A2A30] flex gap-3 shrink-0 bg-[#0A0A0C]">
-              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-purple-600/20 text-purple-400 hover:bg-purple-600 hover:text-white rounded-lg cursor-pointer transition-colors">Chọn tất cả (có Video/Ảnh)</button>
-              <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-[#121214] border border-[#2A2A30] text-gray-400 hover:text-white rounded-lg cursor-pointer transition-colors">Bỏ chọn</button>
+            <div className={`px-6 py-5 border-b ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
+              <div className="flex justify-between items-center mb-3">
+                <span className={`font-semibold text-sm ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>Âm lượng video gốc (Mix)</span>
+                <span className="text-purple-600 font-mono font-bold bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20">{(globalMixVol / 100).toFixed(2)}</span>
+              </div>
+              <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-purple-500 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
+            </div>
+            <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
+              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white rounded-lg cursor-pointer border border-purple-500/20 transition-colors">Chọn tất cả (có Video/Ảnh)</button>
+              <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
               <div className="flex flex-col">
@@ -622,65 +680,66 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
                   const isEligible = (scene.videoUrl || scene.startFrameUrl);
                   const isChecked = !!checkedMergeScenes[scene.scene_n];
                   return (
-                    <div key={scene.scene_n} onClick={() => !isMerging && isEligible && setCheckedMergeScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b border-[#2A2A30] transition-colors select-none ${!isEligible ? 'opacity-50 cursor-not-allowed bg-black/20' : (isChecked ? 'bg-purple-500/10' : 'hover:bg-white/5 cursor-pointer')} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      <div className="shrink-0">{isChecked ? <CheckSquare className="text-purple-500" size={20} /> : <Square className="text-gray-600" size={20} />}</div>
+                    <div key={scene.scene_n} onClick={() => !isMerging && isEligible && setCheckedMergeScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${!isEligible ? (darkMode ? 'opacity-50 cursor-not-allowed bg-black/20' : 'opacity-50 cursor-not-allowed bg-zinc-100') : (isChecked ? (darkMode ? 'bg-purple-500/10' : 'bg-purple-50') : (darkMode ? 'hover:bg-white/5 cursor-pointer' : 'hover:bg-zinc-50 cursor-pointer'))} ${isMerging ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <div className="shrink-0">{isChecked ? <CheckSquare className="text-purple-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                       <div className="flex-1 min-w-0 text-sm">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`font-bold ${isChecked ? 'text-purple-400' : 'text-zinc-200'}`}>Scene {scene.scene_n}</span>
-                          {!isEligible && <span className="text-[10px] font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Thiếu Input</span>}
+                          <span className={`font-bold ${isChecked ? 'text-purple-600' : (darkMode ? 'text-zinc-200' : 'text-zinc-900')}`}>Scene {scene.scene_n}</span>
+                          {!isEligible && <span className="text-[10px] font-bold text-red-600 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">Thiếu Input</span>}
                         </div>
-                        <div className="text-xs text-zinc-500">{generatedAudios[scene.scene_n] ? 'Âm thanh: Có AI Audio + Nhạc nền' : 'Âm thanh: Chỉ lấy âm thanh Video gốc'}</div>
+                        <div className={`text-xs ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>{generatedAudios[scene.scene_n] ? 'Âm thanh: Có AI Audio + Nhạc nền' : 'Âm thanh: Chỉ lấy âm thanh Video gốc'}</div>
                       </div>
                     </div>
                   );
                 })}
               </div>
             </div>
-            <div className="p-6 border-t border-[#2A2A30] shrink-0">
-              <button onClick={handleStartMerge} disabled={isMerging || Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]).length === 0} className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 transition-colors">
-                {isMerging ? <Loader2 size={16} className="animate-spin" /> : <Merge size={16} />} {isMerging ? 'Đang xử lý...' : `Bắt đầu Merge`}
+            <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <button onClick={handleStartMerge} disabled={isMerging || Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]).length === 0} className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all">
+                {isMerging ? <Loader2 size={18} className="animate-spin" /> : <Merge size={18} />} {isMerging ? 'Đang xử lý...' : `Bắt đầu Merge Video`}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* 🚀 MODAL: EXPORT BATCH */}
       {isExportModalOpen && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative">
-            <button onClick={() => setIsExportModalOpen(false)} className="absolute top-5 right-5 text-gray-500 hover:text-white cursor-pointer"><X size={20}/></button>
-            <div className="p-6 border-b border-[#2A2A30] shrink-0">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2"><Download className="text-green-400"/> Export Batch</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => setIsExportModalOpen(false)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Download className="text-green-500"/> Export Output</h2>
             </div>
             
             {Object.keys(mergedVideos).length === 0 ? (
-               <div className="flex-1 flex items-center justify-center text-center text-zinc-500 py-16 text-sm">
+               <div className={`flex-1 flex items-center justify-center text-center py-16 text-sm ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>
                  Chưa có video Output nào được tạo.<br/>Bạn hãy chạy "Batch Merge" trước nhé!
                </div>
             ) : (
                <>
-                  <div className="px-6 py-3 border-b border-[#2A2A30] flex gap-3 shrink-0 bg-[#0A0A0C]">
-                    <button onClick={() => { const all = {}; parsedData.forEach(s => { if(mergedVideos[s.scene_n]) all[s.scene_n] = true; }); setCheckedExportScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white rounded-lg cursor-pointer transition-colors">Chọn tất cả</button>
-                    <button onClick={() => setCheckedExportScenes({})} className="px-4 py-1.5 text-xs font-bold bg-[#121214] border border-[#2A2A30] text-gray-400 hover:text-white rounded-lg cursor-pointer transition-colors">Bỏ chọn</button>
+                  <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
+                    <button onClick={() => { const all = {}; parsedData.forEach(s => { if(mergedVideos[s.scene_n]) all[s.scene_n] = true; }); setCheckedExportScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-green-500/10 text-green-600 hover:bg-green-600 hover:text-white rounded-lg cursor-pointer border border-green-500/20 transition-colors">Chọn tất cả</button>
+                    <button onClick={() => setCheckedExportScenes({})} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
                   </div>
                   <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
                     <div className="flex flex-col">
                       {parsedData.filter(scene => mergedVideos[scene.scene_n]).map((scene) => {
                         const isChecked = !!checkedExportScenes[scene.scene_n];
                         return (
-                          <div key={scene.scene_n} onClick={() => setCheckedExportScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b border-[#2A2A30] cursor-pointer transition-colors ${isChecked ? 'bg-green-900/10' : 'hover:bg-white/5'}`}>
-                            <div className="shrink-0">{isChecked ? <CheckSquare className="text-green-500" size={20} /> : <Square className="text-gray-600" size={20} />}</div>
+                          <div key={scene.scene_n} onClick={() => setCheckedExportScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-center gap-4 p-4 border-b cursor-pointer transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${isChecked ? (darkMode ? 'bg-green-900/20' : 'bg-green-50') : (darkMode ? 'hover:bg-white/5' : 'hover:bg-zinc-50')}`}>
+                            <div className="shrink-0">{isChecked ? <CheckSquare className="text-green-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                             <div className="flex-1 min-w-0 text-sm space-y-1">
-                              <div className={`font-bold ${isChecked ? 'text-green-400' : 'text-zinc-200'}`}>Scene {scene.scene_n} Output.mp4</div>
-                              <div className="text-xs text-zinc-500">{generatedAudios[scene.scene_n] ? 'Âm thanh: Có AI Audio' : 'Âm thanh: Chỉ Video gốc'}</div>
+                              <div className={`font-bold ${isChecked ? 'text-green-600' : (darkMode ? 'text-zinc-200' : 'text-zinc-900')}`}>Scene {scene.scene_n} Output.mp4</div>
+                              <div className={`text-xs ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>{generatedAudios[scene.scene_n] ? 'Âm thanh: Có AI Audio' : 'Âm thanh: Chỉ Video gốc'}</div>
                             </div>
                           </div>
                         );
                       })}
                     </div>
                   </div>
-                  <div className="p-6 border-t border-[#2A2A30] shrink-0">
-                    <button onClick={handleDownloadVideos} disabled={Object.keys(checkedExportScenes).filter(k => checkedExportScenes[k]).length === 0} className="w-full py-3.5 bg-green-600 hover:bg-green-500 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 transition-colors"><Download size={18}/> Tải xuống Video</button>
+                  <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+                    <button onClick={handleDownloadVideos} disabled={Object.keys(checkedExportScenes).filter(k => checkedExportScenes[k]).length === 0} className="w-full py-3.5 bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 shadow-md transition-all"><Download size={18}/> Tải xuống Video</button>
                   </div>
                </>
             )}
@@ -688,37 +747,42 @@ export default function Workspace({ ffmpeg, isFfmpegReady }) {
         </div>
       )}
       
+      {/* 🚀 MODAL: SINGLE GEN AUDIO */}
       {activeGenModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-md p-7 shadow-2xl relative">
-            <button onClick={() => setActiveGenModal(null)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer transition-colors"><X size={20} /></button>
-            <h3 className="text-lg font-bold border-b border-[#2A2A30] pb-4 text-zinc-100 flex items-center gap-2"><Mic size={20} className="text-blue-400" /> Audio - Scene {activeGenModal.scene_n}</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border rounded-2xl w-full max-w-md p-7 shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => setActiveGenModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20} /></button>
+            <h3 className={`text-lg font-bold border-b pb-4 flex items-center gap-2 ${darkMode ? 'text-zinc-100 border-white/10' : 'text-black border-zinc-200'}`}><Mic size={20} className="text-blue-500" /> Audio - Scene {activeGenModal.scene_n}</h3>
             <div className="mt-6 space-y-5">
-              <div className="bg-[#0A0A0C] border border-[#2A2A30] rounded-xl p-5 shadow-inner">
-                <div className="text-zinc-500 font-semibold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5"><AlignLeft size={14} /> {isSemi ? 'Voiceover' : 'Dialogue'}</div>
-                <p className="text-zinc-200 leading-relaxed text-[14px] whitespace-pre-wrap">{activeGenModal.textToGen || "Không có lời thoại (Chỉ lấy Video gốc)"}</p>
+              <div className={`border rounded-xl p-5 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
+                <div className={`font-semibold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}><AlignLeft size={14} /> {isSemi ? 'Voiceover' : 'Dialogue'}</div>
+                <p className={`leading-relaxed text-[14px] whitespace-pre-wrap ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeGenModal.textToGen || "Không có lời thoại (Chỉ lấy Video gốc)"}</p>
               </div>
             </div>
-            <div className="flex justify-end gap-3 pt-5 mt-6 border-t border-[#2A2A30] shrink-0">
-              <button onClick={() => setActiveGenModal(null)} className="h-10 px-6 bg-transparent hover:bg-white/5 text-zinc-300 rounded-xl font-medium cursor-pointer transition-colors">Hủy bỏ</button>
-              <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
+            <div className={`flex justify-end gap-3 pt-5 mt-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+              <button onClick={() => setActiveGenModal(null)} className={`h-10 px-6 rounded-xl font-medium cursor-pointer transition-colors ${darkMode ? 'bg-transparent hover:bg-white/5 text-zinc-300' : 'bg-transparent hover:bg-zinc-100 text-zinc-700'}`}>Hủy bỏ</button>
+              <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
             </div>
           </div>
         </div>
       )}
       
+      {/* 🚀 MODAL: SINGLE MERGE */}
       {activeMergeModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-[#121214] border border-[#2A2A30] rounded-2xl w-full max-w-sm p-7 shadow-2xl flex flex-col items-center relative">
-            <button onClick={() => setActiveMergeModal(null)} className="absolute top-5 right-5 text-zinc-500 hover:text-white cursor-pointer"><X size={20} /></button>
-            <h3 className="text-lg font-bold mb-4 text-zinc-100 flex items-center"><Merge className="mr-2 text-blue-500" /> Merge - Scene {activeMergeModal.scene_n}</h3>
-            <div className="w-full bg-[#0A0A0C] border border-[#2A2A30] p-5 rounded-xl mb-6 text-left shadow-inner">
-              <div className="flex justify-between items-center mb-3"><span className="font-semibold text-zinc-300 text-sm">Âm lượng gốc</span><span className="text-blue-400 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">{(singleMixVol / 100).toFixed(2)}</span></div>
-              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className="w-full h-1.5 bg-[#2A2A30] rounded-lg appearance-none cursor-pointer accent-blue-500" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className={`border rounded-2xl w-full max-w-sm p-7 shadow-2xl flex flex-col items-center relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+            <button onClick={() => setActiveMergeModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20} /></button>
+            <h3 className={`text-lg font-bold mb-5 flex items-center ${darkMode ? 'text-zinc-100' : 'text-black'}`}><Merge className="mr-2 text-blue-500" /> Merge - Scene {activeMergeModal.scene_n}</h3>
+            <div className={`w-full border p-5 rounded-xl mb-6 text-left shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
+              <div className="flex justify-between items-center mb-3">
+                <span className={`font-semibold text-sm ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>Âm lượng gốc</span>
+                <span className="text-blue-600 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">{(singleMixVol / 100).toFixed(2)}</span>
+              </div>
+              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-600 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
             </div>
             <div className="flex w-full gap-3">
-              <button onClick={() => setActiveMergeModal(null)} className="flex-1 py-3 rounded-xl font-bold text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer border border-[#2A2A30]">Hủy</button>
-              <button onClick={handleSingleSceneMergeConfirm} className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors cursor-pointer shadow-lg">Tiến hành</button>
+              <button onClick={() => setActiveMergeModal(null)} className={`flex-1 py-3 rounded-xl font-bold border transition-colors cursor-pointer ${darkMode ? 'text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 border-[#2A2A30]' : 'text-zinc-700 hover:text-black bg-zinc-50 hover:bg-zinc-100 border-zinc-300'}`}>Hủy</button>
+              <button onClick={handleSingleSceneMergeConfirm} className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors cursor-pointer shadow-md">Tiến hành</button>
             </div>
           </div>
         </div>
