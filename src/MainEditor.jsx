@@ -285,15 +285,6 @@ Kịch bản: ${script}`);
           </>
         )}
 
-        {/* 🌓 NÚT DARK/LIGHT MODE TRONG KHUNG LÀM VIỆC */}
-        <button 
-          onClick={() => setDarkMode(!darkMode)}
-          className={`absolute top-6 right-6 p-2.5 rounded-xl border transition-all duration-300 cursor-pointer ${darkMode ? 'bg-[#1A1A1F] border-white/10 text-yellow-400 hover:bg-[#222228]' : 'bg-zinc-50 border-zinc-200 text-purple-600 hover:bg-zinc-100'}`}
-          title={darkMode ? "Chuyển sang Chế độ sáng" : "Chuyển sang Chế độ tối"}
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
-
         <div className="text-center mb-10 relative z-10">
           <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
             Khởi tạo Dự án Video

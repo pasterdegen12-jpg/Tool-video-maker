@@ -513,13 +513,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-black'}`}>
             <Sliders size={16} className="text-purple-500" /> Bảng điều khiển
           </div>
-          <button 
-            onClick={() => setDarkMode(!darkMode)}
-            className={`p-1.5 rounded-lg border transition-all duration-300 cursor-pointer shadow-sm ${darkMode ? 'bg-[#1A1A1F] border-white/10 text-yellow-400 hover:bg-[#222228]' : 'bg-zinc-50 border-zinc-200 text-purple-600 hover:bg-zinc-100'}`}
-            title={darkMode ? "Chuyển sang Chế độ sáng" : "Chuyển sang Chế độ tối"}
-          >
-            {darkMode ? <Sun size={14} /> : <Moon size={14} />}
-          </button>
         </div>
         
         <div className="flex flex-col gap-3">
