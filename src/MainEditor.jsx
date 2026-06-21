@@ -31,7 +31,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMo
     if (!script) return alert("Vui lòng nhập kịch bản!");
     
     setIsLocked(true);
-    setLoadingStatus('Đang bóc tách kịch bản GEN AI...');
+    setLoadingStatus('Đang xử lý kịch bản GEN AI...');
     
     try {
       const parsedData = await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
@@ -87,21 +87,30 @@ Kịch bản: ${script}`);
     setLoadingStatus('Đang trích xuất mốc thời gian (Semi)...');
 
     try {
-      const parsedData = await callGeminiAPI(`Bạn là chuyên gia trích xuất dữ liệu. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
-LƯU Ý TỐI QUAN TRỌNG: 
-1. Kịch bản có thể có "Time" và "Time_origin". Bạn BẮT BUỘC phải lấy CHÍNH XÁC giá trị của "Time_origin" (VD: "03:12 - 03:20") đưa vào trường "time_origin" của JSON. Nếu lấy sai, hệ thống sẽ bị lỗi.
-2. Tự tính số từ của "Voiceover" điền vào "Word_count".
-3. Không cần phân tích nhân vật, mảng "characters" để rỗng [].
+      const parsedData = await callGeminiAPI(`You are an expert data extraction assistant. Read the provided script and return EXACTLY ONE JSON Object.
 
-Cấu trúc JSON BẮT BUỘC:
+CRITICAL INSTRUCTIONS:
+1. TIME EXTRACTION: The script may contain both 'Time' and 'Time_origin'. You MUST extract the EXACT value of 'Time_origin' (e.g., "03:12 - 03:20") and assign it to the "time_origin" field. Failing this will break the system.
+
+2. VOICEOVER HANDLING (STRICT BAN ON VIETNAMESE):
+   - Extract the exact spoken dialogue (which is usually in English) into the "Voiceover" field.
+   - KILL-SWITCH FILTER: The "Voiceover" field MUST NEVER contain any Vietnamese words. IF you are about to include any Vietnamese text in the "Voiceover", you MUST consider it INVALID and LEAVE IT COMPLETELY EMPTY: "Voiceover": "" and "Word_count": 0.
+   - NEVER mix the Vietnamese translation (the "Translate" line) or author notes into the "Voiceover" field.
+   - Calculate the word count of the "Voiceover" text and put it in "Word_count".
+   - FALLBACK: IF a scene has NO spoken dialogue (or violates the Vietnamese text ban), you MUST leave it empty: "Voiceover": "" and "Word_count": 0.
+
+3. IGNORE CHARACTERS: Do not analyze characters. Always keep the "characters" array completely empty [].
+
+REQUIRED JSON STRUCTURE (EXAMPLE):
 {
   "characters": [], 
   "scenes": [
-    { "scene_n": 1, "time_origin": "03:12 - 03:20", "Footage": "Cảnh sát lạnh lùng...", "Effect": "Metal handcuffs clicking", "Character": "", "Voiceover": "You can't play the victim...", "Translate": "Bạn không thể đóng vai...", "Tone_of_Voice": "Tự nhiên", "Word_count": 15, "status": "pending" }
+    { "scene_n": 1, "time_origin": "03:12 - 03:20", "Footage": "Cảnh sát lạnh lùng...", "Effect": "Metal handcuffs clicking", "Character": "", "Voiceover": "You can't play the victim...", "Translate": "Bạn không thể đóng vai...", "Tone_of_Voice": "Tự nhiên", "Word_count": 6, "status": "pending" },
+    { "scene_n": 2, "time_origin": "03:20 - 03:25", "Footage": "Đám đông nhốn nháo...", "Effect": "Crowd noise", "Character": "", "Voiceover": "", "Translate": "", "Tone_of_Voice": "", "Word_count": 0, "status": "pending" }
   ]
 }
 
-KHÔNG thêm markdown \`\`\`json. CHỈ TRẢ VỀ ĐÚNG CẤU TRÚC JSON ĐÓ.
+DO NOT wrap the output in markdown \`\`\`json. RETURN ONLY THE RAW JSON OBJECT.
 Kịch bản: ${script}`);
 
       await performCutVideo(parsedData);
@@ -109,7 +118,7 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      alert("Đã xảy ra lỗi khi bóc tách kịch bản!");
+      alert("Đã xảy ra lỗi khi xử lý kịch bản!");
     }
   };
 
