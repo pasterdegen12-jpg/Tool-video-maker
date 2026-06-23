@@ -48,7 +48,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [mergingScenes, setMergingScenes] = useState({}); 
   const [mergedVideos, setMergedVideos] = useState({});
 
-  // 🚀 STATE MỚI: THEO DÕI TIẾN ĐỘ BATCH GEN & BATCH MERGE
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchGenProgress, setBatchGenProgress] = useState({ current: 0, total: 0 });
   const [batchMergeProgress, setBatchMergeProgress] = useState({ current: 0, total: 0 });
@@ -222,27 +221,67 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return finalUrl;
   };
 
+  // 🚀 HÀM UPLOAD VOICE CLONE SIÊU TỐC (CHỈ ĐẨY LÊN R2, KHÔNG DÙNG WHISPER)
+  const handleVoiceUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setVoiceCloneFile(file); setVoiceCloneUrl(URL.createObjectURL(file)); setIsTranscribing(true);
+    try {
+      setVoiceCloneRefText("Đang đồng bộ file lên Cloud..."); 
+      
+      const fileExt = file.name.split('.').pop() || 'mp3';
+      const uniqueFileName = `project_${projectId}/voice_clone_${Date.now()}.${fileExt}`;
+      const fileType = file.type || 'audio/mpeg';
+
+      const urlRes = await fetch('/api/get-upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName: uniqueFileName, fileType: fileType })
+      });
+      const { uploadUrl } = await urlRes.json();
+      if (!uploadUrl) throw new Error("Không lấy được Link kết nối Cloudflare");
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': fileType }
+      });
+      if (!uploadRes.ok) throw new Error("Upload Voice thất bại");
+
+      const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+      setVoiceCloneBase64(audioCloudUrl); 
+
+      setVoiceCloneRefText("Tải lên thành công! Đã sẵn sàng Gen Audio.");
+      await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: "Tải lên thành công! Đã sẵn sàng Gen Audio.", qwenEmbeddingUrl: null });
+      
+    } catch (error) { 
+      console.error(error); 
+      setVoiceCloneRefText("Lỗi xử lý. Thử lại."); 
+    } finally { 
+      setIsTranscribing(false); 
+    }
+  };
+
+  // 🚀 HÀM GEN AUDIO WAVESPEED TỐI ƯU
   const handleGenAudio = async (sceneNo, scriptText) => {
     if (!scriptText || scriptText.trim() === '') return;
 
-    // 🚀 CHỐT CHẶN CÁ NHÂN: Dành cho nút Gen Audio lẻ từng Scene
     if (!voiceCloneBase64) {
        alert("⚠️ Bạn chưa tải lên file âm thanh mẫu (Voice Clone) ở Bảng điều khiển!");
        return;
     }
 
+    // 🚀 BẮT ĐẦU KHÓA TRẠNG THÁI LOADING
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
     try {
       let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/["'”’“‘()[\]{}]/g, '').replace(/\s+/g, ' ');
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
       
-      // 🚀 CHỈ GỌI DUY NHẤT 1 API VOICE CLONE
       const endpoint = "https://api.wavespeed.ai/api/v3/wavespeed-ai/qwen3-tts/voice-clone";
         
       const payload = { 
         text: cleanText, 
-        audio: voiceCloneBase64, // Truyền thẳng file âm thanh trên Cloudflare
-        reference_text: voiceCloneRefText.trim(), 
+        audio: voiceCloneBase64, 
         language: "auto", 
         enable_sync_mode: true 
       };
@@ -261,11 +300,13 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const result = await response.json();
       let audioUrl = null;
 
-      // 🚀 XỬ LÝ KẾT QUẢ ĐỒNG BỘ HOẶC BẤT ĐỒNG BỘ
-      if (result.outputs && result.outputs.length > 0) {
-         audioUrl = result.outputs[0];
+      // 🚀 PARSE DỮ LIỆU ĐA NĂNG
+      if (result.status === "COMPLETED" || result.output || result.audio_url || result.audio?.url) {
+         const outObj = result.output || result.outputs?.[0] || result;
+         audioUrl = outObj.audio_url || outObj.audio?.url || outObj.url || (typeof outObj === 'string' ? outObj : null);
       } 
-      else if (result.task_id) {
+      // 🚀 BACKUP POLLING NẾU SYNC BỊ CRASH
+      else if (result.task_id && result.status !== "COMPLETED" && result.status !== "FAILED") {
         let attempts = 0; 
         let taskId = result.task_id;
         while (attempts < 60) {
@@ -276,7 +317,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           });
           const statusJson = await statusRes.json(); 
           if (statusJson.status === "COMPLETED" || statusJson.output?.task_status === "SUCCEEDED") {
-            audioUrl = statusJson.outputs?.[0] || statusJson.output?.audio_url || statusJson.output?.url;
+            const outObj = statusJson.output || statusJson.outputs?.[0] || statusJson;
+            audioUrl = outObj.audio_url || outObj.audio?.url || outObj.url;
             break;
           } else if (statusJson.status === "FAILED" || statusJson.output?.task_status === "FAILED") { 
             throw new Error(statusJson.error || "Generation Failed"); 
@@ -288,11 +330,14 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
+      } else {
+        throw new Error("API xử lý xong nhưng không tìm thấy Link Audio.");
       }
     } catch (error) { 
       console.error(error); 
       alert(`Lỗi Scene ${sceneNo}: ${error.message}`);
     } finally { 
+      // 🚀 CHỈ KẾT THÚC LOADING KHI ĐÃ CÓ KẾT QUẢ HOẶC GẶP LỖI THỰC SỰ
       setIsGenerating(prev => ({ ...prev, [sceneNo]: false })); 
     }
   };
@@ -303,12 +348,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return text && text.trim() !== '';
   });
 
-  // 🚀 BATCH GEN AUDIO (ĐÃ SỬA CHỮA)
   const handleStartBatchGen = async () => { 
-    // 🚀 TRẠM KIỂM SOÁT: Bắt buộc phải có Voice Clone
     if (!voiceCloneBase64) {
       alert("⚠️ Bạn chưa tải lên file âm thanh mẫu (Voice Clone). Vui lòng tải file ở Bảng điều khiển trước khi Gen Audio!");
-      setIsModalOpen(false); // Tự động đóng Modal để user đi tải file
+      setIsModalOpen(false); 
       return;
     }
 
@@ -340,7 +383,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 BATCH MERGE VIDEO (ĐÃ SỬA CHỮA)
   const handleStartMerge = async () => { 
     const scenesToMergeList = Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]);
     if (scenesToMergeList.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để Merge!");
@@ -374,7 +416,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     setTimeout(() => {
       setIsMergeModalOpen(false);
       setCheckedMergeScenes({});
-    }, 1000); // Tự đóng sau 1 giây
+    }, 1000); 
     alert("✅ Đã xử lý xong Batch Merge!");
   };
 
@@ -393,62 +435,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         });
       }
     } catch (error) { console.error(error); } finally { setMergingScenes(prev => ({ ...prev, [scene.scene_n]: false })); }
-  };
-
-  const handleVoiceUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setVoiceCloneFile(file); setVoiceCloneUrl(URL.createObjectURL(file)); setIsTranscribing(true);
-    try {
-      setVoiceCloneRefText("Đang tải lên Cloudflare R2..."); 
-      
-      const fileExt = file.name.split('.').pop() || 'mp3';
-      const uniqueFileName = `project_${projectId}/voice_clone_${Date.now()}.${fileExt}`;
-      const fileType = file.type || 'audio/mpeg';
-
-      const urlRes = await fetch('/api/get-upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: uniqueFileName, fileType: fileType })
-      });
-      const { uploadUrl } = await urlRes.json();
-      if (!uploadUrl) throw new Error("Không lấy được Link kết nối Cloudflare");
-
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': fileType }
-      });
-      if (!uploadRes.ok) throw new Error("Upload Voice thất bại");
-
-      const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
-      setVoiceCloneBase64(audioCloudUrl); 
-
-      // 🚀 CHUYỂN SANG DÙNG WAVESPEED WHISPER TURBO ĐỂ LẤY TEXT
-      setVoiceCloneRefText("Đang nhận diện Text (Wavespeed Whisper)...");
-      const response = await fetch("https://api.wavespeed.ai/api/v3/wavespeed-ai/openai-whisper-turbo", { 
-        method: "POST", 
-        headers: { 
-          "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}`, 
-          "Content-Type": "application/json" 
-        }, 
-        // enable_sync_mode bắt API trả kết quả ngay lập tức
-        body: JSON.stringify({ audio: audioCloudUrl, enable_sync_mode: true }) 
-      });
-      const result = await response.json(); 
-      const extractedText = result.outputs?.[0]?.text || result.outputs?.[0] || result.text;
-      const refText = extractedText ? extractedText.trim() : "Không nhận diện được giọng.";
-
-      // 🚀 KHÔNG CẦN BƯỚC TẠO EMBEDDING NỮA VÌ WAVESPEED CLONE TRỰC TIẾP TỪ AUDIO CLOUD URL
-      setVoiceCloneRefText(refText || "Upload thành công!");
-      await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: refText, qwenEmbeddingUrl: null });
-      
-    } catch (error) { 
-      console.error(error); 
-      setVoiceCloneRefText("Lỗi xử lý. Thử lại."); 
-    } finally { 
-      setIsTranscribing(false); 
-    }
   };
 
   const handleRemoveVoice = async () => {
@@ -520,7 +506,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         {(!originalScript || isEditingScript) ? (
           <div className="flex-1 flex flex-col gap-3 min-h-0 animate-in fade-in zoom-in-95 duration-200">
             <textarea value={originalScript} onChange={(e) => setOriginalScript(e.target.value)} placeholder="Paste kịch bản..." className={`flex-1 rounded-xl p-3.5 text-sm custom-scrollbar focus:outline-none focus:ring-2 focus:ring-blue-500/50 border transition-all resize-none ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-300' : 'bg-zinc-50 border-zinc-300 text-zinc-800'}`} />
-            {/* 🚀 ĐÃ SỬA: Màu xanh dương */}
             <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className={`w-full h-10 font-bold text-sm rounded-xl cursor-pointer transition-all shadow-md text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-500 hover:bg-blue-600'}`}>Lưu kịch bản</button>
           </div>
         ) : ( <div className={`flex-1 overflow-y-auto pr-2 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar animate-in fade-in duration-200 ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{originalScript}</div> )}
@@ -538,7 +523,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           {isEditingProjectName ? (
             <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4">
               <input type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSaveProjectName()} className={`border-b-2 border-blue-500 px-1 py-1.5 text-2xl font-bold focus:outline-none min-w-[300px] bg-transparent ${darkMode ? 'text-white' : 'text-black'}`} autoFocus />
-              {/* 🚀 ĐÃ SỬA: Màu xanh dương */}
               <button onClick={handleSaveProjectName} className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-lg font-bold shadow-md transition-colors cursor-pointer ${darkMode ? 'bg-blue-600 text-white hover:bg-blue-500' : 'bg-blue-500 text-white hover:bg-blue-600'}`}><Save size={16} /> Lưu</button>
             </div>
           ) : (
@@ -593,7 +577,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         
         <div className={`w-full h-[1px] my-1 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        {/* 🚀 ĐÃ SỬA: Nút Gen Audio đổi sang Gradient Tím hồng */}
         <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
           <Music size={16} /> Gen All Audio
         </button>
@@ -612,7 +595,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               <div className={`text-[11px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 custom-audio" />
               <div className="relative">
-                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} disabled={isTranscribing} className={`w-full h-10 px-3 border focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded-xl text-sm transition-all ${isTranscribing ? 'opacity-50' : ''} ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-900'}`} placeholder="Nhập Text mẫu..." />
+                <input type="text" value={voiceCloneRefText} readOnly className={`w-full h-10 px-3 border focus:outline-none rounded-xl text-xs transition-all opacity-80 ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-400' : 'bg-white border-zinc-300 text-zinc-600'}`} placeholder="Trạng thái tải lên..." />
                 {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
               </div>
             </div>
@@ -620,7 +603,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
 
         <div className="flex-1"></div>
-        {/* 🚀 ĐÃ SỬA: Nút Xuất File đổi sang Tone Xanh lá dịu mắt */}
         <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
           <Download size={16} /> Xuất File (Export)
         </button>
@@ -691,7 +673,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               <button onClick={() => setCheckedScenes({})} disabled={isBatchGenerating} className={`px-4 py-1.5 text-xs font-bold border disabled:opacity-50 disabled:cursor-not-allowed rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
             
-            {/* 🚀 THANH TIẾN ĐỘ BATCH GEN */}
             {isBatchGenerating && (
               <div className={`px-6 py-2.5 border-b text-sm font-semibold flex items-center justify-between shadow-inner ${darkMode ? 'bg-purple-900/20 border-white/10 text-purple-400' : 'bg-purple-50 border-zinc-200 text-purple-600'}`}>
                 <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Đang khởi tạo Audio...</span>
@@ -750,7 +731,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className={`px-4 py-1.5 text-xs font-bold border disabled:opacity-50 rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
 
-            {/* 🚀 THANH TIẾN ĐỘ BATCH MERGE */}
             {isMerging && (
               <div className={`px-6 py-2.5 border-b text-sm font-semibold flex items-center justify-between shadow-inner ${darkMode ? 'bg-blue-900/20 border-white/10 text-blue-400' : 'bg-blue-50 border-zinc-200 text-blue-600'}`}>
                 <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Đang Merge Video...</span>
@@ -846,6 +826,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             </div>
             <div className={`flex justify-end gap-3 pt-5 mt-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
               <button onClick={() => setActiveGenModal(null)} className={`h-10 px-6 rounded-xl font-medium cursor-pointer transition-colors ${darkMode ? 'bg-transparent hover:bg-white/5 text-zinc-300' : 'bg-transparent hover:bg-zinc-100 text-zinc-700'}`}>Hủy bỏ</button>
+              
+              {/* 🚀 ĐÃ SỬA: Bấm nút xác nhận xong, Modal đóng đi nhưng Main UI vẫn sẽ báo Loading */}
               <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
             </div>
           </div>
