@@ -33,54 +33,78 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
 
   console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudflare R2...`);
   
-  // 🚀 BẢN VÁ: DÙNG VÒNG LẶP ĐỂ UPLOAD TUẦN TỰ TỪNG FILE TRÁNH NGHẼN MẠNG
+  // 🚀 VÒNG LẶP TUẦN TỰ: TẢI LÊN TỪNG FILE MỘT
   for (let i = 0; i < uploadData.length; i++) {
     const scene = uploadData[i];
     
     if (scene.videoUrl && scene.videoUrl.startsWith('blob:')) {
-      try {
-        console.log(`-> Đang xử lý Scene ${scene.scene_n} (${i + 1}/${uploadData.length})...`);
-        const response = await fetch(scene.videoUrl);
-        const blob = await response.blob();
-        
-        const uniqueFileName = `${projectId}/scene_${scene.scene_n}_${Date.now()}.mp4`;
+      let success = false;
+      let retries = 3; // 🚀 CƠ CHẾ 1: Cho phép thử lại tối đa 3 lần nếu rớt mạng
+      
+      while (retries > 0 && !success) {
+        try {
+          console.log(`-> Đang xử lý Scene ${scene.scene_n} (${i + 1}/${uploadData.length})... (Lần thử: ${4 - retries}/3)`);
+          
+          const response = await fetch(scene.videoUrl);
+          const blob = await response.blob();
+          
+          const uniqueFileName = `${projectId}/scene_${scene.scene_n}_${Date.now()}.mp4`;
 
-        // Gọi Vercel API xin Link Upload
-        const urlRes = await withTimeout(
-          fetch('/api/get-upload-url', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fileName: uniqueFileName, fileType: 'video/mp4' })
-          }),
-          15000, 
-          "Vercel API không phản hồi khi xin link upload"
-        );
-        
-        const { uploadUrl } = await urlRes.json();
-        if (!uploadUrl) throw new Error("Server không cấp được Link Upload R2");
+          // Gọi Vercel API xin Link Upload
+          const urlRes = await withTimeout(
+            fetch('/api/get-upload-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fileName: uniqueFileName, fileType: 'video/mp4' })
+            }),
+            15000, 
+            "Vercel API không phản hồi khi xin link upload"
+          );
+          
+          if (!urlRes.ok) {
+             if (urlRes.status === 429) throw new Error("Vercel Rate Limit (Quá nhiều request)");
+             throw new Error("Server trả về lỗi khi xin Link");
+          }
 
-        // Đẩy Video lên Cloudflare (PUT)
-        const uploadRes = await withTimeout(
-          fetch(uploadUrl, {
-            method: 'PUT', 
-            body: blob,
-            headers: { 'Content-Type': 'video/mp4' } 
-          }),
-          600000, 
-          `Cloudflare upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` 
-        );
-        
-        if (uploadRes.ok) {
-           const finalVideoUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
-           uploadData[i].videoUrl = finalVideoUrl;
-           console.log(`✅ [THÀNH CÔNG] Đã upload xong Scene ${scene.scene_n}!`);
-        } else {
-           throw new Error(`Cloudflare trả về mã lỗi: ${uploadRes.status}`);
+          const { uploadUrl } = await urlRes.json();
+          if (!uploadUrl) throw new Error("Server không cấp được Link Upload R2");
+
+          // Đẩy Video lên Cloudflare (PUT)
+          const uploadRes = await withTimeout(
+            fetch(uploadUrl, {
+              method: 'PUT', 
+              body: blob,
+              headers: { 'Content-Type': 'video/mp4' } 
+            }),
+            600000, 
+            `Cloudflare upload bị kẹt quá 10 phút cho Scene ${scene.scene_n}` 
+          );
+          
+          if (uploadRes.ok) {
+             const finalVideoUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+             uploadData[i].videoUrl = finalVideoUrl;
+             console.log(`✅ [THÀNH CÔNG] Đã upload xong Scene ${scene.scene_n}!`);
+             
+             success = true; // Đánh dấu thành công để thoát vòng lặp while
+          } else {
+             throw new Error(`Cloudflare trả về mã lỗi: ${uploadRes.status}`);
+          }
+        } catch (error) {
+          retries--;
+          console.warn(`⚠️ Lỗi tải Scene ${scene.scene_n}: ${error.message}. Đang thử lại... (Còn ${retries} lần)`);
+          
+          if (retries === 0) {
+            console.error(`❌ [LỖI TẢI LÊN] Scene ${scene.scene_n} thất bại hoàn toàn!`);
+            throw new Error(`Scene ${scene.scene_n} tải lên R2 thất bại: ${error.message}`);
+          }
+          
+          // 🚀 CƠ CHẾ 2: Nghỉ 2.5 giây trước khi thử lại để Server nhả block Rate Limit
+          await new Promise(resolve => setTimeout(resolve, 2500));
         }
-      } catch (error) {
-        console.error(`❌ [LỖI TẢI LÊN] Scene ${scene.scene_n}:`, error.message);
-        throw new Error(`Scene ${scene.scene_n} tải lên R2 thất bại: ${error.message}`);
       }
+      
+      // 🚀 CƠ CHẾ 3: Nghỉ ngơi 1.5 giây giữa mỗi video thành công để tránh dính Rate Limit cho video tiếp theo
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
   }
 

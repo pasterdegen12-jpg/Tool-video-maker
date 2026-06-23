@@ -72,7 +72,6 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      // 🚀 SỬA ĐỔI: Hiển thị đúng lỗi từ API trả về
       alert(error.message || "Đã xảy ra lỗi trong quá trình xử lý!");
     }
   };
@@ -119,7 +118,6 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      // 🚀 SỬA ĐỔI: Hiển thị đúng lỗi từ API trả về
       alert(error.message || "Đã xảy ra lỗi khi xử lý kịch bản!");
     }
   };
@@ -169,16 +167,17 @@ Kịch bản: ${script}`);
 
       } catch (err) {
         if (i === geminiKeys.length - 1) {
-          // 🚀 SỬA ĐỔI: Thay đổi câu thông báo lỗi quá tải
           throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
         }
       }
     }
-    // 🚀 SỬA ĐỔI: Chốt chặn bắt buộc phải có để tránh lỗi "reading 'scenes' of undefined"
     throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
   };
 
   const performCutVideo = async (parsedData) => {
+    // 🚀 BỔ SUNG CỜ THEO DÕI ĐỂ BÁO LỖI ĐÚNG GIAI ĐOẠN
+    let isVideoProcessingPhase = true; 
+
     try {
       setLoadingStatus('Đang kiểm tra lõi xử lý Video...');
       if (!isFfmpegLoaded) {
@@ -195,6 +194,7 @@ Kịch bản: ${script}`);
       
       setCutProgress({ current: 0, total: validScenes.length });
 
+      // Vẫn lấy tối đa luồng để chạy nhanh nhất có thể theo yêu cầu của bạn
       const userCores = navigator.hardwareConcurrency || 4;
       const threadsToUse = Math.max(1, Math.floor(userCores * 0.8));
 
@@ -223,7 +223,9 @@ Kịch bản: ${script}`);
           '-threads', threadsToUse.toString(),
           '-c:v', 'libx264', 
           '-preset', 'ultrafast', 
-          '-crf', '23',
+          '-crf', '25', // Điều chỉnh cực nhẹ để nới RAM
+          '-vf', "scale='min(1920,iw)':-2", // 🚀 KHÓA TRẦN ĐỘ PHÂN GIẢI Ở 1080P ĐỂ CHỐNG SỐC RAM
+          '-max_muxing_queue_size', '4096', // Tăng vùng đệm
           '-tune', 'fastdecode', 
           '-c:a', 'copy', 
           outputName
@@ -237,11 +239,15 @@ Kịch bản: ${script}`);
         scene.videoUrl = blobUrl;
         scene.status = 'cut';
 
+        // Xóa rác ngay lập tức
         try {
           await ffmpeg.deleteFile(outputName);
         } catch (e) {
           console.warn(`Không thể dọn dẹp file ${outputName}`, e);
         }
+
+        // Dừng cực ngắn 50ms cho luồng trình duyệt kịp xử lý xóa RAM, không làm chậm quá trình
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
       
       try {
@@ -250,6 +256,8 @@ Kịch bản: ${script}`);
         console.warn("Không thể dọn dẹp input_video.mp4", e);
       }
       
+      // 🚀 CHUYỂN CỜ KHI ĐÃ CẮT XONG, BẮT ĐẦU UPLOAD CLOUD
+      isVideoProcessingPhase = false;
       setLoadingStatus('Đang đồng bộ Video lên mây (Vui lòng chờ)...');
       
       const savedProjectId = await autoSaveToFirebase(
@@ -267,9 +275,22 @@ Kịch bản: ${script}`);
       }
 
     } catch (error) {
-      console.error(error); 
+      console.error("Chi tiết lỗi:", error); 
       setIsLocked(false);
-      alert("Lỗi khi xử lý video hoặc tải lên Cloud!");
+      
+      // 🚀 BẮT BỆNH VÀ HIỂN THỊ POPUP THÔNG MINH
+      const errorMsg = error?.message?.toLowerCase() || String(error).toLowerCase();
+      
+      if (isVideoProcessingPhase) {
+         if (errorMsg.includes("out of bounds") || errorMsg.includes("memory") || errorMsg.includes("abort")) {
+            alert("❌ Dung lượng RAM trình duyệt không đủ để cắt video (Tràn bộ nhớ WebAssembly). Vui lòng F5 tải lại trang, tắt bớt các tab khác và thử lại!");
+         } else {
+            alert("❌ Đã xảy ra lỗi trong quá trình cắt video (FFmpeg): " + (error.message || "Lỗi không xác định"));
+         }
+      } else {
+         // Nếu lỗi xảy ra khi isVideoProcessingPhase = false, nghĩa là đang bị lỗi tải Firebase
+         alert("❌ Lỗi khi đồng bộ dữ liệu lên Cloud Database (Firebase)!");
+      }
     } 
   };
 
