@@ -37,7 +37,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [voiceCloneFile, setVoiceCloneFile] = useState(null);
   const [voiceCloneBase64, setVoiceCloneBase64] = useState(null);
   const [voiceCloneRefText, setVoiceCloneRefText] = useState("");
-  // 🚀 STATE MỚI: Tách biệt biến thông báo trạng thái tải Voice
   const [voiceUploadStatus, setVoiceUploadStatus] = useState("");
   const [qwenEmbeddingUrl, setQwenEmbeddingUrl] = useState(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -87,7 +86,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           if (projectInfo.generatedAudios) setGeneratedAudios(projectInfo.generatedAudios);
           if (projectInfo.mergedVideos) setMergedVideos(projectInfo.mergedVideos);
           
-          // 🚀 Dọn dẹp Database rác nếu phiên bản trước lỡ lưu nhầm câu "Tải lên thành công" vào Ref Text
           if (projectInfo.voiceCloneRefText) {
              if (projectInfo.voiceCloneRefText.includes("Tải lên thành công") || projectInfo.voiceCloneRefText.includes("Đang")) {
                 setVoiceCloneRefText("");
@@ -162,40 +160,121 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
+  // 🚀 BẢN VÁ LỖI LOGIC MIX ÂM THANH (CROSSFADE CHUẨN)
   const processMergeSingleScene = async (scene, volValue) => {
     const videoUrl = scene.videoUrl || scene.startFrameUrl;
     const aiAudioUrl = generatedAudios[scene.scene_n];
     if (!videoUrl) return null;
+
+    // Tính toán tỷ lệ Mix chéo (Crossfade)
+    const origVol = Number(volValue) / 100;
+    const aiVol = 1.0 - origVol;
+
     let finalUrl = null;
+    const inVid = `vid_${scene.scene_n}.mp4`;
+    const inAud = `aud_${scene.scene_n}.mp3`;
+    const outName = `Scene_${scene.scene_n}_Merged.mp4`;
 
-    if (!aiAudioUrl) {
-      finalUrl = videoUrl;
-    } else {
-      const inVid = `vid_${scene.scene_n}.mp4`;
-      const inAud = `aud_${scene.scene_n}.mp3`;
-      const outName = `Scene_${scene.scene_n}_Merged.mp4`;
+    try {
+      let exitCode = -1;
 
-      try {
-        if (scene.startFrameUrl && !scene.videoUrl) {
-          await ffmpeg.writeFile('image.jpg', await fetchFile(scene.startFrameUrl));
-          await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
-          await ffmpeg.exec(['-loop', '1', '-i', 'image.jpg', '-i', inAud, '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-pix_fmt', 'yuv420p', outName]);
+      // ==========================================
+      // TRƯỜNG HỢP 1: KHÔNG CÓ AI AUDIO (Chỉ có video gốc)
+      // ==========================================
+      if (!aiAudioUrl) {
+        if (origVol === 1) {
+          return videoUrl; // Giữ nguyên 100% bản gốc, không cần render lại
+        }
+        await ffmpeg.writeFile(inVid, await fetchFile(videoUrl));
+        
+        if (origVol === 0) {
+          // Tắt hoàn toàn âm thanh gốc
+          try { exitCode = await ffmpeg.exec(['-i', inVid, '-c:v', 'copy', '-an', outName]); } catch(e){}
         } else {
-          await ffmpeg.writeFile(inVid, await fetchFile(videoUrl));
-          await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
-          let exitCode = -1;
-          if (volValue == 0) {
-            try { exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]); } catch (e) { exitCode = 1; }
-          } else {
-            const vol = volValue / 100;
-            try { exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-filter_complex', `[0:a]volume=${vol}[a1];[1:a]volume=1.0[a2];[a1][a2]amix=inputs=2:duration=shortest[aout]`, '-map', '0:v', '-map', '[aout]', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]); } catch (e) { exitCode = 1; }
-            if (exitCode !== 0) try { exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]); } catch (e) {}
+          // Giảm âm lượng gốc
+          try { exitCode = await ffmpeg.exec(['-i', inVid, '-filter:a', `volume=${origVol}`, '-c:v', 'copy', '-c:a', 'aac', outName]); } catch(e){}
+          // Nếu video không có luồng audio, lệnh filter sẽ lỗi -> Fallback sang copy video không audio
+          if (exitCode !== 0) { 
+            try { exitCode = await ffmpeg.exec(['-i', inVid, '-c:v', 'copy', '-an', outName]); } catch(e){}
           }
         }
+      }
+      // ==========================================
+      // TRƯỜNG HỢP 2: CÓ AI AUDIO + INPUT CHỈ LÀ ẢNH TĨNH
+      // ==========================================
+      else if (scene.startFrameUrl && !scene.videoUrl) {
+        await ffmpeg.writeFile('image.jpg', await fetchFile(scene.startFrameUrl));
+        await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
+        
+        if (aiVol === 0) {
+          // Ép bỏ AI Audio -> Tạo video im lặng từ ảnh (3 giây)
+           try { exitCode = await ffmpeg.exec(['-loop', '1', '-i', 'image.jpg', '-f', 'lavfi', '-i', 'anullsrc', '-c:v', 'libx264', '-c:a', 'aac', '-t', '3', '-pix_fmt', 'yuv420p', outName]); } catch(e){}
+        } else {
+          // Ghép Ảnh + AI Audio (có chỉnh âm lượng của AI)
+           try { exitCode = await ffmpeg.exec(['-loop', '1', '-i', 'image.jpg', '-i', inAud, '-filter:a', `volume=${aiVol}`, '-c:v', 'libx264', '-c:a', 'aac', '-shortest', '-pix_fmt', 'yuv420p', outName]); } catch(e){}
+        }
+      }
+      // ==========================================
+      // TRƯỜNG HỢP 3: CÓ CẢ VIDEO GỐC VÀ AI AUDIO
+      // ==========================================
+      else {
+        await ffmpeg.writeFile(inVid, await fetchFile(videoUrl));
+        await ffmpeg.writeFile(inAud, await fetchFile(aiAudioUrl));
 
+        if (origVol === 0) {
+          // CHỈ LẤY AI AUDIO (Loại bỏ âm thanh gốc hoàn toàn bằng map)
+          try { exitCode = await ffmpeg.exec(['-i', inVid, '-i', inAud, '-map', '0:v', '-map', '1:a', '-filter:a', `volume=${aiVol}`, '-c:v', 'copy', '-c:a', 'aac', '-shortest', outName]); } catch(e){}
+        }
+        else if (aiVol === 0) {
+          // CHỈ LẤY ÂM THANH GỐC (Loại bỏ AI Audio hoàn toàn)
+          try { exitCode = await ffmpeg.exec(['-i', inVid, '-filter:a', `volume=${origVol}`, '-c:v', 'copy', '-c:a', 'aac', outName]); } catch(e){}
+          if (exitCode !== 0) {
+             try { exitCode = await ffmpeg.exec(['-i', inVid, '-c:v', 'copy', '-an', outName]); } catch(e){}
+          }
+        }
+        else {
+          // MIX CẢ HAI VỚI TỶ LỆ CROSSFADE
+          try {
+            exitCode = await ffmpeg.exec([
+              '-i', inVid,
+              '-i', inAud,
+              '-filter_complex', `[0:a]volume=${origVol}[a1];[1:a]volume=${aiVol}[a2];[a1][a2]amix=inputs=2:duration=shortest[aout]`,
+              '-map', '0:v',
+              '-map', '[aout]',
+              '-c:v', 'copy',
+              '-c:a', 'aac',
+              '-shortest',
+              outName
+            ]);
+          } catch(e) {}
+
+          // FALLBACK: Nếu video gốc KHÔNG CÓ AUDIO (làm bộ lọc amix bị sập)
+          // -> Chúng ta tự động rơi về chế độ: Chỉ lấy AI Audio
+          if (exitCode !== 0) {
+            try {
+              exitCode = await ffmpeg.exec([
+                '-i', inVid,
+                '-i', inAud,
+                '-map', '0:v',
+                '-map', '1:a',
+                '-filter:a', `volume=${aiVol}`,
+                '-c:v', 'copy',
+                '-c:a', 'aac',
+                '-shortest',
+                outName
+              ]);
+            } catch(e) {}
+          }
+        }
+      }
+
+      // ==========================================
+      // UPLOAD LÊN CLOUDFLARE R2
+      // ==========================================
+      if (exitCode === 0) {
         const outData = await ffmpeg.readFile(outName);
         const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
-        
+
         try {
           const uniqueFileName = `project_${projectId}/merged_scene_${scene.scene_n}_${Date.now()}.mp4`;
           const urlRes = await fetch('/api/get-upload-url', {
@@ -211,25 +290,32 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               body: outBlob,
               headers: { 'Content-Type': 'video/mp4' }
             });
-            
+
             if (uploadRes.ok) {
               finalUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
             } else {
               throw new Error("Lỗi đẩy lên R2");
             }
           }
-        } catch(err) { 
+        } catch(err) {
           console.error("Lỗi upload R2 (Dùng tạm file Local):", err);
-          finalUrl = URL.createObjectURL(outBlob); 
+          finalUrl = URL.createObjectURL(outBlob);
         }
-        
-        try { await ffmpeg.deleteFile(inVid); } catch(e){}
-        try { await ffmpeg.deleteFile('image.jpg'); } catch(e){}
-        try { await ffmpeg.deleteFile(inAud); } catch(e){}
-        try { await ffmpeg.deleteFile(outName); } catch(e){}
-      } catch (e) { console.error(e); }
+      } else {
+          console.warn(`Render FFmpeg thất bại cho Scene ${scene.scene_n}, mã lỗi: ${exitCode}`);
+      }
+
+      // Dọn dẹp RAM WebAssembly
+      try { await ffmpeg.deleteFile(inVid); } catch(e){}
+      try { await ffmpeg.deleteFile('image.jpg'); } catch(e){}
+      try { await ffmpeg.deleteFile(inAud); } catch(e){}
+      try { await ffmpeg.deleteFile(outName); } catch(e){}
+
+    } catch (e) {
+      console.error("Lỗi Mix Audio nghiêm trọng:", e);
     }
-    return finalUrl;
+
+    return finalUrl || videoUrl; // Trả về video cũ nếu xảy ra lỗi
   };
 
   const handleVoiceUpload = async (e) => {
@@ -262,7 +348,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
       setVoiceCloneBase64(audioCloudUrl); 
 
-      // 🚀 Đã tách biệt Status ra khỏi Reference Text
       setVoiceUploadStatus("Tải lên thành công! Đã sẵn sàng Gen Audio.");
       await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, qwenEmbeddingUrl: null });
       
@@ -274,7 +359,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 BẢN VÁ WAVESPEED API TOÀN DIỆN
   const handleGenAudio = async (sceneNo, scriptText) => {
     if (!scriptText || scriptText.trim() === '') return;
 
@@ -296,7 +380,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         language: "auto"
       };
 
-      // Nạp Reference Text một cách cẩn thận nếu user có gõ transcript
       if (voiceCloneRefText && voiceCloneRefText.trim() !== '') {
          payload.reference_text = voiceCloneRefText.trim();
       }
@@ -315,14 +398,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const result = await response.json();
       let audioUrl = null;
 
-      // 🚀 BẮT KẾT QUẢ CHUẨN SCHEMA CỦA WAVESPEED (Nằm trong object `data`)
       if (result.code === 200 && result.data) {
         if (result.data.status === "completed" || result.data.status === "success") {
-          // Lấy mảng outputs
           audioUrl = result.data.outputs?.[0];
         } 
         else if (result.data.status === "created" || result.data.status === "processing") {
-          // Quá trình Polling nếu API bắt chờ
           let attempts = 0; 
           const getUrl = result.data.urls.get;
           while (attempts < 60) {
@@ -520,7 +600,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   return (
     <div className={`h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300 ${darkMode ? 'bg-[#09090B] text-gray-200' : 'bg-zinc-100 text-zinc-900'}`}>
       
-      {/* 🚀 CỘT TRÁI: KỊCH BẢN GỐC */}
+      {/* CỘT TRÁI: KỊCH BẢN GỐC */}
       <div className={`fixed left-6 top-24 bottom-6 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex transition-all duration-300 border ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}><FileText size={16} className="text-blue-500" /> Kịch bản gốc</div>
@@ -538,7 +618,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
-      {/* 🚀 CỘT GIỮA */}
+      {/* CỘT GIỮA */}
       <div className="flex flex-col gap-6 w-full pb-20 px-0 xl:pl-[310px] xl:pr-[290px]">
         
         {/* Thanh Header & Tabs */}
@@ -585,7 +665,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         {activeTab === 'storyboard' && <StoryboardTab parsedData={parsedData} generatedAudios={generatedAudios} isGenerating={isGenerating} mergingScenes={mergingScenes} mergedVideos={mergedVideos} setActiveEditSceneModal={setActiveEditSceneModal} frameInputRef={frameInputRef} activeUploadIdRef={activeUploadIdRef} setActiveGenModal={setActiveGenModal} handleDeleteScene={handleDeleteScene} globalMixVol={globalMixVol} setSingleMixVol={setSingleMixVol} setActiveMergeModal={setActiveMergeModal} forceDownloadVideo={forceDownloadVideo} projectType={projectType} darkMode={darkMode} />}
       </div>
 
-      {/* 🚀 CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}
+      {/* CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}
       <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         
         <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
@@ -618,7 +698,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               <div className={`text-[11px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 custom-audio" />
               
-              {/* 🚀 ĐÃ SỬA: Tách riêng Input Reference Text cho Qwen3 */}
               <div className="relative">
                 <input 
                   type="text" 
@@ -632,7 +711,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                 {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
               </div>
               
-              {/* 🚀 Hiển thị câu báo Status thành công ở phía dưới thay vì chui vào Input */}
               {voiceUploadStatus && <div className="text-[11px] font-semibold text-green-500 px-1">{voiceUploadStatus}</div>}
             </div>
           )}
@@ -644,7 +722,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </button>
       </div>
 
-      {/* 🚀 MODAL: SỬA SCENE */}
+      {/* CÁC MODAL LÀM VIỆC */}
+      
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -695,7 +774,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
 
-      {/* 🚀 MODAL: BATCH GEN AUDIO */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -746,7 +824,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
 
-      {/* 🚀 MODAL: BATCH MERGE VIDEO */}
       {isMergeModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -804,7 +881,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
 
-      {/* 🚀 MODAL: EXPORT BATCH */}
       {isExportModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -848,7 +924,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
       
-      {/* 🚀 MODAL: SINGLE GEN AUDIO */}
       {activeGenModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-md p-7 shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -869,7 +944,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
       
-      {/* 🚀 MODAL: SINGLE MERGE */}
       {activeMergeModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-sm p-7 shadow-2xl flex flex-col items-center relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
