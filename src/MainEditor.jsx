@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2, Sun, Moon } from 'lucide-react';
+import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2 } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/util';
 import { useNavigate } from 'react-router-dom';
 
@@ -72,7 +72,8 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      alert("Đã xảy ra lỗi trong quá trình xử lý!");
+      // 🚀 SỬA ĐỔI: Hiển thị đúng lỗi từ API trả về
+      alert(error.message || "Đã xảy ra lỗi trong quá trình xử lý!");
     }
   };
 
@@ -118,7 +119,8 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      alert("Đã xảy ra lỗi khi xử lý kịch bản!");
+      // 🚀 SỬA ĐỔI: Hiển thị đúng lỗi từ API trả về
+      alert(error.message || "Đã xảy ra lỗi khi xử lý kịch bản!");
     }
   };
 
@@ -151,13 +153,11 @@ Kịch bản: ${script}`);
         
         const rawText = data.candidates[0].content.parts[0].text;
         
-        // 🚀 BẢN VÁ 1: Nới lỏng Regex để bắt được cả Object {} và Array [] trong trường hợp AI ngáo
         const jsonMatch = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
         if (!jsonMatch) throw new Error("Lỗi cấu trúc trả về từ AI.");
         
         let parsedJson = JSON.parse(jsonMatch[0]);
         
-        // Đảm bảo luôn trả về Object bọc ngoài dù AI có lỡ trả về Array
         if (Array.isArray(parsedJson)) {
           parsedJson = { characters: [], scenes: parsedJson };
         }
@@ -169,10 +169,13 @@ Kịch bản: ${script}`);
 
       } catch (err) {
         if (i === geminiKeys.length - 1) {
-          throw new Error("Tất cả API Key hiện đều đang bị quá tải. Vui lòng chờ 1 phút rồi thử lại!");
+          // 🚀 SỬA ĐỔI: Thay đổi câu thông báo lỗi quá tải
+          throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
         }
       }
     }
+    // 🚀 SỬA ĐỔI: Chốt chặn bắt buộc phải có để tránh lỗi "reading 'scenes' of undefined"
+    throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
   };
 
   const performCutVideo = async (parsedData) => {
@@ -192,9 +195,7 @@ Kịch bản: ${script}`);
       
       setCutProgress({ current: 0, total: validScenes.length });
 
-      // 🚀 TÍNH TOÁN LÕI CPU CỦA MÁY NGƯỜI DÙNG
       const userCores = navigator.hardwareConcurrency || 4;
-      // Dành khoảng 80% sức mạnh CPU cho FFmpeg, giữ lại 1-2 lõi để tab trình duyệt không bị đơ giật
       const threadsToUse = Math.max(1, Math.floor(userCores * 0.8));
 
       for (let i = 0; i < updatedScenes.length; i++) {
@@ -215,12 +216,11 @@ Kịch bản: ${script}`);
         const startSec = timeToSeconds(start);
         const duration = timeToSeconds(end) - startSec;
         
-        // 🚀 ĐƯA BIẾN THREADS VÀO LỆNH THỰC THI CỦA FFMPEG
         await ffmpeg.exec([
           '-ss', startSec.toString(), 
           '-i', 'input_video.mp4', 
           '-t', duration.toString(), 
-          '-threads', threadsToUse.toString(), // <-- ÉP CHẠY ĐA LUỒNG TẠI ĐÂY
+          '-threads', threadsToUse.toString(),
           '-c:v', 'libx264', 
           '-preset', 'ultrafast', 
           '-crf', '23',
@@ -237,7 +237,6 @@ Kịch bản: ${script}`);
         scene.videoUrl = blobUrl;
         scene.status = 'cut';
 
-        // 🚀 BẢN VÁ 2.1: QUAN TRỌNG! Xóa file khỏi RAM của WebAssembly ngay sau khi lấy được Blob
         try {
           await ffmpeg.deleteFile(outputName);
         } catch (e) {
@@ -245,7 +244,6 @@ Kịch bản: ${script}`);
         }
       }
       
-      // 🚀 BẢN VÁ 2.2: Dọn dẹp luôn file gốc dung lượng lớn khỏi RAM
       try {
         await ffmpeg.deleteFile('input_video.mp4');
       } catch (e) {

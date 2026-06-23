@@ -48,6 +48,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [mergingScenes, setMergingScenes] = useState({}); 
   const [mergedVideos, setMergedVideos] = useState({});
 
+  // 🚀 STATE MỚI: THEO DÕI TIẾN ĐỘ BATCH GEN & BATCH MERGE
+  const [isBatchGenerating, setIsBatchGenerating] = useState(false);
+  const [batchGenProgress, setBatchGenProgress] = useState({ current: 0, total: 0 });
+  const [batchMergeProgress, setBatchMergeProgress] = useState({ current: 0, total: 0 });
+
   const fileInputRef = useRef(null);
   const frameInputRef = useRef(null);
   const avatarInputRef = useRef(null);
@@ -219,47 +224,77 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
   const handleGenAudio = async (sceneNo, scriptText) => {
     if (!scriptText || scriptText.trim() === '') return;
+
+    // 🚀 CHỐT CHẶN CÁ NHÂN: Dành cho nút Gen Audio lẻ từng Scene
+    if (!voiceCloneBase64) {
+       alert("⚠️ Bạn chưa tải lên file âm thanh mẫu (Voice Clone) ở Bảng điều khiển!");
+       return;
+    }
+
     setIsGenerating(prev => ({ ...prev, [sceneNo]: true }));
     try {
       let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/["'”’“‘()[\]{}]/g, '').replace(/\s+/g, ' ');
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
       
-      const isClone = !!qwenEmbeddingUrl;
-      const endpoint = "https://queue.fal.run/fal-ai/qwen-3-tts/text-to-speech/1.7b";
-      const payload = isClone ? { text: cleanText, speaker_voice_embedding_file_url: qwenEmbeddingUrl, reference_text: voiceCloneRefText.trim() } : { text: cleanText, voice: "Vivian" };
+      // 🚀 CHỈ GỌI DUY NHẤT 1 API VOICE CLONE
+      const endpoint = "https://api.wavespeed.ai/api/v3/wavespeed-ai/qwen3-tts/voice-clone";
+        
+      const payload = { 
+        text: cleanText, 
+        audio: voiceCloneBase64, // Truyền thẳng file âm thanh trên Cloudflare
+        reference_text: voiceCloneRefText.trim(), 
+        language: "auto", 
+        enable_sync_mode: true 
+      };
 
       const response = await fetch(endpoint, {
-        method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" },
+        method: "POST", 
+        headers: { 
+          "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Lỗi API Fal AI.");
-      const queueData = await response.json();
-      let result = null;
+      if (!response.ok) throw new Error("Lỗi API Wavespeed Voice Clone.");
+      
+      const result = await response.json();
+      let audioUrl = null;
 
-      if (queueData.status_url) {
-        let attempts = 0; let lastStatus = "IN_QUEUE";
-        while (attempts < 150) {
-          attempts++; await new Promise(resolve => setTimeout(resolve, 2000));
-          const statusRes = await fetch(queueData.status_url, { method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` } });
-          const statusJson = await statusRes.json(); lastStatus = statusJson.status;
-          if (lastStatus === "COMPLETED") {
-            const finalLink = statusJson.response_url || queueData.response_url;
-            if (finalLink) { const finalRes = await fetch(finalLink, { method: "GET", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` } }); result = await finalRes.json(); } 
-            else { result = statusJson.payload || statusJson.data || statusJson; }
+      // 🚀 XỬ LÝ KẾT QUẢ ĐỒNG BỘ HOẶC BẤT ĐỒNG BỘ
+      if (result.outputs && result.outputs.length > 0) {
+         audioUrl = result.outputs[0];
+      } 
+      else if (result.task_id) {
+        let attempts = 0; 
+        let taskId = result.task_id;
+        while (attempts < 60) {
+          attempts++; 
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const statusRes = await fetch(`https://api.wavespeed.ai/api/v3/tasks/${taskId}`, { 
+            headers: { "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}` } 
+          });
+          const statusJson = await statusRes.json(); 
+          if (statusJson.status === "COMPLETED" || statusJson.output?.task_status === "SUCCEEDED") {
+            audioUrl = statusJson.outputs?.[0] || statusJson.output?.audio_url || statusJson.output?.url;
             break;
-          } else if (lastStatus === "FAILED") { throw new Error(statusJson.error); }
+          } else if (statusJson.status === "FAILED" || statusJson.output?.task_status === "FAILED") { 
+            throw new Error(statusJson.error || "Generation Failed"); 
+          }
         }
-      } else { result = queueData; }
+      }
 
-      const audioUrl = result?.audio?.url || result?.audio_file?.url || result?.audio_url || result?.url || (typeof result?.audio === 'string' ? result.audio : null);
       if (audioUrl) {
         const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       }
-    } catch (error) { console.error(error); alert(`Lỗi Scene ${sceneNo}: ${error.message}`);
-    } finally { setIsGenerating(prev => ({ ...prev, [sceneNo]: false })); }
+    } catch (error) { 
+      console.error(error); 
+      alert(`Lỗi Scene ${sceneNo}: ${error.message}`);
+    } finally { 
+      setIsGenerating(prev => ({ ...prev, [sceneNo]: false })); 
+    }
   };
 
   const getTextToGen = (scene) => isSemi ? scene.Voiceover : (scene.Dialogue || scene.Voiceover);
@@ -268,25 +303,53 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return text && text.trim() !== '';
   });
 
+  // 🚀 BATCH GEN AUDIO (ĐÃ SỬA CHỮA)
   const handleStartBatchGen = async () => { 
+    // 🚀 TRẠM KIỂM SOÁT: Bắt buộc phải có Voice Clone
+    if (!voiceCloneBase64) {
+      alert("⚠️ Bạn chưa tải lên file âm thanh mẫu (Voice Clone). Vui lòng tải file ở Bảng điều khiển trước khi Gen Audio!");
+      setIsModalOpen(false); // Tự động đóng Modal để user đi tải file
+      return;
+    }
+
     const scenesToGen = Object.keys(checkedScenes).filter(k => checkedScenes[k]);
     if (scenesToGen.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
-    setIsModalOpen(false); 
-    const promises = scenesToGen.map(sceneNo => {
+    
+    setIsBatchGenerating(true);
+    setBatchGenProgress({ current: 0, total: scenesToGen.length });
+    let completed = 0;
+
+    const promises = scenesToGen.map(async (sceneNo) => {
       const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
       const text = getTextToGen(scene);
-      if (scene && text) return handleGenAudio(scene.scene_n, text);
-      return Promise.resolve();
+      if (scene && text) {
+        await handleGenAudio(scene.scene_n, text);
+      }
+      completed++;
+      setBatchGenProgress(prev => ({ ...prev, current: completed }));
     });
-    try { await Promise.all(promises); } finally { setCheckedScenes({}); }
+
+    try { 
+      await Promise.all(promises); 
+    } finally { 
+      setIsBatchGenerating(false);
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setCheckedScenes({});
+      }, 1000); 
+    }
   };
 
+  // 🚀 BATCH MERGE VIDEO (ĐÃ SỬA CHỮA)
   const handleStartMerge = async () => { 
     const scenesToMergeList = Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]);
     if (scenesToMergeList.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để Merge!");
     if (!ffmpeg || !isFfmpegReady) return alert("FFmpeg chưa sẵn sàng!");
-    setIsMergeModalOpen(false); 
+    
     setIsMerging(true);
+    setBatchMergeProgress({ current: 0, total: scenesToMergeList.length });
+    let completed = 0;
+
     for (const sceneNo of scenesToMergeList) {
       const scene = parsedData.find(s => s.scene_n === parseInt(sceneNo));
       if (scene) {
@@ -303,8 +366,16 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         } catch (error) { console.error(error); }
         setMergingScenes(prev => ({ ...prev, [scene.scene_n]: false }));
       }
+      completed++;
+      setBatchMergeProgress(prev => ({ ...prev, current: completed }));
     }
-    setIsMerging(false); alert("✅ Đã xử lý xong Batch Merge!");
+    
+    setIsMerging(false); 
+    setTimeout(() => {
+      setIsMergeModalOpen(false);
+      setCheckedMergeScenes({});
+    }, 1000); // Tự đóng sau 1 giây
+    alert("✅ Đã xử lý xong Batch Merge!");
   };
 
   const handleSingleSceneMergeConfirm = async () => { 
@@ -353,30 +424,31 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const audioCloudUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
       setVoiceCloneBase64(audioCloudUrl); 
 
-      setVoiceCloneRefText("Đang nhận diện Text (Whisper)...");
-      const response = await fetch("https://fal.run/fal-ai/whisper", { method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ audio_url: audioCloudUrl }) });
-      const result = await response.json(); const refText = result.text ? result.text.trim() : "Không nhận diện được giọng.";
+      // 🚀 CHUYỂN SANG DÙNG WAVESPEED WHISPER TURBO ĐỂ LẤY TEXT
+      setVoiceCloneRefText("Đang nhận diện Text (Wavespeed Whisper)...");
+      const response = await fetch("https://api.wavespeed.ai/api/v3/wavespeed-ai/openai-whisper-turbo", { 
+        method: "POST", 
+        headers: { 
+          "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}`, 
+          "Content-Type": "application/json" 
+        }, 
+        // enable_sync_mode bắt API trả kết quả ngay lập tức
+        body: JSON.stringify({ audio: audioCloudUrl, enable_sync_mode: true }) 
+      });
+      const result = await response.json(); 
+      const extractedText = result.outputs?.[0]?.text || result.outputs?.[0] || result.text;
+      const refText = extractedText ? extractedText.trim() : "Không nhận diện được giọng.";
 
-      setVoiceCloneRefText("Đang trích xuất Voice Clone...");
-      const cloneRes = await fetch("https://queue.fal.run/fal-ai/qwen-3-tts/clone-voice/1.7b", { method: "POST", headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ audio_url: audioCloudUrl, reference_text: refText }) });
-      const cloneQueueData = await cloneRes.json(); let embeddingUrl = null;
-      if (cloneQueueData.status_url) {
-        let attempts = 0;
-        while (attempts < 60) {
-          attempts++; await new Promise(r => setTimeout(r, 2000));
-          const statusRes = await fetch(cloneQueueData.status_url, { headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }});
-          const statusJson = await statusRes.json();
-          if (statusJson.status === "COMPLETED") {
-            const finalRes = await fetch(statusJson.response_url || cloneQueueData.response_url, { headers: { "Authorization": `Key ${import.meta.env.VITE_FAL_API_KEY}` }});
-            const finalData = await finalRes.json(); embeddingUrl = finalData?.speaker_embedding?.url; break;
-          }
-        }
-      } else { embeddingUrl = cloneQueueData?.speaker_embedding?.url; }
-      if (!embeddingUrl) throw new Error("Lỗi embedding file.");
+      // 🚀 KHÔNG CẦN BƯỚC TẠO EMBEDDING NỮA VÌ WAVESPEED CLONE TRỰC TIẾP TỪ AUDIO CLOUD URL
+      setVoiceCloneRefText(refText || "Upload thành công!");
+      await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: refText, qwenEmbeddingUrl: null });
       
-      setQwenEmbeddingUrl(embeddingUrl); setVoiceCloneRefText(refText || "Clone thành công!");
-      await updateProjectProgress(projectId, { voiceCloneBase64: audioCloudUrl, voiceCloneRefText: refText, qwenEmbeddingUrl: embeddingUrl });
-    } catch (error) { console.error(error); setVoiceCloneRefText("Lỗi xử lý. Thử lại."); } finally { setIsTranscribing(false); }
+    } catch (error) { 
+      console.error(error); 
+      setVoiceCloneRefText("Lỗi xử lý. Thử lại."); 
+    } finally { 
+      setIsTranscribing(false); 
+    }
   };
 
   const handleRemoveVoice = async () => {
@@ -609,21 +681,31 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-            <button onClick={() => setIsModalOpen(false)} className={`absolute top-4 right-4 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <button onClick={() => !isBatchGenerating && setIsModalOpen(false)} disabled={isBatchGenerating} className={`absolute top-4 right-4 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
             <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
               <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Music className="text-purple-500"/> Batch Gen Audio</h2>
             </div>
+            
             <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
-              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} className="px-4 py-1.5 text-xs font-bold bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white rounded-lg cursor-pointer transition-colors border border-purple-500/20">Chọn tất cả</button>
-              <button onClick={() => setCheckedScenes({})} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
+              <button onClick={() => { const all = {}; filteredScenesForAudio.forEach(s => { if(!generatedAudios[s.scene_n]) all[s.scene_n] = true; }); setCheckedScenes(all); }} disabled={isBatchGenerating} className="px-4 py-1.5 text-xs font-bold bg-purple-500/10 text-purple-600 hover:bg-purple-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg cursor-pointer transition-colors border border-purple-500/20">Chọn tất cả</button>
+              <button onClick={() => setCheckedScenes({})} disabled={isBatchGenerating} className={`px-4 py-1.5 text-xs font-bold border disabled:opacity-50 disabled:cursor-not-allowed rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
+            
+            {/* 🚀 THANH TIẾN ĐỘ BATCH GEN */}
+            {isBatchGenerating && (
+              <div className={`px-6 py-2.5 border-b text-sm font-semibold flex items-center justify-between shadow-inner ${darkMode ? 'bg-purple-900/20 border-white/10 text-purple-400' : 'bg-purple-50 border-zinc-200 text-purple-600'}`}>
+                <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Đang khởi tạo Audio...</span>
+                <span>{batchGenProgress.current} / {batchGenProgress.total}</span>
+              </div>
+            )}
+
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
               <div className="flex flex-col">
                 {filteredScenesForAudio.length === 0 ? (
                     <div className={`text-center py-10 text-sm ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>Không có cảnh nào chứa lời thoại.</div>
                 ) : (
                     filteredScenesForAudio.map((scene) => (
-                      <div key={scene.scene_n} onClick={() => setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b cursor-pointer transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${checkedScenes[scene.scene_n] ? (darkMode ? 'bg-purple-900/20' : 'bg-purple-50') : (darkMode ? 'hover:bg-white/5' : 'hover:bg-zinc-50')}`}>
+                      <div key={scene.scene_n} onClick={() => !isBatchGenerating && setCheckedScenes(prev => ({ ...prev, [scene.scene_n]: !prev[scene.scene_n] }))} className={`flex items-start gap-4 p-4 border-b transition-colors select-none ${darkMode ? 'border-white/5' : 'border-zinc-100'} ${checkedScenes[scene.scene_n] ? (darkMode ? 'bg-purple-900/20' : 'bg-purple-50') : (darkMode ? 'hover:bg-white/5 cursor-pointer' : 'hover:bg-zinc-50 cursor-pointer')} ${isBatchGenerating ? 'cursor-not-allowed opacity-60' : ''}`}>
                         <div className="mt-1 shrink-0">{checkedScenes[scene.scene_n] ? <CheckSquare className="text-purple-600" size={20} /> : <Square className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} size={20} />}</div>
                         <div className="flex-1 min-w-0 text-sm space-y-1.5">
                           <div className="flex items-center gap-2">
@@ -638,7 +720,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               </div>
             </div>
             <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <button onClick={handleStartBatchGen} className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex justify-center items-center gap-2"><Mic size={18}/> Bắt đầu Gen Audio</button>
+              <button onClick={handleStartBatchGen} disabled={isBatchGenerating} className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex justify-center items-center gap-2">
+                {isBatchGenerating ? <Loader2 size={18} className="animate-spin" /> : <Mic size={18}/>} 
+                {isBatchGenerating ? 'Hệ thống đang xử lý, vui lòng chờ...' : 'Bắt đầu Gen Audio'}
+              </button>
             </div>
           </div>
         </div>
@@ -648,7 +733,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       {isMergeModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border rounded-2xl w-full max-w-2xl flex flex-col max-h-[85vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+            <button onClick={() => !isMerging && setIsMergeModalOpen(false)} disabled={isMerging} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
             <div className={`p-6 border-b shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
               <h2 className={`text-xl font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-black'}`}><Merge className="text-blue-500"/> Batch Merge Video</h2>
             </div>
@@ -659,10 +744,20 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               </div>
               <input type="range" min="0" max="100" value={globalMixVol} onChange={(e) => setGlobalMixVol(e.target.value)} disabled={isMerging} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-500 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
             </div>
+            
             <div className={`px-6 py-3 border-b flex gap-3 shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-white/10' : 'bg-zinc-50 border-zinc-200'}`}>
-              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-blue-500/10 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer border border-blue-500/20 transition-colors">Chọn tất cả (có Video/Ảnh)</button>
-              <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className={`px-4 py-1.5 text-xs font-bold border rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
+              <button onClick={() => { const all = {}; parsedData.forEach(s => { if(s.videoUrl || s.startFrameUrl) all[s.scene_n] = true; }); setCheckedMergeScenes(all); }} disabled={isMerging} className="px-4 py-1.5 text-xs font-bold bg-blue-500/10 text-blue-600 disabled:opacity-50 hover:bg-blue-600 hover:text-white rounded-lg cursor-pointer border border-blue-500/20 transition-colors">Chọn tất cả (có Video/Ảnh)</button>
+              <button onClick={() => setCheckedMergeScenes({})} disabled={isMerging} className={`px-4 py-1.5 text-xs font-bold border disabled:opacity-50 rounded-lg cursor-pointer transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-gray-400 hover:text-white' : 'bg-white border-zinc-300 text-zinc-700 hover:text-black'}`}>Bỏ chọn</button>
             </div>
+
+            {/* 🚀 THANH TIẾN ĐỘ BATCH MERGE */}
+            {isMerging && (
+              <div className={`px-6 py-2.5 border-b text-sm font-semibold flex items-center justify-between shadow-inner ${darkMode ? 'bg-blue-900/20 border-white/10 text-blue-400' : 'bg-blue-50 border-zinc-200 text-blue-600'}`}>
+                <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Đang Merge Video...</span>
+                <span>{batchMergeProgress.current} / {batchMergeProgress.total}</span>
+              </div>
+            )}
+
             <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
               <div className="flex flex-col">
                 {parsedData.map((scene) => {
@@ -685,7 +780,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             </div>
             <div className={`p-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
               <button onClick={handleStartMerge} disabled={isMerging || Object.keys(checkedMergeScenes).filter(k => checkedMergeScenes[k]).length === 0} className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-white rounded-xl font-bold cursor-pointer flex items-center justify-center gap-2 shadow-lg transition-all">
-                {isMerging ? <Loader2 size={18} className="animate-spin" /> : <Merge size={18} />} {isMerging ? 'Đang xử lý...' : `Bắt đầu Merge Video`}
+                {isMerging ? <Loader2 size={18} className="animate-spin" /> : <Merge size={18} />} 
+                {isMerging ? 'Hệ thống đang xử lý, vui lòng chờ...' : `Bắt đầu Merge Video`}
               </button>
             </div>
           </div>
