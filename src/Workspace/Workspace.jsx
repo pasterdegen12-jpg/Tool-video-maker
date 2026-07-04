@@ -17,6 +17,14 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
+// 🚀 HÀM BỌC PROXY ĐỂ CHỐNG LỖI CORS TỪ CLOUDFRONT
+const proxifyUrl = (url) => {
+  if (url && url.includes('cloudfront.net') && !url.includes('/api/proxy-audio')) {
+    return `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+};
+
 export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode }) { 
   const { projectId } = useParams(); 
   const location = useLocation();
@@ -92,7 +100,16 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             setProjectCharacters(projectInfo.characters || []);
           } 
           if (projectInfo.originalScript) setOriginalScript(projectInfo.originalScript);
-          if (projectInfo.generatedAudios) setGeneratedAudios(projectInfo.generatedAudios);
+          
+          // 🚀 ĐÃ CẬP NHẬT: Bọc Proxy tự động cứu các dự án cũ bị dính CloudFront CORS
+          if (projectInfo.generatedAudios) {
+            const proxiedAudios = {};
+            Object.keys(projectInfo.generatedAudios).forEach(key => {
+              proxiedAudios[key] = proxifyUrl(projectInfo.generatedAudios[key]);
+            });
+            setGeneratedAudios(proxiedAudios);
+          }
+
           if (projectInfo.mergedVideos) setMergedVideos(projectInfo.mergedVideos);
           
           if (projectInfo.voiceCloneRefText) {
@@ -243,7 +260,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         }
       }
 
-      // 🚀 ĐÃ CẬP NHẬT: Vòng lặp chống dính Rate Limit (Failed to fetch) khi tải lên Cloudflare R2
       if (exitCode === 0) {
         const outData = await ffmpeg.readFile(outName);
         const outBlob = new Blob([outData.buffer], { type: 'video/mp4' });
@@ -319,7 +335,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const uniqueFileName = `project_${projectId}/voice_clone_${Date.now()}.${fileExt}`;
       const fileType = file.type || 'audio/mpeg';
 
-      // 🚀 ĐÃ CẬP NHẬT: Vòng lặp an toàn chống rớt mạng khi Up MP3 lên R2
       let successUpload = false;
       let retries = 3;
       let audioCloudUrl = "";
@@ -435,7 +450,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       }
 
       if (audioUrl) {
-        const newAudios = { ...generatedAudios, [sceneNo]: audioUrl };
+        // 🚀 ĐÃ CẬP NHẬT: Bọc Proxy ngay khi vừa Gen xong để đảm bảo thẻ Audio chạy mượt
+        const proxiedUrl = proxifyUrl(audioUrl);
+        const newAudios = { ...generatedAudios, [sceneNo]: proxiedUrl };
+        
         setGeneratedAudios(newAudios);
         await updateProjectProgress(projectId, { generatedAudios: newAudios });
       } else {
@@ -470,7 +488,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     let completed = 0;
 
     try { 
-      // 🚀 ĐÃ CẬP NHẬT: Thay đổi Promise.all (Nã bom Spam) thành vòng lặp For...Of (Tuần tự nhả nhịp)
       for (const sceneNo of scenesToGen) {
         const scene = parsedData.find(s => String(s.scene_n) === String(sceneNo));
         const text = getTextToGen(scene);
@@ -482,7 +499,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         completed++;
         setBatchGenProgress(prev => ({ ...prev, current: completed }));
         
-        // Nhịp nghỉ an toàn 1.5 giây giữa mỗi lần Gen để phòng AI Rate Limit
         await new Promise(r => setTimeout(r, 1500)); 
       }
     } finally { 
@@ -523,7 +539,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       completed++;
       setBatchMergeProgress(prev => ({ ...prev, current: completed }));
       
-      // 🚀 ĐÃ CẬP NHẬT: Tránh kẹt Rate Limit Vercel khi loop tải lên nhiều Video
       await new Promise(r => setTimeout(r, 1500));
     }
     
@@ -818,7 +833,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                     <div className={`text-center py-10 text-sm ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}>Không có cảnh nào chứa lời thoại.</div>
                 ) : (
                     filteredScenesForAudio.map((scene) => {
-                      // 🚀 ĐÃ CẬP NHẬT UX: ẨN hoàn toàn các Scene không chọn khi đang tiến hành
                       if (isBatchGenerating && !checkedScenes[scene.scene_n]) return null;
                       
                       return (
@@ -830,6 +844,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                               {generatedAudios[scene.scene_n] && <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">Đã có Audio</span>}
                             </div>
                             <div className={`truncate leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}>{isSemi ? 'Voiceover: ' : 'Dialogue: '} {getTextToGen(scene)}</div>
+                            
+                            {generatedAudios[scene.scene_n] && (
+                              <div className="mt-2" onClick={(e) => e.stopPropagation()}> 
+                                <audio src={generatedAudios[scene.scene_n]} controls className="w-full h-8 custom-audio" controlsList="nodownload noplaybackrate"/>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );
@@ -880,7 +900,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                   const isEligible = (scene.videoUrl || scene.startFrameUrl);
                   const isChecked = !!checkedMergeScenes[scene.scene_n];
 
-                  // 🚀 ĐÃ CẬP NHẬT UX: ẨN hoàn toàn các Scene không chọn
                   if (isMerging && !isChecked) return null;
 
                   return (
