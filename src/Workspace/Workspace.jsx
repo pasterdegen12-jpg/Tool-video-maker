@@ -60,6 +60,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   
   const [generatedAudios, setGeneratedAudios] = useState({});
   const [isGenerating, setIsGenerating] = useState({});
+  
+  // 🚀 THÊM STATE THEO DÕI QUÁ TRÌNH GEN VIDEO
+  const [isVideoGenerating, setIsVideoGenerating] = useState({});
+
   const [globalMixVol, setGlobalMixVol] = useState(35);
   const [singleMixVol, setSingleMixVol] = useState(35);
   const [isMerging, setIsMerging] = useState(false); 
@@ -101,7 +105,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           } 
           if (projectInfo.originalScript) setOriginalScript(projectInfo.originalScript);
           
-          // 🚀 ĐÃ CẬP NHẬT: Bọc Proxy tự động cứu các dự án cũ bị dính CloudFront CORS
           if (projectInfo.generatedAudios) {
             const proxiedAudios = {};
             Object.keys(projectInfo.generatedAudios).forEach(key => {
@@ -138,6 +141,22 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     if (!projectName.trim()) return;
     setIsEditingProjectName(false);
     await updateProjectProgress(projectId, { projectName: projectName.trim() });
+  };
+
+  // 🚀 BỔ SUNG: HÀM ĐỒNG BỘ DỮ LIỆU TỪ SETUP TAB LÊN FIREBASE
+  const handleSaveSetupData = async (updatedCharacters, updatedParsedData) => {
+    setProjectCharacters(updatedCharacters);
+    if (updatedParsedData) setParsedData(updatedParsedData);
+    
+    try {
+      const updates = { characters: updatedCharacters };
+      if (updatedParsedData) updates.data = updatedParsedData;
+      
+      await updateProjectProgress(projectId, updates);
+      console.log("✅ Đã đồng bộ SetupTab lên Firebase & Storyboard!");
+    } catch (err) {
+      alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message);
+    }
   };
 
   const handleStartFrameUpload = (e) => {
@@ -184,6 +203,39 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       await updateProjectProgress(projectId, { data: updatedData });
       setActiveEditSceneModal(null); 
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
+  };
+
+  // 🚀 BỔ SUNG: HÀM MẪU XỬ LÝ GEN VIDEO AI
+  const handleGenVideo = async (sceneNo) => {
+    const scene = parsedData.find(s => s.scene_n === sceneNo);
+    if (!scene) return;
+    
+    if (!scene.startFrameUrl) return alert("Vui lòng tải Nền (Ảnh đầu vào) trước khi Gen Video!");
+    
+    const prompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}`;
+    if (!prompt.trim()) return alert("Thiếu dữ liệu Context/Action để Gen Video!");
+
+    setIsVideoGenerating(prev => ({ ...prev, [sceneNo]: true }));
+    
+    try {
+      console.log(`Đang gửi yêu cầu Gen Video cho Scene ${sceneNo}...`);
+      
+      // Chờ AI xử lý (Giả lập delay 5 giây)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Tạm thời gắn video mẫu vào để test luồng UI
+      const generatedVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
+
+      const updatedData = parsedData.map(s => s.scene_n === sceneNo ? { ...s, videoUrl: generatedVideoUrl } : s);
+      setParsedData(updatedData);
+      await updateProjectProgress(projectId, { data: updatedData });
+
+      alert(`Gen Video Scene ${sceneNo} thành công!`);
+    } catch (error) {
+      alert("Lỗi Gen Video: " + error.message);
+    } finally {
+      setIsVideoGenerating(prev => ({ ...prev, [sceneNo]: false }));
+    }
   };
 
   const processMergeSingleScene = async (scene, volValue) => {
@@ -450,7 +502,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       }
 
       if (audioUrl) {
-        // 🚀 ĐÃ CẬP NHẬT: Bọc Proxy ngay khi vừa Gen xong để đảm bảo thẻ Audio chạy mượt
         const proxiedUrl = proxifyUrl(audioUrl);
         const newAudios = { ...generatedAudios, [sceneNo]: proxiedUrl };
         
@@ -694,8 +745,42 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
 
         {/* NỘI DUNG TABS */}
-        {activeTab === 'setup' && !isSemi && <SetupTab projectCharacters={projectCharacters} setProjectCharacters={setProjectCharacters} parsedData={parsedData} setParsedData={setParsedData} handleDeleteCharacter={handleDeleteCharacter} avatarInputRef={avatarInputRef} charVoiceInputRef={charVoiceInputRef} activeUploadIdRef={activeUploadIdRef} darkMode={darkMode} />}
-        {activeTab === 'storyboard' && <StoryboardTab parsedData={parsedData} generatedAudios={generatedAudios} isGenerating={isGenerating} mergingScenes={mergingScenes} mergedVideos={mergedVideos} setActiveEditSceneModal={setActiveEditSceneModal} frameInputRef={frameInputRef} activeUploadIdRef={activeUploadIdRef} setActiveGenModal={setActiveGenModal} handleDeleteScene={handleDeleteScene} globalMixVol={globalMixVol} setSingleMixVol={setSingleMixVol} setActiveMergeModal={setActiveMergeModal} forceDownloadVideo={forceDownloadVideo} projectType={projectType} darkMode={darkMode} />}
+        {activeTab === 'setup' && !isSemi && (
+          <SetupTab 
+            projectCharacters={projectCharacters} 
+            setProjectCharacters={setProjectCharacters} 
+            parsedData={parsedData} 
+            setParsedData={setParsedData} 
+            handleSaveSetupData={handleSaveSetupData} /* 🚀 ĐÃ TRUYỀN PROP LƯU FIREBASE */
+            handleDeleteCharacter={handleDeleteCharacter} 
+            avatarInputRef={avatarInputRef} 
+            charVoiceInputRef={charVoiceInputRef} 
+            activeUploadIdRef={activeUploadIdRef} 
+            darkMode={darkMode} 
+          />
+        )}
+        {activeTab === 'storyboard' && (
+          <StoryboardTab 
+            parsedData={parsedData} 
+            generatedAudios={generatedAudios} 
+            isGenerating={isGenerating} 
+            isVideoGenerating={isVideoGenerating} /* 🚀 TRUYỀN STATE THEO DÕI GEN VIDEO */
+            handleGenVideo={handleGenVideo} /* 🚀 TRUYỀN HÀM XỬ LÝ GEN VIDEO */
+            mergingScenes={mergingScenes} 
+            mergedVideos={mergedVideos} 
+            setActiveEditSceneModal={setActiveEditSceneModal} 
+            frameInputRef={frameInputRef} 
+            activeUploadIdRef={activeUploadIdRef} 
+            setActiveGenModal={setActiveGenModal} 
+            handleDeleteScene={handleDeleteScene} 
+            globalMixVol={globalMixVol} 
+            setSingleMixVol={setSingleMixVol} 
+            setActiveMergeModal={setActiveMergeModal} 
+            forceDownloadVideo={forceDownloadVideo} 
+            projectType={projectType} 
+            darkMode={darkMode} 
+          />
+        )}
       </div>
 
       {/* CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}

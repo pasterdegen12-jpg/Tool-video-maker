@@ -4,7 +4,8 @@ import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as Image
 export default function SetupTab({ 
   projectCharacters, setProjectCharacters, 
   parsedData, setParsedData, 
-  handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode // 🚀 ĐÃ BỔ SUNG darkMode
+  handleSaveSetupData, // 🚀 ĐÃ BỔ SUNG PROP NÀY
+  handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode 
 }) {
   const [isEditing, setIsEditing] = useState({});
   const [tempData, setTempData] = useState({});
@@ -20,16 +21,24 @@ export default function SetupTab({
 
   const saveEdit = (id) => {
     const updatedChar = tempData[id];
-    setProjectCharacters(prev => prev.map(c => c.id === id ? updatedChar : c));
-    if (setParsedData && updatedChar.name) {
-      setParsedData(prev => prev.map(s => {
-        const oldChar = projectCharacters.find(c => c.id === id);
+    
+    // Tạo mảng Characters mới
+    const newCharacters = projectCharacters.map(c => c.id === id ? updatedChar : c);
+    let newParsedData = null;
+
+    // Cập nhật tên Character & Tone giọng trong các Scene liên quan
+    if (parsedData && updatedChar.name) {
+      const oldChar = projectCharacters.find(c => c.id === id);
+      newParsedData = parsedData.map(s => {
         if (oldChar && s.Character === oldChar.name) {
           return { ...s, Character: updatedChar.name, Tone_of_Voice: updatedChar.voiceTone };
         }
         return s;
-      }));
+      });
     }
+
+    // 🚀 Gọi hàm lưu tổng hợp để đồng bộ Firebase và Storyboard
+    handleSaveSetupData(newCharacters, newParsedData);
     setIsEditing(prev => ({ ...prev, [id]: false }));
   };
 
