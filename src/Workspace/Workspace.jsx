@@ -8,7 +8,6 @@ import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSqua
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
 
-// 🚀 HÀM ÉP TIMEOUT DÙNG RIÊNG CHO WORKSPACE
 const withTimeout = (promise, ms, errorMessage) => {
   let timeoutId;
   const timeoutPromise = new Promise((_, reject) => {
@@ -17,7 +16,6 @@ const withTimeout = (promise, ms, errorMessage) => {
   return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
 };
 
-// 🚀 HÀM BỌC PROXY ĐỂ CHỐNG LỖI CORS TỪ CLOUDFRONT
 const proxifyUrl = (url) => {
   if (url && url.includes('cloudfront.net') && !url.includes('/api/proxy-audio')) {
     return `/api/proxy-audio?url=${encodeURIComponent(url)}`;
@@ -60,8 +58,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   
   const [generatedAudios, setGeneratedAudios] = useState({});
   const [isGenerating, setIsGenerating] = useState({});
-  
-  // 🚀 THÊM STATE THEO DÕI QUÁ TRÌNH GEN VIDEO
   const [isVideoGenerating, setIsVideoGenerating] = useState({});
 
   const [globalMixVol, setGlobalMixVol] = useState(35);
@@ -143,7 +139,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     await updateProjectProgress(projectId, { projectName: projectName.trim() });
   };
 
-  // 🚀 BỔ SUNG: HÀM ĐỒNG BỘ DỮ LIỆU TỪ SETUP TAB LÊN FIREBASE
   const handleSaveSetupData = async (updatedCharacters, updatedParsedData) => {
     setProjectCharacters(updatedCharacters);
     if (updatedParsedData) setParsedData(updatedParsedData);
@@ -159,29 +154,96 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  const handleStartFrameUpload = (e) => {
+  // 🚀 HÀM HELPER: UPLOAD FILE LÊN R2 LẤY LINK VĨNH VIỄN ĐỂ TRÁNH F5 MẤT DATA
+  const uploadFileToR2 = async (file, folderPrefix) => {
+    const fileExt = file.name.split('.').pop() || 'bin';
+    const uniqueFileName = `project_${projectId}/${folderPrefix}_${Date.now()}.${fileExt}`;
+    const fileType = file.type || 'application/octet-stream';
+
+    const urlRes = await fetch('/api/get-upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: uniqueFileName, fileType })
+    });
+    if (!urlRes.ok) throw new Error("Lỗi xin link upload Vercel");
+    const { uploadUrl } = await urlRes.json();
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': fileType }
+    });
+    if (!uploadRes.ok) throw new Error("Lỗi upload file lên R2");
+
+    return `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
+  };
+
+  // 🚀 ĐÃ SỬA: Đẩy file Avatar lên Cloudflare R2
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    const charId = activeUploadIdRef.current;
+    if (!file || !charId) return;
+    
+    // Gán blob tạm thời để hiển thị mượt ngay lập tức
+    const tempUrl = URL.createObjectURL(file);
+    setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, imageUrl: tempUrl } : c));
+
+    try {
+      const publicUrl = await uploadFileToR2(file, 'avatar');
+      setProjectCharacters(prev => {
+        const newChars = prev.map(c => c.id === charId ? { ...c, imageUrl: publicUrl } : c);
+        updateProjectProgress(projectId, { characters: newChars }); // Lưu Firebase với link thật
+        return newChars;
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Không thể upload Avatar vĩnh viễn. Vui lòng thử lại!");
+    }
+  };
+
+  // 🚀 ĐÃ SỬA: Đẩy file Voice nhân vật lên Cloudflare R2
+  const handleCharVoiceUpload = async (e) => {
+    const file = e.target.files[0];
+    const charId = activeUploadIdRef.current;
+    if (!file || !charId) return;
+    e.target.value = null; 
+    
+    const tempUrl = URL.createObjectURL(file);
+    setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, voiceUrl: tempUrl, voiceFileName: file.name } : c));
+
+    try {
+      const publicUrl = await uploadFileToR2(file, 'char_voice');
+      setProjectCharacters(prev => {
+        const newChars = prev.map(c => c.id === charId ? { ...c, voiceUrl: publicUrl, voiceFileName: file.name } : c);
+        updateProjectProgress(projectId, { characters: newChars }); // Lưu Firebase với link thật
+        return newChars;
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Không thể upload Voice Nhân vật vĩnh viễn. Vui lòng thử lại!");
+    }
+  };
+
+  // 🚀 ĐÃ SỬA: Đẩy Ảnh nền của Scene lên Cloudflare R2
+  const handleStartFrameUpload = async (e) => {
     const file = e.target.files[0];
     const scene_n = activeUploadIdRef.current;
     if (!file || !scene_n) return;
+    
     const tempUrl = URL.createObjectURL(file);
     setParsedData(prev => prev.map(s => s.scene_n === scene_n ? { ...s, startFrameUrl: tempUrl } : s));
-  };
 
-  const handleAvatarUpload = (e) => {
-    const file = e.target.files[0];
-    const charId = activeUploadIdRef.current;
-    if (!file || !charId) return;
-    const tempUrl = URL.createObjectURL(file);
-    setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, imageUrl: tempUrl } : c));
-  };
-
-  const handleCharVoiceUpload = (e) => {
-    const file = e.target.files[0];
-    const charId = activeUploadIdRef.current;
-    if (!file || !charId) return;
-    const tempUrl = URL.createObjectURL(file);
-    setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, voiceUrl: tempUrl, voiceFileName: file.name } : c));
-    e.target.value = null; 
+    try {
+      const publicUrl = await uploadFileToR2(file, 'scene_bg');
+      setParsedData(prev => {
+        const newData = prev.map(s => s.scene_n === scene_n ? { ...s, startFrameUrl: publicUrl } : s);
+        updateProjectProgress(projectId, { data: newData }); // Lưu Firebase với link thật
+        return newData;
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Không thể upload Ảnh Nền vĩnh viễn. Vui lòng thử lại!");
+    }
   };
 
   const handleDeleteScene = (scene_n) => {
@@ -205,7 +267,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
-  // 🚀 BỔ SUNG: HÀM MẪU XỬ LÝ GEN VIDEO AI
   const handleGenVideo = async (sceneNo) => {
     const scene = parsedData.find(s => s.scene_n === sceneNo);
     if (!scene) return;
@@ -219,17 +280,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     
     try {
       console.log(`Đang gửi yêu cầu Gen Video cho Scene ${sceneNo}...`);
-      
-      // Chờ AI xử lý (Giả lập delay 5 giây)
       await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Tạm thời gắn video mẫu vào để test luồng UI
       const generatedVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
-
       const updatedData = parsedData.map(s => s.scene_n === sceneNo ? { ...s, videoUrl: generatedVideoUrl } : s);
       setParsedData(updatedData);
       await updateProjectProgress(projectId, { data: updatedData });
-
       alert(`Gen Video Scene ${sceneNo} thành công!`);
     } catch (error) {
       alert("Lỗi Gen Video: " + error.message);
@@ -751,7 +806,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             setProjectCharacters={setProjectCharacters} 
             parsedData={parsedData} 
             setParsedData={setParsedData} 
-            handleSaveSetupData={handleSaveSetupData} /* 🚀 ĐÃ TRUYỀN PROP LƯU FIREBASE */
+            handleSaveSetupData={handleSaveSetupData} 
             handleDeleteCharacter={handleDeleteCharacter} 
             avatarInputRef={avatarInputRef} 
             charVoiceInputRef={charVoiceInputRef} 
@@ -762,10 +817,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         {activeTab === 'storyboard' && (
           <StoryboardTab 
             parsedData={parsedData} 
+            projectCharacters={projectCharacters} /* 🚀 TRUYỀN PROJECT CHARACTERS XUỐNG ĐÂY */
             generatedAudios={generatedAudios} 
             isGenerating={isGenerating} 
-            isVideoGenerating={isVideoGenerating} /* 🚀 TRUYỀN STATE THEO DÕI GEN VIDEO */
-            handleGenVideo={handleGenVideo} /* 🚀 TRUYỀN HÀM XỬ LÝ GEN VIDEO */
+            isVideoGenerating={isVideoGenerating} 
+            handleGenVideo={handleGenVideo} 
             mergingScenes={mergingScenes} 
             mergedVideos={mergedVideos} 
             setActiveEditSceneModal={setActiveEditSceneModal} 
@@ -840,7 +896,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </button>
       </div>
 
-      {/* CÁC MODAL LÀM VIỆC */}
+      {/* CÁC MODAL LÀM VIỆC LƯỢC BỎ ĐỂ FILE GỌN HƠN (Giữ nguyên logic HTML của bạn) */}
       
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
