@@ -3,7 +3,12 @@ import { Video, CheckSquare, Download, Clock, Hash, Play, Mic, Film, Merge, Tras
 
 export default function StoryboardTab({
   parsedData, projectCharacters, generatedAudios, isGenerating, isVideoGenerating, handleGenVideo, mergingScenes, mergedVideos,
-  setActiveEditSceneModal, frameInputRef, activeUploadIdRef, setActiveGenModal,
+  setActiveEditSceneModal, 
+  
+  // 🚀 NHẬN THÊM PROP NÀY TỪ WORKSPACE ĐỂ MỞ MODAL
+  setActiveStartFrameModal, 
+  
+  frameInputRef, activeUploadIdRef, setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
   projectType, darkMode 
 }) {
@@ -31,7 +36,6 @@ export default function StoryboardTab({
 
         const voWordCount = scene.Word_count || (scene.Voiceover ? scene.Voiceover.trim().split(/\s+/).length : 0);
         
-        // 🚀 TÌM KIẾM THÔNG TIN CHARACTER DỰA VÀO TÊN ĐỂ HIỂN THỊ AVATAR
         const characterInfo = projectCharacters?.find(c => c.name && scene.Character && c.name.trim() === scene.Character.trim()) || null;
 
         return (
@@ -75,7 +79,6 @@ export default function StoryboardTab({
                   </div>
                 )}
                 
-                {/* 🚀 AVATAR CHARACTER TỰ ĐỘNG HIỂN THỊ */}
                 {characterInfo && !isSemi && (
                   <div className={`flex items-center gap-3 p-3 mt-4 rounded-xl border shadow-sm ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 border shadow-inner ${darkMode ? 'bg-[#15151A] border-[#2A2A30]' : 'bg-zinc-200 border-zinc-300'}`}>
@@ -183,24 +186,27 @@ export default function StoryboardTab({
                 
                 {!isSemi ? (
                   <>
-                    <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
+                    {/* 🚀 ĐÃ CẬP NHẬT NÚT TẢI NỀN ĐỂ MỞ MODAL */}
+                    <button onClick={() => setActiveStartFrameModal(scene)} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                         <ImageIcon size={14} /> Tải Nền
                     </button>
+                    
                     <button 
-  onClick={() => handleGenVideo && handleGenVideo(scene.scene_n)} 
-  disabled={isLoadingVideo || !scene.startFrameUrl} 
-  className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 ${
-    isLoadingVideo || !scene.startFrameUrl 
-      ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border border-[#2A2A30] cursor-not-allowed shadow-none' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none') 
-      : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent')
-  }`}
->
-    {isLoadingVideo ? <Loader2 size={14} className="animate-spin" /> : <Film size={14} />} 
-    {isLoadingVideo ? 'Đang Gen...' : 'Gen Video (AI)'}
-</button>
+                      onClick={() => handleGenVideo && handleGenVideo(scene.scene_n)} 
+                      disabled={isLoadingVideo || !scene.startFrameUrl} 
+                      className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 ${
+                        isLoadingVideo || !scene.startFrameUrl 
+                          ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border border-[#2A2A30] cursor-not-allowed shadow-none' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none') 
+                          : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent')
+                      }`}
+                    >
+                        {isLoadingVideo ? <Loader2 size={14} className="animate-spin" /> : <Film size={14} />} 
+                        {isLoadingVideo ? 'Đang Gen...' : 'Gen Video (AI)'}
+                    </button>
                   </>
                 ) : (
-                  <button onClick={() => { activeUploadIdRef.current = scene.scene_n; frameInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
+                  // 🚀 ĐÃ CẬP NHẬT NÚT TẢI ẢNH NỀN BÊN SEMI ĐỂ MỞ MODAL
+                  <button onClick={() => setActiveStartFrameModal(scene)} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                       <ImageIcon size={14} /> Tải Ảnh Nền
                   </button>
                 )}
