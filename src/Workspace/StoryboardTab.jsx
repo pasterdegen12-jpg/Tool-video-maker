@@ -53,7 +53,7 @@ export default function StoryboardTab({
                     {scene.videoUrl ? (
                       <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     ) : scene.startFrameUrl ? (
-                      <img src={scene.startFrameUrl} className="w-full h-full object-cover" />
+                      <img src={scene.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center flex flex-col items-center gap-2 opacity-50"><Video size={20} className="text-zinc-400" /></div>
                     )}
@@ -80,7 +80,7 @@ export default function StoryboardTab({
                   <div className={`flex items-center gap-3 p-3 mt-4 rounded-xl border shadow-sm ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 border shadow-inner ${darkMode ? 'bg-[#15151A] border-[#2A2A30]' : 'bg-zinc-200 border-zinc-300'}`}>
                       {characterInfo.imageUrl ? (
-                        <img src={characterInfo.imageUrl} className="w-full h-full object-cover" alt="Avatar" />
+                        <img src={characterInfo.imageUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Avatar" />
                       ) : (
                         <User size={20} className={darkMode ? 'text-zinc-500' : 'text-zinc-400'} />
                       )}

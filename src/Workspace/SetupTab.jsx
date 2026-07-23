@@ -78,7 +78,7 @@ export default function SetupTab({
             <div className="flex gap-5 items-start">
               <div className={`w-20 h-20 rounded-full border flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
                 {char.imageUrl ? (
-                  <img src={char.imageUrl} className="w-full h-full object-cover" alt="avatar" />
+                  <img src={char.imageUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="avatar" />
                 ) : (
                   <Camera size={20} className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} />
                 )}
