@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
-import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon } from 'lucide-react';
+import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User } from 'lucide-react';
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
@@ -39,6 +39,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   const [activeEditSceneModal, setActiveEditSceneModal] = useState(null);
+  
+  // 🚀 BỔ SUNG STATE QUẢN LÝ MODAL START FRAME
+  const [activeStartFrameModal, setActiveStartFrameModal] = useState(null);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -73,7 +77,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const fileInputRef = useRef(null);
   const frameInputRef = useRef(null);
   const avatarInputRef = useRef(null);
-  
   const charVoiceInputRef = useRef(null); 
   const activeUploadIdRef = useRef(null); 
 
@@ -154,7 +157,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 HÀM HELPER: UPLOAD FILE LÊN R2 LẤY LINK VĨNH VIỄN ĐỂ TRÁNH F5 MẤT DATA
   const uploadFileToR2 = async (file, folderPrefix) => {
     const fileExt = file.name.split('.').pop() || 'bin';
     const uniqueFileName = `project_${projectId}/${folderPrefix}_${Date.now()}.${fileExt}`;
@@ -178,13 +180,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
   };
 
-  // 🚀 ĐÃ SỬA: Đẩy file Avatar lên Cloudflare R2
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     const charId = activeUploadIdRef.current;
     if (!file || !charId) return;
     
-    // Gán blob tạm thời để hiển thị mượt ngay lập tức
     const tempUrl = URL.createObjectURL(file);
     setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, imageUrl: tempUrl } : c));
 
@@ -192,7 +192,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const publicUrl = await uploadFileToR2(file, 'avatar');
       setProjectCharacters(prev => {
         const newChars = prev.map(c => c.id === charId ? { ...c, imageUrl: publicUrl } : c);
-        updateProjectProgress(projectId, { characters: newChars }); // Lưu Firebase với link thật
+        updateProjectProgress(projectId, { characters: newChars });
         return newChars;
       });
     } catch (err) {
@@ -201,7 +201,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 ĐÃ SỬA: Đẩy file Voice nhân vật lên Cloudflare R2
   const handleCharVoiceUpload = async (e) => {
     const file = e.target.files[0];
     const charId = activeUploadIdRef.current;
@@ -215,7 +214,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const publicUrl = await uploadFileToR2(file, 'char_voice');
       setProjectCharacters(prev => {
         const newChars = prev.map(c => c.id === charId ? { ...c, voiceUrl: publicUrl, voiceFileName: file.name } : c);
-        updateProjectProgress(projectId, { characters: newChars }); // Lưu Firebase với link thật
+        updateProjectProgress(projectId, { characters: newChars });
         return newChars;
       });
     } catch (err) {
@@ -224,7 +223,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 ĐÃ SỬA: Đẩy Ảnh nền của Scene lên Cloudflare R2
   const handleStartFrameUpload = async (e) => {
     const file = e.target.files[0];
     const scene_n = activeUploadIdRef.current;
@@ -237,7 +235,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const publicUrl = await uploadFileToR2(file, 'scene_bg');
       setParsedData(prev => {
         const newData = prev.map(s => s.scene_n === scene_n ? { ...s, startFrameUrl: publicUrl } : s);
-        updateProjectProgress(projectId, { data: newData }); // Lưu Firebase với link thật
+        updateProjectProgress(projectId, { data: newData }); 
         return newData;
       });
     } catch (err) {
@@ -273,7 +271,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     
     if (!scene.startFrameUrl) return alert("Vui lòng tải Nền (Ảnh đầu vào) trước khi Gen Video!");
     
-    const prompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}`;
+    // 🚀 ĐÃ BỔ SUNG PROMPT TỪ BOX "MÔ TẢ THÊM" VÀO ĐÂY
+    const prompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}${scene.AdditionalPrompt ? '. ' + scene.AdditionalPrompt : ''}`;
     if (!prompt.trim()) return alert("Thiếu dữ liệu Context/Action để Gen Video!");
 
     setIsVideoGenerating(prev => ({ ...prev, [sceneNo]: true }));
@@ -817,7 +816,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         {activeTab === 'storyboard' && (
           <StoryboardTab 
             parsedData={parsedData} 
-            projectCharacters={projectCharacters} /* 🚀 TRUYỀN PROJECT CHARACTERS XUỐNG ĐÂY */
+            projectCharacters={projectCharacters} 
             generatedAudios={generatedAudios} 
             isGenerating={isGenerating} 
             isVideoGenerating={isVideoGenerating} 
@@ -825,7 +824,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             mergingScenes={mergingScenes} 
             mergedVideos={mergedVideos} 
             setActiveEditSceneModal={setActiveEditSceneModal} 
-            frameInputRef={frameInputRef} 
+            
+            // 🚀 ĐÃ TRUYỀN ACTIVE MODAL VÀO STORYBOARD
+            setActiveStartFrameModal={setActiveStartFrameModal}
+            
             activeUploadIdRef={activeUploadIdRef} 
             setActiveGenModal={setActiveGenModal} 
             handleDeleteScene={handleDeleteScene} 
@@ -858,7 +860,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           <Music size={16} /> Gen All Audio
         </button>
         
-        {/* Khu vực Upload Voice Clone */}
         <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
           <div className={`text-[12px] font-bold flex justify-between items-center ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>
             Voice Clone 
@@ -880,7 +881,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                   onBlur={() => updateProjectProgress(projectId, { voiceCloneRefText: voiceCloneRefText })}
                   disabled={isTranscribing} 
                   className={`w-full h-10 px-3 border focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl text-[13px] transition-all ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-800'}`} 
-                  placeholder="Nhập Transcript của Audio mẫu (Tùy chọn)..." 
+                  placeholder="Nhập Transcript của Audio mẫu..." 
                 />
                 {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
               </div>
@@ -896,7 +897,77 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </button>
       </div>
 
-      {/* CÁC MODAL LÀM VIỆC LƯỢC BỎ ĐỂ FILE GỌN HƠN (Giữ nguyên logic HTML của bạn) */}
+      {/* CÁC MODAL LÀM VIỆC */}
+
+      {/* 🚀 MODAL CHỌN ẢNH NỀN VÀ MÔ TẢ MỚI TẠO Ở ĐÂY */}
+      {activeStartFrameModal && (() => {
+        // Lấy dữ liệu mới nhất của Scene hiện tại
+        const sceneInfo = parsedData.find(s => s.scene_n === activeStartFrameModal.scene_n) || activeStartFrameModal;
+        const charInfo = projectCharacters.find(c => c.name === sceneInfo.Character);
+        const hasAvatar = charInfo && charInfo.imageUrl;
+
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className={`border p-7 rounded-2xl w-full max-w-sm flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+              <button onClick={() => setActiveStartFrameModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+              
+              <div className="text-center border-b pb-5 mb-5 border-zinc-200 dark:border-white/10">
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Start frame - Scene {sceneInfo.scene_n}</h3>
+                <p className={`text-xs mt-1.5 ${darkMode ? 'text-zinc-400' : 'text-zinc-500'}`}>Xem trước và tạo open frame cho scene_{sceneInfo.scene_n}</p>
+              </div>
+
+              <div className="flex flex-col gap-5 overflow-y-auto custom-scrollbar">
+                
+                {/* Khu vực Preview Ảnh */}
+                {sceneInfo.startFrameUrl && (
+                  <div className={`w-full aspect-video rounded-xl overflow-hidden flex items-center justify-center border shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
+                    <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Start Frame Preview" />
+                  </div>
+                )}
+
+                {/* Các Nút Lựa Chọn Upload */}
+                <div className="flex flex-col gap-3">
+                  {!isSemi && hasAvatar && (
+                    <button 
+                      onClick={() => {
+                        const newData = parsedData.map(s => s.scene_n === sceneInfo.scene_n ? { ...s, startFrameUrl: charInfo.imageUrl } : s);
+                        setParsedData(newData);
+                        updateProjectProgress(projectId, { data: newData });
+                      }}
+                      className={`h-11 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border shadow-sm ${darkMode ? 'bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border-purple-500/20' : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200'}`}
+                    >
+                      <User size={16} /> Dùng ảnh Profile làm Start Frame
+                    </button>
+                  )}
+                  
+                  <button 
+                    onClick={() => { activeUploadIdRef.current = sceneInfo.scene_n; frameInputRef.current.click(); }}
+                    className={`h-11 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${darkMode ? 'text-white bg-blue-600 hover:bg-blue-500 border-transparent' : 'text-white bg-blue-500 hover:bg-blue-600 border-transparent'}`}
+                  >
+                    <Upload size={16} /> Upload Custom Image
+                  </button>
+                </div>
+
+                {/* Box nhập Mô tả thêm */}
+                <div className="flex flex-col gap-2 mt-2">
+                  <label className={`text-sm font-bold ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>Mô tả thêm (lựa chọn)</label>
+                  <textarea 
+                    value={sceneInfo.AdditionalPrompt || ''}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        setParsedData(prev => prev.map(s => s.scene_n === sceneInfo.scene_n ? { ...s, AdditionalPrompt: val } : s));
+                    }}
+                    onBlur={() => updateProjectProgress(projectId, { data: parsedData })}
+                    className={`w-full border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 h-24 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`}
+                    placeholder="Nhập text để bổ sung vào prompt tạo video..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
