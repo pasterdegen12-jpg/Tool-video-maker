@@ -4,7 +4,7 @@ import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as Image
 export default function SetupTab({ 
   projectCharacters, setProjectCharacters, 
   parsedData, setParsedData, 
-  handleSaveSetupData, // 🚀 ĐÃ BỔ SUNG PROP NÀY
+  handleSaveSetupData, // 🚀 NHẬN HÀM LƯU FIREBASE TỪ WORKSPACE
   handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode 
 }) {
   const [isEditing, setIsEditing] = useState({});
@@ -37,7 +37,7 @@ export default function SetupTab({
       });
     }
 
-    // 🚀 Gọi hàm lưu tổng hợp để đồng bộ Firebase và Storyboard
+    // 🚀 GỌI HÀM NÀY ĐỂ BẮN DATA LÊN FIREBASE NGAY LẬP TỨC
     handleSaveSetupData(newCharacters, newParsedData);
     setIsEditing(prev => ({ ...prev, [id]: false }));
   };
@@ -55,7 +55,6 @@ export default function SetupTab({
         return (
           <div key={char.id} className={`border rounded-2xl p-6 shadow-xl flex flex-col gap-5 relative transition-all group ${darkMode ? 'bg-[#121214] border-[#2A2A30] hover:border-white/10' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
             
-            {/* 🚀 NÚT EDIT/DELETE LUÔN HIỂN THỊ */}
             {!editing ? (
               <div className="absolute top-5 right-5 flex gap-2">
                 <button onClick={() => toggleEdit(char)} className={`p-2 rounded-lg transition-colors border shadow-sm cursor-pointer ${darkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white border-white/5' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 border-zinc-200'}`} title="Sửa thông tin">
@@ -70,14 +69,13 @@ export default function SetupTab({
                 <button onClick={() => cancelEdit(char.id)} className={`p-2 rounded-lg transition-colors border shadow-sm cursor-pointer ${darkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white border-white/5' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 border-zinc-200'}`}>
                   <X size={14}/>
                 </button>
-                <button onClick={() => saveEdit(char.id)} className={`p-2 rounded-lg transition-colors border cursor-pointer ${darkMode ? 'bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white border-green-500/30 shadow-green-900/20 shadow-lg' : 'bg-green-100 hover:bg-green-500 text-green-700 hover:text-white border-green-200 shadow-md'}`}>
+                <button onClick={() => saveEdit(char.id)} className={`p-2 rounded-lg transition-colors border cursor-pointer ${darkMode ? 'bg-green-500/20 hover:bg-green-500 text-green-400 hover:text-white border-green-500/30 shadow-green-900/20 shadow-lg' : 'bg-green-100 hover:bg-green-500 text-green-700 hover:text-white border-green-200 shadow-md'}`} title="Lưu lại">
                   <Check size={14}/>
                 </button>
               </div>
             )}
 
             <div className="flex gap-5 items-start">
-              {/* Avatar cố định */}
               <div className={`w-20 h-20 rounded-full border flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
                 {char.imageUrl ? (
                   <img src={char.imageUrl} className="w-full h-full object-cover" alt="avatar" />
@@ -116,14 +114,12 @@ export default function SetupTab({
               </div>
             )}
 
-            {/* Trạng thái Voice */}
             {char.voiceUrl && (
                <div className={`flex items-center gap-2 text-[11px] font-medium px-3 py-2 rounded-lg border ${darkMode ? 'text-green-400 bg-green-500/10 border-green-500/20' : 'text-green-700 bg-green-50 border-green-200'}`}>
                  <Music size={12} /> Đã tải Voice mẫu: {char.voiceFileName || "Audio.mp3"}
                </div>
             )}
 
-            {/* DÀN NÚT */}
             <div className={`flex flex-wrap items-center gap-3 pt-4 mt-2 border-t ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-200'}`}>
               <button onClick={() => { activeUploadIdRef.current = char.id; avatarInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[12px] font-semibold flex items-center gap-1.5 border transition-colors shadow-sm cursor-pointer ${darkMode ? 'bg-white/5 hover:bg-white/10 text-zinc-300 border-white/5' : 'bg-white hover:bg-zinc-50 text-zinc-700 border-zinc-300'}`}>
                 <ImageIcon size={14} /> Tải Ảnh Nền
