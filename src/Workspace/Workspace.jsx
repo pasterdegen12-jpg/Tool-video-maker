@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
-import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay } from 'lucide-react';
+import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay, Image as ImageIcon } from 'lucide-react';
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
