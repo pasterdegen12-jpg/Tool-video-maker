@@ -44,9 +44,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   // 🚀 BỔ SUNG STATE QUẢN LÝ MODAL GEN VIDEO AI
   const [activeVideoGenModal, setActiveVideoGenModal] = useState(null);
   const [videoGenOptions, setVideoGenOptions] = useState({
-    mode: 'start_frame_to_video', // Mặc định
+    mode: 'start_frame_to_video', 
     prompt: '',
-    resolution: '480p' // Mặc định
+    resolution: '480p' 
   });
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -157,6 +157,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const updates = { characters: updatedCharacters };
       if (updatedParsedData) updates.data = updatedParsedData;
       await updateProjectProgress(projectId, updates);
+      console.log("✅ Đã đồng bộ SetupTab lên Firebase & Storyboard!");
     } catch (err) { alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message); }
   };
 
@@ -259,7 +260,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
-  // 🚀 HÀM GEN VIDEO TỪNG SCENE
   const handleGenVideoSingle = async (sceneNo, options, isBatch = false) => {
     const scene = parsedData.find(s => s.scene_n === sceneNo);
     if (!scene) return;
@@ -269,10 +269,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       return;
     }
     
-    // Ghép Prompt
     let finalPrompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}`;
     if (scene.AdditionalPrompt) finalPrompt += `. ${scene.AdditionalPrompt}`;
-    if (options.prompt) finalPrompt += `. ${options.prompt}`; // Lấy từ Modal option
+    if (options.prompt) finalPrompt += `. ${options.prompt}`;
 
     if (!finalPrompt.trim()) {
        if(!isBatch) alert("Thiếu dữ liệu Context/Action để làm Prompt cho AI!");
@@ -284,8 +283,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     try {
       console.log(`Đang gửi yêu cầu Gen Video [Mode: ${options.mode}, Res: ${options.resolution}] cho Scene ${sceneNo}...`);
       
-      // 🚀 CHỖ NÀY LÀ NƠI BẠN SẼ CODE GỌI API (Runway/Luma/Kling...) DỰA TRÊN 3 KEY API XOAY VÒNG
-      await new Promise(resolve => setTimeout(resolve, 8000)); // Giả lập chờ 8s
+      await new Promise(resolve => setTimeout(resolve, 8000));
       
       const generatedVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
       const updatedData = parsedData.map(s => s.scene_n === sceneNo ? { ...s, videoUrl: generatedVideoUrl } : s);
@@ -302,8 +300,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  // 🚀 3 NÚT TÍNH NĂNG MỚI BÊN BẢNG ĐIỀU KHIỂN
-  
   const handleSetAllStartFrames = async () => {
     if (isSemi) return alert("Chế độ Semi không có nhân vật để set ảnh nền tự động.");
     if (!window.confirm("Hệ thống sẽ lấy ảnh Avatar của nhân vật tương ứng đè lên làm Nền (Start Frame) cho TẤT CẢ các Scene. Bạn chắc chắn chứ?")) return;
@@ -327,7 +323,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
     setIsBatchVideoGenerating(true);
     
-    // Chia mảng thành các chunk 3 phần tử
     for(let i = 0; i < scenesToGen.length; i += 3) {
         const chunk = scenesToGen.slice(i, i + 3);
         console.log(`Đang chạy Batch Video Gen chunk:`, chunk.map(c=>c.scene_n));
@@ -348,7 +343,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     
     const resetData = parsedData.map(s => {
         const { startFrameUrl, videoUrl, AdditionalPrompt, ...rest } = s;
-        return rest; // Bỏ các field đã render
+        return rest; 
     });
     setParsedData(resetData);
     
@@ -359,7 +354,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     });
     alert("🔄 Đã Reset dự án về trạng thái ban đầu thành công!");
   };
-
 
   const processMergeSingleScene = async (scene, volValue) => {
     const videoUrl = scene.videoUrl || scene.startFrameUrl;
@@ -807,9 +801,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   return (
     <div className={`h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300 ${darkMode ? 'bg-[#09090B] text-gray-200' : 'bg-zinc-100 text-zinc-900'}`}>
       
-      {/* CỘT TRÁI: KỊCH BẢN GỐC */}
-      <div className={`fixed left-6 top-24 bottom-6 rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-4 w-[280px] hidden xl:flex transition-all duration-300 border ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-        <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+      <div className={`fixed left-4 top-24 bottom-4 rounded-2xl p-4 shadow-xl z-20 flex flex-col gap-3 w-[260px] hidden xl:flex transition-all duration-300 border ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+        <div className={`flex items-center justify-between border-b pb-2 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-zinc-900'}`}><FileText size={16} className="text-blue-500" /> Kịch bản gốc</div>
           {originalScript && !isEditingScript && <button onClick={() => setIsEditingScript(true)} className="text-zinc-500 hover:text-blue-500 text-xs font-medium cursor-pointer transition-colors">Chỉnh sửa</button>}
         </div>
@@ -818,17 +811,15 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             <textarea value={originalScript} onChange={(e) => setOriginalScript(e.target.value)} placeholder="Paste kịch bản..." className={`flex-1 rounded-xl p-3.5 text-sm custom-scrollbar focus:outline-none focus:ring-2 focus:ring-blue-500/50 border transition-all resize-none ${darkMode ? 'bg-[#0A0A0C] border-white/10 text-zinc-300' : 'bg-zinc-50 border-zinc-300 text-zinc-800'}`} />
             <button onClick={() => { updateProjectProgress(projectId, { originalScript: originalScript.trim() }); setIsEditingScript(false); }} className={`w-full h-10 font-bold text-sm rounded-xl cursor-pointer transition-all shadow-md text-white ${darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-500 hover:bg-blue-600'}`}>Lưu kịch bản</button>
           </div>
-        ) : ( <div className={`flex-1 overflow-y-auto pr-2 text-[13px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar animate-in fade-in duration-200 ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{originalScript}</div> )}
+        ) : ( <div className={`flex-1 overflow-y-auto pr-2 text-[12px] leading-relaxed whitespace-pre-wrap font-mono custom-scrollbar animate-in fade-in duration-200 ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{originalScript}</div> )}
       </div>
 
       <input type="file" accept="image/*" ref={frameInputRef} className="hidden" onChange={handleStartFrameUpload} />
       <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
-      {/* CỘT GIỮA */}
-      <div className="flex flex-col gap-6 w-full pb-20 px-0 xl:pl-[310px] xl:pr-[290px]">
+      <div className="flex flex-col gap-5 w-full pb-20 px-0 xl:pl-[290px] xl:pr-[260px]">
         
-        {/* Thanh Header & Tabs */}
         <div className={`flex items-center justify-between pb-3 border-b pt-2 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           {isEditingProjectName ? (
             <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4">
@@ -837,7 +828,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             </div>
           ) : (
             <div className="flex items-center gap-3 group">
-              <h1 className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{projectName}</h1>
+              <h1 className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{projectName}</h1>
               <button onClick={() => setIsEditingProjectName(true)} className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-md transition-all cursor-pointer ${darkMode ? 'text-zinc-500 hover:text-zinc-300 hover:bg-white/10' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'}`}><Pencil size={16} /></button>
             </div>
           )}
@@ -850,24 +841,22 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           </div>
         </div>
 
-        {/* Bảng Thống kê */}
-        <div className={`border rounded-2xl p-6 shadow-lg relative overflow-hidden transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30]' : 'bg-white border-zinc-200'}`}>
+        <div className={`border rounded-2xl p-5 shadow-sm relative overflow-hidden transition-colors ${darkMode ? 'bg-[#121214] border-[#2A2A30]' : 'bg-white border-zinc-200'}`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-transparent opacity-40"></div>
-          <div className={`flex items-center gap-2 font-semibold text-xs uppercase tracking-widest mb-6 ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}><LayoutDashboard size={14} /> Thống kê dự án</div>
+          <div className={`flex items-center gap-2 font-semibold text-xs uppercase tracking-widest mb-4 ${darkMode ? 'text-zinc-400' : 'text-zinc-600'}`}><LayoutDashboard size={14} /> Thống kê dự án</div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6 text-left">
-            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Scene</div><div className={`text-2xl font-bold ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{totalScenes}</div></div>
-            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Voice</div><div className="text-2xl font-bold text-blue-500">{totalVoice}</div></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-left">
+            <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Scene</div><div className={`text-xl font-bold ${darkMode ? 'text-zinc-100' : 'text-black'}`}>{totalScenes}</div></div>
+            <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Total Voice</div><div className="text-xl font-bold text-blue-500">{totalVoice}</div></div>
             {isSemi && (
-              <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Avg Duration</div><div className="text-2xl font-bold text-green-500">{avgDuration}</div></div>
+              <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Avg Duration</div><div className="text-xl font-bold text-green-500">{avgDuration}</div></div>
             )}
-            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Est Cost</div><div className="text-2xl font-bold text-yellow-500">{estCost}</div></div>
-            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Audio Gen</div><div className="text-xl font-semibold text-purple-500 mt-1">{Object.keys(generatedAudios).length} <span className={`text-sm ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalVoice}</span></div></div>
-            <div><div className={`text-[11px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Video Gen</div><div className="text-xl font-semibold text-orange-500 mt-1">{Object.keys(mergedVideos).length} <span className={`text-sm ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalScenes}</span></div></div>
+            <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Est Cost</div><div className="text-xl font-bold text-yellow-500">{estCost}</div></div>
+            <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Audio Gen</div><div className="text-lg font-semibold text-purple-500 mt-1">{Object.keys(generatedAudios).length} <span className={`text-xs ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalVoice}</span></div></div>
+            <div><div className={`text-[10px] font-medium uppercase tracking-wider mb-1 ${darkMode ? 'text-zinc-500' : 'text-zinc-500'}`}>Video Gen</div><div className="text-lg font-semibold text-orange-500 mt-1">{Object.keys(mergedVideos).length} <span className={`text-xs ${darkMode ? 'text-zinc-600' : 'text-zinc-400'}`}>/ {totalScenes}</span></div></div>
           </div>
         </div>
 
-        {/* NỘI DUNG TABS */}
         {activeTab === 'setup' && !isSemi && (
           <SetupTab 
             projectCharacters={projectCharacters} 
@@ -894,7 +883,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             mergedVideos={mergedVideos} 
             setActiveEditSceneModal={setActiveEditSceneModal} 
             setActiveStartFrameModal={setActiveStartFrameModal}
-            setActiveVideoGenModal={setActiveVideoGenModal} /* 🚀 TRUYỀN MODAL VIDEO GEN XUỐNG */
+            setActiveVideoGenModal={setActiveVideoGenModal} 
             frameInputRef={frameInputRef} 
             activeUploadIdRef={activeUploadIdRef} 
             setActiveGenModal={setActiveGenModal} 
@@ -909,76 +898,70 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         )}
       </div>
 
-      {/* CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}
-      <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors overflow-y-auto custom-scrollbar ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+      <div className={`fixed right-4 top-24 bottom-4 border rounded-2xl p-4 shadow-xl z-20 flex flex-col gap-4 w-[240px] hidden xl:flex transition-colors overflow-y-auto custom-scrollbar ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         
-        <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+        <div className={`flex items-center justify-between border-b pb-2 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-black'}`}>
             <Sliders size={16} className="text-purple-500" /> Bảng điều khiển
           </div>
         </div>
         
         <div className="flex flex-col gap-3 shrink-0">
-          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer"><Merge size={16} /> Merge All</button>
+          <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"><Merge size={16} /> Merge All</button>
         </div>
         
-        <div className={`w-full h-[1px] my-1 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
+        <div className={`w-full h-[1px] my-0 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        {/* 🚀 3 NÚT TÍNH NĂNG MỚI */}
         <div className="flex flex-col gap-3 shrink-0">
-           <button onClick={handleSetAllStartFrames} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400'}`}>
+           <button onClick={handleSetAllStartFrames} className={`w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400'}`}>
              <ImagePlay size={16} /> Set All Start Frame
            </button>
            
-           <button onClick={handleBatchGenVideo} disabled={isBatchVideoGenerating} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${isBatchVideoGenerating ? 'bg-gray-600 cursor-not-allowed' : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400')}`}>
+           <button onClick={handleBatchGenVideo} disabled={isBatchVideoGenerating} className={`w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${isBatchVideoGenerating ? 'bg-gray-600 cursor-not-allowed' : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400')}`}>
              {isBatchVideoGenerating ? <Loader2 size={16} className="animate-spin" /> : <MonitorPlay size={16} />} 
              {isBatchVideoGenerating ? 'Đang Gen Batch...' : 'Gen All Video'}
            </button>
            
-           <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
+           <button onClick={() => setIsModalOpen(true)} className={`w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
              <Music size={16} /> Gen All Audio
            </button>
         </div>
 
-        <div className={`w-full h-[1px] my-1 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
+        <div className={`w-full h-[1px] my-0 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        {/* Khu vực Upload Voice Clone */}
-        <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
+        <div className={`border rounded-xl p-3 flex flex-col gap-3 shadow-inner shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
           <div className={`text-[12px] font-bold flex justify-between items-center ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>
             Voice Clone 
             {voiceCloneFile && (<button onClick={handleRemoveVoice} className="text-red-500 hover:text-red-400 bg-red-500/10 p-1.5 rounded cursor-pointer transition-colors"><Trash2 size={14} /></button>)}
           </div>
           <input type="file" accept="audio/mp3,audio/wav,audio/m4a" ref={fileInputRef} onChange={handleVoiceUpload} className="hidden" />
           {!voiceCloneFile ? (
-            <button onClick={() => fileInputRef.current.click()} className={`w-full h-11 border border-dashed rounded-xl text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer ${darkMode ? 'border-[#2A2A30] hover:border-purple-400 text-zinc-400 hover:text-purple-400' : 'border-zinc-300 hover:border-purple-600 text-zinc-700 hover:text-purple-700 hover:bg-purple-50'}`}><Upload size={16} /> Tải file MP3</button>
+            <button onClick={() => fileInputRef.current.click()} className={`w-full h-10 border border-dashed rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer ${darkMode ? 'border-[#2A2A30] hover:border-purple-400 text-zinc-400 hover:text-purple-400' : 'border-zinc-300 hover:border-purple-600 text-zinc-700 hover:text-purple-700 hover:bg-purple-50'}`}><Upload size={14} /> Tải file MP3</button>
           ) : (
-            <div className="flex flex-col gap-3 animate-in fade-in duration-300">
-              <div className={`text-[11px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
+            <div className="flex flex-col gap-2 animate-in fade-in duration-300">
+              <div className={`text-[10px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 custom-audio" />
               <div className="relative">
-                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} onBlur={() => updateProjectProgress(projectId, { voiceCloneRefText: voiceCloneRefText })} disabled={isTranscribing} className={`w-full h-10 px-3 border focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl text-[13px] transition-all ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-800'}`} placeholder="Nhập Transcript của Audio mẫu (Tùy chọn)..." />
-                {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
+                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} onBlur={() => updateProjectProgress(projectId, { voiceCloneRefText: voiceCloneRefText })} disabled={isTranscribing} className={`w-full h-8 px-2 border focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-lg text-[11px] transition-all ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-800'}`} placeholder="Nhập Transcript của Audio mẫu (Tùy chọn)..." />
+                {isTranscribing && <Loader2 size={12} className="absolute right-2 top-2.5 animate-spin text-purple-500" />}
               </div>
-              {voiceUploadStatus && <div className="text-[11px] font-semibold text-green-500 px-1">{voiceUploadStatus}</div>}
+              {voiceUploadStatus && <div className="text-[10px] font-semibold text-green-500 px-1">{voiceUploadStatus}</div>}
             </div>
           )}
         </div>
 
-        <div className="flex-1 min-h-[20px]"></div>
+        <div className="flex-1 min-h-[10px]"></div>
         
         <div className="flex flex-col gap-3 shrink-0">
-           <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
-             <Download size={16} /> Xuất File (Export)
+           <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
+             <Download size={16} /> Xuất File
            </button>
-           <button onClick={handleResetProject} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300'}`}>
+           <button onClick={handleResetProject} className={`w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300'}`}>
              <RotateCcw size={16} /> Reset Project
            </button>
         </div>
       </div>
 
-      {/* CÁC MODAL LÀM VIỆC */}
-
-      {/* 🚀 MODAL START FRAME */}
       {activeStartFrameModal && (() => {
         const sceneInfo = parsedData.find(s => s.scene_n === activeStartFrameModal.scene_n) || activeStartFrameModal;
         const charInfo = projectCharacters.find(c => c.name === sceneInfo.Character);
@@ -1043,7 +1026,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         );
       })()}
 
-      {/* 🚀 MODAL GEN VIDEO AI TÙY CHỈNH MỚI */}
       {activeVideoGenModal && (() => {
          const sceneInfo = parsedData.find(s => s.scene_n === activeVideoGenModal.scene_n) || activeVideoGenModal;
          const isGeneratingThis = isVideoGenerating[sceneInfo.scene_n];
@@ -1067,7 +1049,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
               ) : (
                  <div className="flex flex-col gap-6 overflow-y-auto custom-scrollbar max-h-[70vh] pr-2">
                     
-                    {/* Media Display: Ưu tiên hiển thị Output nếu có, nếu không thì Input */}
                     <div className="flex gap-4">
                        {sceneInfo.videoUrl && (
                           <div className="flex-1 flex flex-col gap-2">
@@ -1094,7 +1075,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
                     <div className={`w-full h-[1px] ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
 
-                    {/* Mode Selection */}
                     <div className="flex flex-col gap-3">
                        <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Generate Mode</label>
                        <div className="grid grid-cols-3 gap-3">
@@ -1111,7 +1091,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                        </div>
                     </div>
 
-                    {/* Custom Prompt */}
                     <div className="flex flex-col gap-2">
                        <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Custom prompt (Optional)</label>
                        <textarea 
@@ -1122,7 +1101,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                        />
                     </div>
 
-                    {/* Resolution */}
                     <div className="flex flex-col gap-3">
                        <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Resolution (Độ phân giải)</label>
                        <div className="flex gap-4">
@@ -1151,7 +1129,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           </div>
          );
       })()}
-
 
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
