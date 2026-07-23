@@ -5,6 +5,10 @@ export default function StoryboardTab({
   parsedData, projectCharacters, generatedAudios, isGenerating, isVideoGenerating, handleGenVideo, mergingScenes, mergedVideos,
   setActiveEditSceneModal, 
   setActiveStartFrameModal, 
+  
+  // 🚀 NHẬN STATE ACTIVE VIDEO GEN MODAL TỪ WORKSPACE
+  setActiveVideoGenModal,
+
   frameInputRef, activeUploadIdRef, setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
   projectType, darkMode 
@@ -187,14 +191,10 @@ export default function StoryboardTab({
                         <ImageIcon size={14} /> Tải Nền
                     </button>
                     
+                    {/* 🚀 ĐÃ SỬA: SỰ KIỆN CLICK SẼ GỌI MODAL CHỨ KHÔNG CHẠY LUÔN HÀM NỮA */}
                     <button 
-                      onClick={() => handleGenVideo && handleGenVideo(scene.scene_n)} 
-                      disabled={isLoadingVideo || !scene.startFrameUrl} 
-                      className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 ${
-                        isLoadingVideo || !scene.startFrameUrl 
-                          ? (darkMode ? 'bg-[#0A0A0C] text-zinc-600 border border-[#2A2A30] cursor-not-allowed shadow-none' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none') 
-                          : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent')
-                      }`}
+                      onClick={() => setActiveVideoGenModal(scene)} 
+                      className={`h-9 px-4 rounded-lg text-[13px] font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}
                     >
                         {isLoadingVideo ? <Loader2 size={14} className="animate-spin" /> : <Film size={14} />} 
                         {isLoadingVideo ? 'Đang Gen...' : 'Gen Video (AI)'}

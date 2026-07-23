@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
-import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User } from 'lucide-react';
+import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay } from 'lucide-react';
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
@@ -39,9 +39,15 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [isDataLoading, setIsDataLoading] = useState(true);
 
   const [activeEditSceneModal, setActiveEditSceneModal] = useState(null);
-  
-  // 🚀 BỔ SUNG STATE QUẢN LÝ MODAL START FRAME
   const [activeStartFrameModal, setActiveStartFrameModal] = useState(null);
+  
+  // 🚀 BỔ SUNG STATE QUẢN LÝ MODAL GEN VIDEO AI
+  const [activeVideoGenModal, setActiveVideoGenModal] = useState(null);
+  const [videoGenOptions, setVideoGenOptions] = useState({
+    mode: 'start_frame_to_video', // Mặc định
+    prompt: '',
+    resolution: '480p' // Mặc định
+  });
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [checkedScenes, setCheckedScenes] = useState({});
@@ -73,6 +79,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [isBatchGenerating, setIsBatchGenerating] = useState(false);
   const [batchGenProgress, setBatchGenProgress] = useState({ current: 0, total: 0 });
   const [batchMergeProgress, setBatchMergeProgress] = useState({ current: 0, total: 0 });
+  
+  const [isBatchVideoGenerating, setIsBatchVideoGenerating] = useState(false);
 
   const fileInputRef = useRef(null);
   const frameInputRef = useRef(null);
@@ -145,16 +153,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const handleSaveSetupData = async (updatedCharacters, updatedParsedData) => {
     setProjectCharacters(updatedCharacters);
     if (updatedParsedData) setParsedData(updatedParsedData);
-    
     try {
       const updates = { characters: updatedCharacters };
       if (updatedParsedData) updates.data = updatedParsedData;
-      
       await updateProjectProgress(projectId, updates);
-      console.log("✅ Đã đồng bộ SetupTab lên Firebase & Storyboard!");
-    } catch (err) {
-      alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message);
-    }
+    } catch (err) { alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message); }
   };
 
   const uploadFileToR2 = async (file, folderPrefix) => {
@@ -195,10 +198,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         updateProjectProgress(projectId, { characters: newChars });
         return newChars;
       });
-    } catch (err) {
-      console.error(err);
-      alert("Không thể upload Avatar vĩnh viễn. Vui lòng thử lại!");
-    }
+    } catch (err) { console.error(err); alert("Không thể upload Avatar vĩnh viễn."); }
   };
 
   const handleCharVoiceUpload = async (e) => {
@@ -217,10 +217,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         updateProjectProgress(projectId, { characters: newChars });
         return newChars;
       });
-    } catch (err) {
-      console.error(err);
-      alert("Không thể upload Voice Nhân vật vĩnh viễn. Vui lòng thử lại!");
-    }
+    } catch (err) { console.error(err); alert("Không thể upload Voice Nhân vật vĩnh viễn."); }
   };
 
   const handleStartFrameUpload = async (e) => {
@@ -238,10 +235,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         updateProjectProgress(projectId, { data: newData }); 
         return newData;
       });
-    } catch (err) {
-      console.error(err);
-      alert("Không thể upload Ảnh Nền vĩnh viễn. Vui lòng thử lại!");
-    }
+    } catch (err) { console.error(err); alert("Không thể upload Ảnh Nền vĩnh viễn."); }
   };
 
   const handleDeleteScene = (scene_n) => {
@@ -265,32 +259,107 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     } catch(err) { alert("Lỗi khi lưu: " + err.message); }
   };
 
-  const handleGenVideo = async (sceneNo) => {
+  // 🚀 HÀM GEN VIDEO TỪNG SCENE
+  const handleGenVideoSingle = async (sceneNo, options, isBatch = false) => {
     const scene = parsedData.find(s => s.scene_n === sceneNo);
     if (!scene) return;
     
-    if (!scene.startFrameUrl) return alert("Vui lòng tải Nền (Ảnh đầu vào) trước khi Gen Video!");
+    if (options.mode === 'start_frame_to_video' && !scene.startFrameUrl) {
+      if(!isBatch) alert("Vui lòng tải Nền (Ảnh đầu vào) trước khi Gen bằng chế độ Start Frame!");
+      return;
+    }
     
-    // 🚀 ĐÃ BỔ SUNG PROMPT TỪ BOX "MÔ TẢ THÊM" VÀO ĐÂY
-    const prompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}${scene.AdditionalPrompt ? '. ' + scene.AdditionalPrompt : ''}`;
-    if (!prompt.trim()) return alert("Thiếu dữ liệu Context/Action để Gen Video!");
+    // Ghép Prompt
+    let finalPrompt = `${scene.Context || ''}. ${scene.Action || ''}. ${scene.Camera || ''}`;
+    if (scene.AdditionalPrompt) finalPrompt += `. ${scene.AdditionalPrompt}`;
+    if (options.prompt) finalPrompt += `. ${options.prompt}`; // Lấy từ Modal option
+
+    if (!finalPrompt.trim()) {
+       if(!isBatch) alert("Thiếu dữ liệu Context/Action để làm Prompt cho AI!");
+       return;
+    }
 
     setIsVideoGenerating(prev => ({ ...prev, [sceneNo]: true }));
     
     try {
-      console.log(`Đang gửi yêu cầu Gen Video cho Scene ${sceneNo}...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      console.log(`Đang gửi yêu cầu Gen Video [Mode: ${options.mode}, Res: ${options.resolution}] cho Scene ${sceneNo}...`);
+      
+      // 🚀 CHỖ NÀY LÀ NƠI BẠN SẼ CODE GỌI API (Runway/Luma/Kling...) DỰA TRÊN 3 KEY API XOAY VÒNG
+      await new Promise(resolve => setTimeout(resolve, 8000)); // Giả lập chờ 8s
+      
       const generatedVideoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"; 
       const updatedData = parsedData.map(s => s.scene_n === sceneNo ? { ...s, videoUrl: generatedVideoUrl } : s);
+      
       setParsedData(updatedData);
       await updateProjectProgress(projectId, { data: updatedData });
-      alert(`Gen Video Scene ${sceneNo} thành công!`);
+      
+      if(!isBatch) alert(`✅ Gen Video Scene ${sceneNo} thành công!`);
     } catch (error) {
-      alert("Lỗi Gen Video: " + error.message);
+      if(!isBatch) alert("Lỗi Gen Video: " + error.message);
+      console.error(`Lỗi Gen Video Scene ${sceneNo}:`, error);
     } finally {
       setIsVideoGenerating(prev => ({ ...prev, [sceneNo]: false }));
     }
   };
+
+  // 🚀 3 NÚT TÍNH NĂNG MỚI BÊN BẢNG ĐIỀU KHIỂN
+  
+  const handleSetAllStartFrames = async () => {
+    if (isSemi) return alert("Chế độ Semi không có nhân vật để set ảnh nền tự động.");
+    if (!window.confirm("Hệ thống sẽ lấy ảnh Avatar của nhân vật tương ứng đè lên làm Nền (Start Frame) cho TẤT CẢ các Scene. Bạn chắc chắn chứ?")) return;
+    
+    const newData = parsedData.map(scene => {
+       const charInfo = projectCharacters.find(c => c.name === scene.Character);
+       if (charInfo && charInfo.imageUrl) {
+           return { ...scene, startFrameUrl: charInfo.imageUrl };
+       }
+       return scene;
+    });
+    setParsedData(newData);
+    await updateProjectProgress(projectId, { data: newData });
+    alert("✅ Đã cập nhật ảnh nền cho toàn bộ Scene!");
+  };
+
+  const handleBatchGenVideo = async () => {
+    const scenesToGen = parsedData.filter(s => s.startFrameUrl || videoGenOptions.mode !== 'start_frame_to_video');
+    if(scenesToGen.length === 0) return alert("Không có scene nào đủ điều kiện gen video (Hãy kiểm tra lại Start Frame).");
+    if(!window.confirm(`Bạn chuẩn bị Gen Video bằng AI cho ${scenesToGen.length} Scene. Quá trình xử lý song song 3 video/lần. Tiếp tục?`)) return;
+
+    setIsBatchVideoGenerating(true);
+    
+    // Chia mảng thành các chunk 3 phần tử
+    for(let i = 0; i < scenesToGen.length; i += 3) {
+        const chunk = scenesToGen.slice(i, i + 3);
+        console.log(`Đang chạy Batch Video Gen chunk:`, chunk.map(c=>c.scene_n));
+        await Promise.all(chunk.map(s => handleGenVideoSingle(s.scene_n, videoGenOptions, true)));
+    }
+    
+    setIsBatchVideoGenerating(false);
+    alert("✅ Đã hoàn thành quá trình Gen Video cho toàn bộ dự án!");
+  };
+
+  const handleResetProject = async () => {
+    if(!window.confirm("⚠️ CẢNH BÁO: Hành động này sẽ XÓA TOÀN BỘ Audio, Video, Ảnh Nền đã tạo và đưa kịch bản về trạng thái GỐC. Bạn có chắc chắn?")) return;
+    
+    setGeneratedAudios({});
+    setMergedVideos({});
+    setIsVideoGenerating({});
+    setIsGenerating({});
+    
+    const resetData = parsedData.map(s => {
+        const { startFrameUrl, videoUrl, AdditionalPrompt, ...rest } = s;
+        return rest; // Bỏ các field đã render
+    });
+    setParsedData(resetData);
+    
+    await updateProjectProgress(projectId, {
+        data: resetData,
+        generatedAudios: {},
+        mergedVideos: {}
+    });
+    alert("🔄 Đã Reset dự án về trạng thái ban đầu thành công!");
+  };
+
 
   const processMergeSingleScene = async (scene, volValue) => {
     const videoUrl = scene.videoUrl || scene.startFrameUrl;
@@ -820,14 +889,13 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             generatedAudios={generatedAudios} 
             isGenerating={isGenerating} 
             isVideoGenerating={isVideoGenerating} 
-            handleGenVideo={handleGenVideo} 
+            handleGenVideo={handleGenVideoSingle} 
             mergingScenes={mergingScenes} 
             mergedVideos={mergedVideos} 
             setActiveEditSceneModal={setActiveEditSceneModal} 
-            
-            // 🚀 ĐÃ TRUYỀN ACTIVE MODAL VÀO STORYBOARD
             setActiveStartFrameModal={setActiveStartFrameModal}
-            
+            setActiveVideoGenModal={setActiveVideoGenModal} /* 🚀 TRUYỀN MODAL VIDEO GEN XUỐNG */
+            frameInputRef={frameInputRef} 
             activeUploadIdRef={activeUploadIdRef} 
             setActiveGenModal={setActiveGenModal} 
             handleDeleteScene={handleDeleteScene} 
@@ -842,25 +910,40 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       </div>
 
       {/* CỘT PHẢI: BẢNG ĐIỀU KHIỂN */}
-      <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+      <div className={`fixed right-6 top-24 bottom-6 border rounded-2xl p-5 shadow-2xl z-20 flex flex-col gap-5 w-[260px] hidden xl:flex transition-colors overflow-y-auto custom-scrollbar ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
         
-        <div className={`flex items-center justify-between border-b pb-3 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+        <div className={`flex items-center justify-between border-b pb-3 shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
           <div className={`flex items-center gap-2 font-semibold text-sm ${darkMode ? 'text-zinc-100' : 'text-black'}`}>
             <Sliders size={16} className="text-purple-500" /> Bảng điều khiển
           </div>
         </div>
         
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 shrink-0">
           <button onClick={() => setIsMergeModalOpen(true)} className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/25 transition-all cursor-pointer"><Merge size={16} /> Merge All</button>
         </div>
         
-        <div className={`w-full h-[1px] my-1 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
+        <div className={`w-full h-[1px] my-1 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
-          <Music size={16} /> Gen All Audio
-        </button>
+        {/* 🚀 3 NÚT TÍNH NĂNG MỚI */}
+        <div className="flex flex-col gap-3 shrink-0">
+           <button onClick={handleSetAllStartFrames} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400'}`}>
+             <ImagePlay size={16} /> Set All Start Frame
+           </button>
+           
+           <button onClick={handleBatchGenVideo} disabled={isBatchVideoGenerating} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${isBatchVideoGenerating ? 'bg-gray-600 cursor-not-allowed' : (darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400')}`}>
+             {isBatchVideoGenerating ? <Loader2 size={16} className="animate-spin" /> : <MonitorPlay size={16} />} 
+             {isBatchVideoGenerating ? 'Đang Gen Batch...' : 'Gen All Video'}
+           </button>
+           
+           <button onClick={() => setIsModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400'}`}>
+             <Music size={16} /> Gen All Audio
+           </button>
+        </div>
+
+        <div className={`w-full h-[1px] my-1 shrink-0 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
         
-        <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
+        {/* Khu vực Upload Voice Clone */}
+        <div className={`border rounded-xl p-4 flex flex-col gap-4 shadow-inner shrink-0 ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
           <div className={`text-[12px] font-bold flex justify-between items-center ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>
             Voice Clone 
             {voiceCloneFile && (<button onClick={handleRemoveVoice} className="text-red-500 hover:text-red-400 bg-red-500/10 p-1.5 rounded cursor-pointer transition-colors"><Trash2 size={14} /></button>)}
@@ -872,36 +955,31 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             <div className="flex flex-col gap-3 animate-in fade-in duration-300">
               <div className={`text-[11px] truncate font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-700'}`}>{voiceCloneFile.name}</div>
               <audio src={voiceCloneUrl} crossOrigin="anonymous" controls className="w-full h-8 custom-audio" />
-              
               <div className="relative">
-                <input 
-                  type="text" 
-                  value={voiceCloneRefText} 
-                  onChange={(e) => setVoiceCloneRefText(e.target.value)} 
-                  onBlur={() => updateProjectProgress(projectId, { voiceCloneRefText: voiceCloneRefText })}
-                  disabled={isTranscribing} 
-                  className={`w-full h-10 px-3 border focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl text-[13px] transition-all ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-800'}`} 
-                  placeholder="Nhập Transcript của Audio mẫu..." 
-                />
+                <input type="text" value={voiceCloneRefText} onChange={(e) => setVoiceCloneRefText(e.target.value)} onBlur={() => updateProjectProgress(projectId, { voiceCloneRefText: voiceCloneRefText })} disabled={isTranscribing} className={`w-full h-10 px-3 border focus:outline-none focus:ring-1 focus:ring-purple-500 rounded-xl text-[13px] transition-all ${darkMode ? 'bg-[#121214] border-[#2A2A30] text-zinc-200' : 'bg-white border-zinc-300 text-zinc-800'}`} placeholder="Nhập Transcript của Audio mẫu (Tùy chọn)..." />
                 {isTranscribing && <Loader2 size={16} className="absolute right-3 top-3 animate-spin text-purple-500" />}
               </div>
-              
               {voiceUploadStatus && <div className="text-[11px] font-semibold text-green-500 px-1">{voiceUploadStatus}</div>}
             </div>
           )}
         </div>
 
-        <div className="flex-1"></div>
-        <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
-          <Download size={16} /> Xuất File (Export)
-        </button>
+        <div className="flex-1 min-h-[20px]"></div>
+        
+        <div className="flex flex-col gap-3 shrink-0">
+           <button onClick={() => setIsExportModalOpen(true)} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-green-500/10 border-green-500/20 text-green-400 hover:bg-green-500/20' : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100 hover:border-green-300'}`}>
+             <Download size={16} /> Xuất File (Export)
+           </button>
+           <button onClick={handleResetProject} className={`w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm border ${darkMode ? 'bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20' : 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100 hover:border-red-300'}`}>
+             <RotateCcw size={16} /> Reset Project
+           </button>
+        </div>
       </div>
 
       {/* CÁC MODAL LÀM VIỆC */}
 
-      {/* 🚀 MODAL CHỌN ẢNH NỀN VÀ MÔ TẢ MỚI TẠO Ở ĐÂY */}
+      {/* 🚀 MODAL START FRAME */}
       {activeStartFrameModal && (() => {
-        // Lấy dữ liệu mới nhất của Scene hiện tại
         const sceneInfo = parsedData.find(s => s.scene_n === activeStartFrameModal.scene_n) || activeStartFrameModal;
         const charInfo = projectCharacters.find(c => c.name === sceneInfo.Character);
         const hasAvatar = charInfo && charInfo.imageUrl;
@@ -918,14 +996,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
               <div className="flex flex-col gap-5 overflow-y-auto custom-scrollbar">
                 
-                {/* Khu vực Preview Ảnh */}
                 {sceneInfo.startFrameUrl && (
                   <div className={`w-full aspect-video rounded-xl overflow-hidden flex items-center justify-center border shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
                     <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Start Frame Preview" />
                   </div>
                 )}
 
-                {/* Các Nút Lựa Chọn Upload */}
                 <div className="flex flex-col gap-3">
                   {!isSemi && hasAvatar && (
                     <button 
@@ -948,7 +1024,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                   </button>
                 </div>
 
-                {/* Box nhập Mô tả thêm */}
                 <div className="flex flex-col gap-2 mt-2">
                   <label className={`text-sm font-bold ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>Mô tả thêm (lựa chọn)</label>
                   <textarea 
@@ -968,7 +1043,116 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         );
       })()}
 
-      
+      {/* 🚀 MODAL GEN VIDEO AI TÙY CHỈNH MỚI */}
+      {activeVideoGenModal && (() => {
+         const sceneInfo = parsedData.find(s => s.scene_n === activeVideoGenModal.scene_n) || activeVideoGenModal;
+         const isGeneratingThis = isVideoGenerating[sceneInfo.scene_n];
+
+         return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className={`border p-7 rounded-2xl w-full max-w-xl flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
+              <button onClick={() => !isGeneratingThis && setActiveVideoGenModal(null)} disabled={isGeneratingThis} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+              
+              <div className="border-b pb-5 mb-5 border-zinc-200 dark:border-white/10 flex items-center gap-3">
+                <Film className="text-emerald-500" size={24} />
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>Video - Scene {sceneInfo.scene_n}</h3>
+              </div>
+
+              {isGeneratingThis ? (
+                 <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                    <Loader2 size={60} className="animate-spin text-emerald-500 mb-6" />
+                    <h4 className={`text-xl font-bold mb-2 ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Đang Gen Video bằng AI...</h4>
+                    <p className={`text-sm ${darkMode ? 'text-zinc-400' : 'text-zinc-500'}`}>Hệ thống đang xử lý và khởi tạo chuyển động.<br/>Quá trình này có thể mất vài phút, vui lòng chờ đợi.</p>
+                 </div>
+              ) : (
+                 <div className="flex flex-col gap-6 overflow-y-auto custom-scrollbar max-h-[70vh] pr-2">
+                    
+                    {/* Media Display: Ưu tiên hiển thị Output nếu có, nếu không thì Input */}
+                    <div className="flex gap-4">
+                       {sceneInfo.videoUrl && (
+                          <div className="flex-1 flex flex-col gap-2">
+                             <span className="text-xs font-bold uppercase tracking-wider text-green-500 flex items-center gap-1"><CheckSquare size={14}/> Output Video</span>
+                             <div className={`w-full aspect-video rounded-xl overflow-hidden bg-black border ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-200'}`}>
+                                <video src={sceneInfo.videoUrl} controls crossOrigin="anonymous" className="w-full h-full object-contain" />
+                             </div>
+                          </div>
+                       )}
+                       
+                       {(!sceneInfo.videoUrl || sceneInfo.startFrameUrl) && (
+                          <div className="flex-1 flex flex-col gap-2">
+                             <span className="text-xs font-bold uppercase tracking-wider text-blue-500 flex items-center gap-1"><ImageIcon size={14}/> Input Frame / Media</span>
+                             <div className={`w-full aspect-video rounded-xl overflow-hidden bg-black border flex items-center justify-center ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-200'}`}>
+                                {sceneInfo.startFrameUrl ? (
+                                   <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" />
+                                ) : (
+                                   <span className="text-xs text-zinc-500">Chưa có Start Frame</span>
+                                )}
+                             </div>
+                          </div>
+                       )}
+                    </div>
+
+                    <div className={`w-full h-[1px] ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`}></div>
+
+                    {/* Mode Selection */}
+                    <div className="flex flex-col gap-3">
+                       <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Generate Mode</label>
+                       <div className="grid grid-cols-3 gap-3">
+                          {[
+                            { id: 'start_frame_to_video', label: 'Start Frame ➔ Video' },
+                            { id: 'text_to_video', label: 'Text ➔ Video' },
+                            { id: 'references_to_video', label: 'References ➔ Video' }
+                          ].map(mode => (
+                             <label key={mode.id} className={`flex items-center justify-center p-3 border rounded-xl cursor-pointer transition-all text-xs font-bold text-center ${videoGenOptions.mode === mode.id ? (darkMode ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-emerald-50 border-emerald-400 text-emerald-700') : (darkMode ? 'bg-[#0A0A0C] border-[#2A2A30] text-zinc-400 hover:border-emerald-500/30' : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-emerald-300')}`}>
+                                <input type="radio" name="genMode" className="hidden" checked={videoGenOptions.mode === mode.id} onChange={() => setVideoGenOptions({...videoGenOptions, mode: mode.id})} />
+                                {mode.label}
+                             </label>
+                          ))}
+                       </div>
+                    </div>
+
+                    {/* Custom Prompt */}
+                    <div className="flex flex-col gap-2">
+                       <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Custom prompt (Optional)</label>
+                       <textarea 
+                          value={videoGenOptions.prompt} 
+                          onChange={e => setVideoGenOptions({...videoGenOptions, prompt: e.target.value})}
+                          placeholder="Nhập prompt custom để điều khiển AI tốt hơn..."
+                          className={`w-full h-20 border rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none custom-scrollbar transition-all ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30] text-zinc-200' : 'bg-zinc-50 border-zinc-300 text-zinc-900'}`}
+                       />
+                    </div>
+
+                    {/* Resolution */}
+                    <div className="flex flex-col gap-3">
+                       <label className={`text-sm font-bold ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Resolution (Độ phân giải)</label>
+                       <div className="flex gap-4">
+                          {[
+                            { id: '480p', label: '480p (Nhanh)' },
+                            { id: '720p', label: '720p (Nét)' }
+                          ].map(res => (
+                             <label key={res.id} className={`flex items-center gap-2 cursor-pointer text-sm font-medium ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                                <input type="radio" name="resMode" value={res.id} checked={videoGenOptions.resolution === res.id} onChange={() => setVideoGenOptions({...videoGenOptions, resolution: res.id})} className="accent-emerald-500 w-4 h-4" />
+                                {res.label}
+                             </label>
+                          ))}
+                       </div>
+                    </div>
+
+                    <div className={`mt-2 pt-5 border-t flex justify-end gap-3 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
+                       <button onClick={() => setActiveVideoGenModal(null)} className={`h-10 px-6 rounded-xl font-bold transition-colors ${darkMode ? 'bg-transparent text-zinc-400 hover:bg-white/5 hover:text-white' : 'bg-transparent text-zinc-600 hover:bg-zinc-100 hover:text-black'}`}>Hủy</button>
+                       <button onClick={() => handleGenVideoSingle(sceneInfo.scene_n, videoGenOptions)} className="h-10 px-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-md transition-colors flex items-center gap-2">
+                          <Film size={16} /> Bắt đầu Gen AI
+                       </button>
+                    </div>
+
+                 </div>
+              )}
+            </div>
+          </div>
+         );
+      })()}
+
+
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
@@ -1182,45 +1366,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         </div>
       )}
       
-      {activeGenModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className={`border rounded-2xl w-full max-w-md p-7 shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-            <button onClick={() => setActiveGenModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20} /></button>
-            <h3 className={`text-lg font-bold border-b pb-4 flex items-center gap-2 ${darkMode ? 'text-zinc-100 border-white/10' : 'text-black border-zinc-200'}`}><Mic size={20} className="text-purple-500" /> Audio - Scene {activeGenModal.scene_n}</h3>
-            <div className="mt-6 space-y-5">
-              <div className={`border rounded-xl p-5 shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
-                <div className={`font-semibold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 ${darkMode ? 'text-zinc-500' : 'text-zinc-600'}`}><AlignLeft size={14} /> {isSemi ? 'Voiceover' : 'Dialogue'}</div>
-                <p className={`leading-relaxed text-[14px] whitespace-pre-wrap ${darkMode ? 'text-zinc-200' : 'text-zinc-900'}`}>{activeGenModal.textToGen || "Không có lời thoại (Chỉ lấy Video gốc)"}</p>
-              </div>
-            </div>
-            <div className={`flex justify-end gap-3 pt-5 mt-6 border-t shrink-0 ${darkMode ? 'border-white/10' : 'border-zinc-200'}`}>
-              <button onClick={() => setActiveGenModal(null)} className={`h-10 px-6 rounded-xl font-medium cursor-pointer transition-colors ${darkMode ? 'bg-transparent hover:bg-white/5 text-zinc-300' : 'bg-transparent hover:bg-zinc-100 text-zinc-700'}`}>Hủy bỏ</button>
-              <button onClick={() => { setActiveGenModal(null); handleGenAudio(activeGenModal.scene_n, activeGenModal.textToGen); }} className="h-10 px-6 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-bold cursor-pointer shadow-md transition-colors flex items-center gap-2"><Mic size={16}/> Xác nhận Gen</button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {activeMergeModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className={`border rounded-2xl w-full max-w-sm p-7 shadow-2xl flex flex-col items-center relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-            <button onClick={() => setActiveMergeModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20} /></button>
-            <h3 className={`text-lg font-bold mb-5 flex items-center ${darkMode ? 'text-zinc-100' : 'text-black'}`}><Merge className="mr-2 text-blue-500" /> Merge - Scene {activeMergeModal.scene_n}</h3>
-            <div className={`w-full border p-5 rounded-xl mb-6 text-left shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
-              <div className="flex justify-between items-center mb-3">
-                <span className={`font-semibold text-sm ${darkMode ? 'text-zinc-300' : 'text-zinc-800'}`}>Âm lượng gốc</span>
-                <span className="text-blue-600 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-500/20">{(singleMixVol / 100).toFixed(2)}</span>
-              </div>
-              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-600 ${darkMode ? 'bg-[#2A2A30]' : 'bg-zinc-300'}`} />
-            </div>
-            <div className="flex w-full gap-3">
-              <button onClick={() => setActiveMergeModal(null)} className={`flex-1 py-3 rounded-xl font-bold border transition-colors cursor-pointer ${darkMode ? 'text-zinc-400 hover:text-white bg-white/5 hover:bg-white/10 border-[#2A2A30]' : 'text-zinc-700 hover:text-black bg-zinc-50 hover:bg-zinc-100 border-zinc-300'}`}>Hủy</button>
-              <button onClick={handleSingleSceneMergeConfirm} className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-500 transition-colors cursor-pointer shadow-md">Tiến hành</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
