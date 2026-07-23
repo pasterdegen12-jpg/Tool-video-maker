@@ -40,8 +40,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
   const [activeEditSceneModal, setActiveEditSceneModal] = useState(null);
   const [activeStartFrameModal, setActiveStartFrameModal] = useState(null);
-  
-  // 🚀 BỔ SUNG STATE QUẢN LÝ MODAL GEN VIDEO AI
   const [activeVideoGenModal, setActiveVideoGenModal] = useState(null);
   const [videoGenOptions, setVideoGenOptions] = useState({
     mode: 'start_frame_to_video', 
@@ -157,7 +155,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       const updates = { characters: updatedCharacters };
       if (updatedParsedData) updates.data = updatedParsedData;
       await updateProjectProgress(projectId, updates);
-      console.log("✅ Đã đồng bộ SetupTab lên Firebase & Storyboard!");
     } catch (err) { alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message); }
   };
 
@@ -981,7 +978,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                 
                 {sceneInfo.startFrameUrl && (
                   <div className={`w-full aspect-video rounded-xl overflow-hidden flex items-center justify-center border shadow-inner ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
-                    <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Start Frame Preview" />
+                    {/* 🚀 ĐÃ ĐỔI: object-contain ĐỂ KHÔNG BỊ CẮT ẢNH */}
+                    <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-contain" alt="Start Frame Preview" />
                   </div>
                 )}
 
@@ -1033,7 +1031,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
          return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
             <div className={`border p-7 rounded-2xl w-full max-w-xl flex flex-col shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>
-              <button onClick={() => !isGeneratingThis && setActiveVideoGenModal(null)} disabled={isGeneratingThis} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
+              
+              {/* 🚀 ĐÃ MỞ KHÓA: User luôn có thể tắt cửa sổ bất kể đang Gen hay không */}
+              <button onClick={() => setActiveVideoGenModal(null)} className={`absolute top-5 right-5 cursor-pointer transition-colors ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-zinc-500 hover:text-black'}`}><X size={20}/></button>
               
               <div className="border-b pb-5 mb-5 border-zinc-200 dark:border-white/10 flex items-center gap-3">
                 <Film className="text-emerald-500" size={24} />
@@ -1044,7 +1044,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                     <Loader2 size={60} className="animate-spin text-emerald-500 mb-6" />
                     <h4 className={`text-xl font-bold mb-2 ${darkMode ? 'text-zinc-200' : 'text-zinc-800'}`}>Đang Gen Video bằng AI...</h4>
-                    <p className={`text-sm ${darkMode ? 'text-zinc-400' : 'text-zinc-500'}`}>Hệ thống đang xử lý và khởi tạo chuyển động.<br/>Quá trình này có thể mất vài phút, vui lòng chờ đợi.</p>
+                    <p className={`text-sm ${darkMode ? 'text-zinc-400' : 'text-zinc-500'} mb-6`}>Hệ thống đang xử lý và khởi tạo chuyển động.<br/>Quá trình này có thể mất vài phút, vui lòng chờ đợi.</p>
+                    
+                    {/* 🚀 BỔ SUNG: Nút để người dùng chủ động chạy ngầm */}
+                    <button onClick={() => setActiveVideoGenModal(null)} className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-colors border shadow-sm ${darkMode ? 'bg-[#15151A] border-[#2A2A30] text-zinc-300 hover:text-white' : 'bg-zinc-100 border-zinc-300 text-zinc-700 hover:text-black'}`}>
+                       Đóng & Chạy ngầm
+                    </button>
                  </div>
               ) : (
                  <div className="flex flex-col gap-6 overflow-y-auto custom-scrollbar max-h-[70vh] pr-2">
@@ -1059,15 +1064,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                           </div>
                        )}
                        
-                       {(!sceneInfo.videoUrl || sceneInfo.startFrameUrl) && (
+                       {/* 🚀 ĐÃ SỬA: Luôn hiện Input Frame (kể cả khi đã có video) và đổi thành object-contain */}
+                       {sceneInfo.startFrameUrl && (
                           <div className="flex-1 flex flex-col gap-2">
                              <span className="text-xs font-bold uppercase tracking-wider text-blue-500 flex items-center gap-1"><ImageIcon size={14}/> Input Frame / Media</span>
                              <div className={`w-full aspect-video rounded-xl overflow-hidden bg-black border flex items-center justify-center ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-200'}`}>
-                                {sceneInfo.startFrameUrl ? (
-                                   <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" />
-                                ) : (
-                                   <span className="text-xs text-zinc-500">Chưa có Start Frame</span>
-                                )}
+                                <img src={sceneInfo.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-contain" />
                              </div>
                           </div>
                        )}
@@ -1130,6 +1132,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
          );
       })()}
 
+      {/* Các Modal Edit, Merge... được giữ nguyên */}
       {activeEditSceneModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className={`border p-7 rounded-2xl w-full max-w-2xl flex flex-col max-h-[90vh] shadow-2xl relative animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-[#121214] border-white/10' : 'bg-white border-zinc-200'}`}>

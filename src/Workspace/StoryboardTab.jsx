@@ -13,11 +13,11 @@ export default function StoryboardTab({
   
   const toggleFullscreen = (e) => {
     const videoContainer = e.currentTarget.closest('.video-wrapper');
-    const videoElement = videoContainer.querySelector('video');
-    if (videoElement) {
-      if (videoElement.requestFullscreen) videoElement.requestFullscreen();
-      else if (videoElement.webkitRequestFullscreen) videoElement.webkitRequestFullscreen();
-      else if (videoElement.msRequestFullscreen) videoElement.msRequestFullscreen();
+    const mediaElement = videoContainer.querySelector('video') || videoContainer.querySelector('img');
+    if (mediaElement) {
+      if (mediaElement.requestFullscreen) mediaElement.requestFullscreen();
+      else if (mediaElement.webkitRequestFullscreen) mediaElement.webkitRequestFullscreen();
+      else if (mediaElement.msRequestFullscreen) mediaElement.msRequestFullscreen();
     }
   };
 
@@ -36,13 +36,16 @@ export default function StoryboardTab({
         
         const characterInfo = projectCharacters?.find(c => c.name && scene.Character && c.name.trim() === scene.Character.trim()) || null;
 
+        // 🚀 Tích hợp logic Output: Nếu đã Merge thì hiện file Merge, nếu chưa Merge mà có Video AI thì hiện Video AI
+        const outputVideoUrl = hasOutput || (!isSemi && scene.videoUrl ? scene.videoUrl : null);
+
         return (
-          // 🚀 ĐÃ SỬA: Giảm padding p-6 -> p-5, thu hẹp gap-8 -> gap-6
           <div key={index} className={`flex flex-col md:flex-row gap-6 p-5 rounded-2xl border shadow-sm transition-all duration-300 group ${darkMode ? 'bg-[#121214] hover:bg-[#151518] border-[#2A2A30]' : 'bg-white hover:bg-zinc-50 border-zinc-200'}`}>
             
-            {/* CỘT MEDIA */}
-            {/* 🚀 ĐÃ SỬA: Thu hẹp độ rộng cột Media để cân đối với ảnh (280px / 300px) */}
+            {/* CỘT MEDIA: CHỈ ĐÚNG 3 KHỐI THEO YÊU CẦU */}
             <div className="w-full lg:w-[280px] xl:w-[300px] flex flex-col shrink-0">
+               
+               {/* 1. KHỐI INPUT */}
                <div className={`flex flex-col rounded-xl p-2 border shadow-inner video-wrapper ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
                   <div className={`flex items-center justify-between pb-2 mb-2 px-1 border-b ${darkMode ? 'border-[#2A2A30]' : 'border-zinc-300'}`}>
                     <div className={`flex items-center gap-1.5 ${darkMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
@@ -54,31 +57,33 @@ export default function StoryboardTab({
                     </div>
                   </div>
                   <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative shadow-sm">
-                    {scene.videoUrl ? (
+                    {scene.startFrameUrl ? (
+                      <img src={scene.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-contain" />
+                    ) : (isSemi && scene.videoUrl) ? (
                       <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
-                    ) : scene.startFrameUrl ? (
-                      <img src={scene.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center flex flex-col items-center gap-2 opacity-50"><Video size={20} className="text-zinc-400" /></div>
                     )}
                   </div>
                 </div>
 
-                {hasOutput && (
-                  <div className={`flex flex-col rounded-xl p-2 mt-4 border shadow-md video-wrapper ${darkMode ? 'bg-[#0A0A0C] border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.05)]' : 'bg-green-50 border-green-300'}`}>
-                    <div className={`flex items-center justify-between pb-2 mb-2 px-1 border-b ${darkMode ? 'border-green-500/20' : 'border-green-300/50'}`}>
-                      <div className={`flex items-center gap-1.5 ${darkMode ? 'text-green-400' : 'text-green-700'}`}><CheckSquare size={14} /> <span className="text-[10px] font-bold uppercase tracking-widest">Output</span></div>
+                {/* 2. KHỐI OUTPUT (Gộp chung AI Video và Merge Video) */}
+                {outputVideoUrl && (
+                  <div className={`flex flex-col rounded-xl p-2 mt-4 border shadow-md video-wrapper ${darkMode ? 'bg-[#0A0A0C] border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'bg-emerald-50 border-emerald-300'}`}>
+                    <div className={`flex items-center justify-between pb-2 mb-2 px-1 border-b ${darkMode ? 'border-emerald-500/30' : 'border-emerald-300'}`}>
+                      <div className={`flex items-center gap-1.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}><CheckSquare size={14} /> <span className="text-[10px] font-bold uppercase tracking-widest">Output</span></div>
                       <div className="flex items-center gap-2">
-                        <button onClick={toggleFullscreen} className={`transition-colors cursor-pointer ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-green-600 hover:text-green-900'}`}><Maximize size={12} /></button>
-                        <button onClick={() => forceDownloadVideo(hasOutput, `Scene_${scene.scene_n}.mp4`)} className="text-[10px] font-bold text-white bg-green-600 hover:bg-green-500 px-2 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 shadow-sm"><Download size={12} /> Tải</button>
+                        <button onClick={toggleFullscreen} className={`transition-colors cursor-pointer ${darkMode ? 'text-zinc-500 hover:text-white' : 'text-emerald-600 hover:text-emerald-900'}`}><Maximize size={12} /></button>
+                        <button onClick={() => forceDownloadVideo(outputVideoUrl, `Scene_${scene.scene_n}_Output.mp4`)} className="text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 shadow-sm"><Download size={12} /> Tải</button>
                       </div>
                     </div>
                     <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative shadow-sm">
-                      <video src={hasOutput} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
+                      <video src={outputVideoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     </div>
                   </div>
                 )}
                 
+                {/* 3. KHỐI AVATAR CHARACTER */}
                 {characterInfo && !isSemi && (
                   <div className={`flex items-center gap-3 p-2.5 mt-4 rounded-xl border shadow-sm ${darkMode ? 'bg-[#0A0A0C] border-[#2A2A30]' : 'bg-zinc-50 border-zinc-200'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shrink-0 border shadow-inner ${darkMode ? 'bg-[#15151A] border-[#2A2A30]' : 'bg-zinc-200 border-zinc-300'}`}>
@@ -109,7 +114,6 @@ export default function StoryboardTab({
                 </button>
               </div>
 
-              {/* 🚀 ĐÃ SỬA: Giảm Text size (text-[13px]) và padding để các Box gọn gàng hơn */}
               <div className="space-y-4 flex-1">
                 {isSemi ? (
                   <>
