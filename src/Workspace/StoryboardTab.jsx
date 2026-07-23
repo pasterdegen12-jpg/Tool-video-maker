@@ -4,10 +4,7 @@ import { Video, CheckSquare, Download, Clock, Hash, Play, Mic, Film, Merge, Tras
 export default function StoryboardTab({
   parsedData, projectCharacters, generatedAudios, isGenerating, isVideoGenerating, handleGenVideo, mergingScenes, mergedVideos,
   setActiveEditSceneModal, 
-  
-  // 🚀 NHẬN THÊM PROP NÀY TỪ WORKSPACE ĐỂ MỞ MODAL
   setActiveStartFrameModal, 
-  
   frameInputRef, activeUploadIdRef, setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
   projectType, darkMode 
@@ -186,7 +183,6 @@ export default function StoryboardTab({
                 
                 {!isSemi ? (
                   <>
-                    {/* 🚀 ĐÃ CẬP NHẬT NÚT TẢI NỀN ĐỂ MỞ MODAL */}
                     <button onClick={() => setActiveStartFrameModal(scene)} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                         <ImageIcon size={14} /> Tải Nền
                     </button>
@@ -205,7 +201,6 @@ export default function StoryboardTab({
                     </button>
                   </>
                 ) : (
-                  // 🚀 ĐÃ CẬP NHẬT NÚT TẢI ẢNH NỀN BÊN SEMI ĐỂ MỞ MODAL
                   <button onClick={() => setActiveStartFrameModal(scene)} className={`h-9 px-4 rounded-lg text-[13px] font-semibold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-cyan-500/25 ${darkMode ? 'text-white bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border-transparent' : 'text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 border-transparent'}`}>
                       <ImageIcon size={14} /> Tải Ảnh Nền
                   </button>
