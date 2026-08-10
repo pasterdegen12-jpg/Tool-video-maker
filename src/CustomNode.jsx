@@ -154,23 +154,17 @@ export default function CustomNode({ data }) {
                 )}
               </div>
             ))}
-            {data.imageUrls.map((url, idx) => (
-                        data.outputType === 'video' ? (
-                            <video key={idx} crossOrigin="anonymous" src={url} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
-                        ) : (
-                            <img key={idx} crossOrigin="anonymous" src={url} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
-                        )
-                    ))}
-            {/* SỬA LỖI HIỂN THỊ VIDEO BẰNG THẺ <video> CHUẨN */}
+
+            {/* HIỂN THỊ KẾT QUẢ RENDER */}
             {data.preview && data.preview.type === 'gallery' && (
               <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
                 {data.imageUrls && data.imageUrls.length > 0 ? (
                   <div className="w-full grid grid-cols-1 gap-2">
                     {data.imageUrls.map((url, idx) => (
                         data.outputType === 'video' ? (
-                            <video key={idx} src={url} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                            <video key={idx} crossOrigin="anonymous" src={url} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
                         ) : (
-                            <img key={idx} src={url} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                            <img key={idx} crossOrigin="anonymous" src={url} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
                         )
                     ))}
                   </div>

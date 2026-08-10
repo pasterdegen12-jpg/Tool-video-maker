@@ -289,7 +289,10 @@ export default function WorkflowEditor() {
                 setIsRunning(false);
             }
         );
-    } catch (error) { alert("❌ Lỗi hệ thống: " + error.message); setIsRunning(false); }
+    } catch (error) { 
+        alert("❌ Lỗi hệ thống: " + error.message); 
+        setIsRunning(false); 
+    }
   };
 
   return (
