@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2 } from 'lucide-react';
+// Bổ sung thêm icon Workflow vào dòng import
+import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2, Workflow } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/util';
 import { useNavigate } from 'react-router-dom';
 
@@ -385,6 +386,15 @@ Kịch bản: ${script}`);
               >
                 <Wand2 size={20} className="relative z-10 text-blue-500 group-hover:rotate-12 transition-transform duration-300" /> 
                 <span className="relative z-10 tracking-wide">TẠO VIDEO (GEN AI)</span>
+              </button>
+              
+              {/* NÚT THỨ 3: AUTO FLOW (COMFY UI) */}
+              <button 
+                onClick={() => navigate('/autoflow')} 
+                className={`${buttonBaseClass} ${darkMode ? 'hover:shadow-emerald-500/5 hover:border-emerald-500/30' : 'hover:border-emerald-500/60 hover:bg-emerald-50/10'}`}
+              >
+                <Workflow size={20} className="relative z-10 text-emerald-500 group-hover:scale-110 transition-transform duration-300" /> 
+                <span className="relative z-10 tracking-wide">AUTO FLOW (COMFY UI)</span>
               </button>
             </div>
           </div>

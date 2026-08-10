@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Auto Flow Connector",
+  "version": "1.0.0",
+  "description": "Cầu nối Cookie và reCAPTCHA cho Auto Flow Web chạy trên nền tảng Cloud.",
+  "permissions": [
+    "cookies",
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://labs.google/*",
+    "*://*.google.com/*"
+  ],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:5173/*",
+      "http://192.168.1.9:5173/*",
+      "https://www.aivideomaker.live/*",
+      "https://aivideomaker.live/*"
+    ]
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://labs.google/*"
+      ],
+      "js": [
+        "stealth-core.js"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://labs.google/fx/tools/flow*",
+        "https://labs.google/fx/*/tools/flow*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected.js"
+      ],
+      "matches": [
+        "https://labs.google/*"
+      ]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Auto Flow Connector"
+  }
+}
