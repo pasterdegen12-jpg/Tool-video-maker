@@ -6,7 +6,6 @@ import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2 } from 'lucide-r
 
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
-// Đã import thêm updateDoc và arrayUnion để ghi mảng Video vào Firebase
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
 
 const nodeTypes = { custom: CustomNode };
@@ -230,18 +229,23 @@ export default function WorkflowEditor() {
                             const fileName = `GoogleFlow_${Date.now()}_${i + 1}.${ext}`;
                             const uniqueCloudName = `autoflow/${appProjectId}/${fileName}`;
 
-                            // 1. GỬI LỆNH CHO LOCAL SERVER TẢI VỀ Ổ CỨNG (KHÔNG CHỜ)
-                            const downloadApiUrl = `http://${window.location.hostname}:48321/api/download`;
-                            fetch(downloadApiUrl, {
-                                method: "POST", headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ videoUrl: url, outFolder: settings.outFolder, fileName: fileName })
-                            }).catch(e => console.warn("Local worker không phản hồi, bỏ qua tải Local."));
+                            // 1. XỬ LÝ MIXED CONTENT: Chỉ tải Local khi đang chạy ở máy tính ở nhà (localhost)
+                            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                            if (isLocalhost) {
+                                const downloadApiUrl = `http://localhost:48321/api/download`;
+                                fetch(downloadApiUrl, {
+                                    method: "POST", headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ videoUrl: url, outFolder: settings.outFolder, fileName: fileName })
+                                }).catch(e => console.warn("Local worker không bật, bỏ qua tải Local."));
+                            }
 
-                            // 2. KÉO FILE VÀ ĐẨY LÊN CLOUDFLARE R2
-                            const blobRes = await fetch(url);
-                            if (!blobRes.ok) throw new Error("Không thể tải file gốc từ Google CDN");
+                            // 2. VƯỢT RÀO BẢO MẬT COEP BẰNG PROXY
+                            const proxyUrl = `/api/proxy-media?url=${encodeURIComponent(url)}`;
+                            const blobRes = await fetch(proxyUrl);
+                            if (!blobRes.ok) throw new Error("Proxy Vercel không thể lấy file");
                             const blob = await blobRes.blob();
 
+                            // 3. XIN LINK R2 VÀ UPLOAD
                             const urlRes = await fetch('/api/get-upload-url', {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType })
@@ -253,18 +257,18 @@ export default function WorkflowEditor() {
 
                             const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
                             
-                            // 3. TẠO OBJECT LƯU DATABASE
+                            // 4. TẠO OBJECT LƯU DATABASE
                             finalOutputs.push({
                                 id: `media_${Date.now()}_${i}`,
-                                url: publicR2Url,        // Link R2 vĩnh viễn
-                                googleCdnUrl: url,       // Link dự phòng của Google
+                                url: publicR2Url,        
+                                googleCdnUrl: url,      
                                 type: mode,
                                 prompt: promptToSend,
                                 createdAt: Date.now()
                             });
                         }
 
-                        // 4. LƯU OUTPUTS VÀO FIREBASE BẰNG HÀM arrayUnion
+                        // LƯU FIREBASE
                         await updateDoc(doc(db, "autoflow_projects", appProjectId), {
                             outputs: arrayUnion(...finalOutputs),
                             updatedAt: Date.now()
@@ -277,7 +281,7 @@ export default function WorkflowEditor() {
 
                     } catch (cloudErr) {
                         console.error("Lỗi khi xử lý Cloud:", cloudErr);
-                        alert("⚠️ Gen thành công nhưng quá trình đẩy lên Cloud R2 gặp lỗi. Hãy kiểm tra Console (F12).");
+                        alert("⚠️ Quá trình đẩy lên Cloud R2 gặp lỗi. Hãy kiểm tra Console.");
                     }
                 } else {
                     alert(`✅ Lỗi logic: Không tìm thấy link tải. Vui lòng check tab Console (F12) để xem chi tiết!`);
