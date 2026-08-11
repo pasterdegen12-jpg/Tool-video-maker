@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// Đã thêm useReactFlow để đồng bộ dữ liệu giao diện
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2 } from 'lucide-react';
 
@@ -20,9 +19,8 @@ const categoryIcons = {
   Output: <ImageIcon size={14} className="text-white opacity-80" />,
 };
 
-// Đã thêm 'id' vào prop để biết chính xác đang thao tác trên thẻ nào
 export default function CustomNode({ id, data }) {
-  const { updateNodeData } = useReactFlow(); // Hook quyền lực để đồng bộ dữ liệu
+  const { updateNodeData } = useReactFlow(); 
   const isEngine = data.category === 'Generation';
   
   const [mode, setMode] = useState('image');
@@ -38,20 +36,17 @@ export default function CustomNode({ id, data }) {
     if (isEngine) setModel(mode === 'image' ? 'GEM_PIX_2' : 'OMNI_FLASH'); 
   }, [mode, isEngine]);
 
-  // HÀM 1: BÁO CÁO MỖI KHI GÕ CHỮ (PROMPT)
   const handleTextChange = (fieldId, newValue) => {
     const newFields = data.fields.map(f => f.id === fieldId ? { ...f, defaultValue: newValue } : f);
     updateNodeData(id, { fields: newFields });
   };
 
-  // HÀM 2: UPLOAD ẢNH INPUT LÊN CLOUD NGAY LẬP TỨC
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     setIsUploadingInput(true);
 
     try {
-        // 1. Tạo Base64 cho Google API chạy ngay
         const base64Promises = files.map(file => new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result);
@@ -60,7 +55,6 @@ export default function CustomNode({ id, data }) {
         const newBase64Array = await Promise.all(base64Promises);
         setUploadedImages(prev => [...prev, ...newBase64Array]);
 
-        // 2. Đẩy file lên Cloudflare R2 để lưu Lịch sử (Firebase)
         const appId = localStorage.getItem('current_autoflow_id') || `flow_${Date.now()}`;
         const newCloudUrls = [];
 
@@ -83,7 +77,6 @@ export default function CustomNode({ id, data }) {
             newCloudUrls.push(publicR2Url);
         }
 
-        // Cập nhật link R2 vào dữ liệu Node để Auto-save kéo lên Firebase
         if (newCloudUrls.length > 0) {
             const newFields = data.fields.map(f => {
                 if (f.id === 'ref_img') {
@@ -105,7 +98,6 @@ export default function CustomNode({ id, data }) {
   const handleRemoveImage = (indexToRemove) => {
     setUploadedImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
     
-    // Xóa luôn link R2 tương ứng trong dữ liệu Node
     const newFields = data.fields.map(f => {
         if (f.id === 'ref_img' && f.cloudUrls) {
             const newUrls = f.cloudUrls.filter((_, idx) => idx !== indexToRemove);
@@ -116,14 +108,12 @@ export default function CustomNode({ id, data }) {
     updateNodeData(id, { fields: newFields });
   };
 
-  // HÀM 3: KHÔI PHỤC BASE64 TỪ LINK R2 KHI F5
   useEffect(() => {
     const refField = data.fields?.find(f => f.id === 'ref_img');
     if (refField?.cloudUrls && refField.cloudUrls.length > 0 && uploadedImages.length === 0) {
         const loadBase64FromCloud = async () => {
             try {
                 const b64s = await Promise.all(refField.cloudUrls.map(async url => {
-                    // Dùng Proxy để vượt rào CORS khi kéo ảnh về
                     const proxyUrl = `/api/proxy-media?url=${encodeURIComponent(url)}`;
                     const res = await fetch(proxyUrl);
                     const blob = await res.blob();
@@ -260,17 +250,23 @@ export default function CustomNode({ id, data }) {
               </div>
             ))}
 
+            {/* HIỂN THỊ KẾT QUẢ RENDER VỚI PROXY */}
             {data.preview && data.preview.type === 'gallery' && (
               <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
                 {data.imageUrls && data.imageUrls.length > 0 ? (
                   <div className="w-full grid grid-cols-1 gap-2">
-                    {data.imageUrls.map((url, idx) => (
-                        data.outputType === 'video' ? (
-                            <video key={idx} crossOrigin="anonymous" src={url} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                    {data.imageUrls.map((url, idx) => {
+                        // Tự động bọc Proxy cho mọi link http/https để vượt rào CORS & COEP
+                        const safeUrl = url.startsWith('http') && !url.includes('/api/proxy-media')
+                            ? `/api/proxy-media?url=${encodeURIComponent(url)}`
+                            : url;
+
+                        return data.outputType === 'video' ? (
+                            <video key={idx} crossOrigin="anonymous" src={safeUrl} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
                         ) : (
-                            <img key={idx} crossOrigin="anonymous" src={url} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
-                        )
-                    ))}
+                            <img key={idx} crossOrigin="anonymous" src={safeUrl} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                        );
+                    })}
                   </div>
                 ) : (
                   <><ImageIcon size={24} className="text-gray-600 mb-1" /><span className="text-gray-500 text-[11px] text-center px-4">Kết quả render sẽ tự động xuất hiện tại đây...</span></>
