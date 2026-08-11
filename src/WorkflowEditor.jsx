@@ -22,8 +22,8 @@ const initialNodes = [
 ];
 
 const initialEdges = [
-  { id: 'e-in1-eng1', source: 'node-input-1', sourceHandle: 'Data', target: 'node-engine-1', targetHandle: 'Data' },
-  { id: 'e-eng1-gal1', source: 'node-engine-1', sourceHandle: 'Media', target: 'node-gallery-1', targetHandle: 'Media' },
+  { id: 'e-in1-eng1', source: 'node-input-1', sourceHandle: 'Data', target: 'node-engine-1', targetHandle: 'Data', type: 'default', animated: true, style: { stroke: '#3B82F6', strokeWidth: 2.5, strokeDasharray: '6 4' } },
+  { id: 'e-eng1-gal1', source: 'node-engine-1', sourceHandle: 'Media', target: 'node-gallery-1', targetHandle: 'Media', type: 'default', animated: true, style: { stroke: '#8B5CF6', strokeWidth: 2.5, strokeDasharray: '6 4' } },
 ];
 
 export default function WorkflowEditor() {
@@ -70,7 +70,20 @@ export default function WorkflowEditor() {
 
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params }, eds)), []);
+  
+  // 🚀 TỰ ĐỘNG ĐỔI MÀU DÂY NỐI DỰA VÀO ĐIỂM XUẤT PHÁT
+  const onConnect = useCallback((params) => {
+    let strokeColor = '#8B5CF6'; // Tím mặc định (Media)
+    if (params.sourceHandle === 'Data') strokeColor = '#3B82F6'; // Xanh dương (Prompt)
+    else if (params.sourceHandle === 'Selected Media') strokeColor = '#10B981'; // Xanh lá (Kết quả lọc)
+
+    setEdges((eds) => addEdge({ 
+        ...params, 
+        type: 'default', // Dây Parabol mềm mại
+        animated: true, 
+        style: { stroke: strokeColor, strokeWidth: 2.5, strokeDasharray: '6 4' } // Nét đứt
+    }, eds));
+  }, []);
 
   const handleInputChange = (e) => { const { name, value } = e.target; setSettings(prev => ({ ...prev, [name]: value })); };
 
@@ -88,7 +101,6 @@ export default function WorkflowEditor() {
     alert('✅ Đã lưu Cài đặt!'); setIsSettingsOpen(false);
   };
 
-  // Nút dọn dẹp Graph cũ
   const handleClearGraph = () => {
       if(window.confirm("Xóa toàn bộ bản vẽ hiện tại để tạo mới?")) {
           setNodes(initialNodes);
@@ -105,9 +117,6 @@ export default function WorkflowEditor() {
     setNodes(nds => [...nds, { id: newNodeId, type: 'custom', position: { x: window.innerWidth/2 - 150, y: window.innerHeight/2 - 100 }, data: newNodeData }]);
   };
 
-  // ==========================================
-  // 🧠 THUẬT TOÁN CHẠY TUẦN TỰ (DAG - TOPOLOGICAL SORT)
-  // ==========================================
   const handleRunWorkflow = async (targetEngineId = null) => {
     if (isRunning) return setIsRunning(false);
     if (!settings.extensionId) return alert("❌ Thiếu Extension ID!");
@@ -119,7 +128,6 @@ export default function WorkflowEditor() {
     }
     if (engineNodes.length === 0) return alert("❌ Không tìm thấy AI Engine nào để chạy!");
 
-    // Thuật toán đếm cấp độ phụ thuộc (Để biết thằng nào chạy trước, thằng nào chạy sau)
     const getDependencyLevel = (nodeId, visited = new Set()) => {
         if (visited.has(nodeId)) return 0;
         visited.add(nodeId);
@@ -134,13 +142,10 @@ export default function WorkflowEditor() {
         return 0;
     };
 
-    // Sắp xếp các Engine theo thứ tự: Không phụ thuộc chạy trước, Phụ thuộc chạy sau
     engineNodes.sort((a, b) => getDependencyLevel(a.id) - getDependencyLevel(b.id));
 
     setIsRunning(true);
     const EXT_ID = settings.extensionId.trim();
-
-    // 🚀 BỘ NHỚ TẠM THỜI (Runtime Memory) để truyền dữ liệu giữa các Node đang chạy
     const runtimeGalleryData = {};
 
     const updateNodeProgress = (nodeId, text) => {
@@ -151,7 +156,6 @@ export default function WorkflowEditor() {
       setNodes(nds => nds.map(n => n.id === targetGalleryId ? { ...n, data: { ...n.data, imageUrls: urls, outputType, mediaMetadata: metaDict } } : n));
     };
 
-    // 🚀 CHẠY TUẦN TỰ (AWAIT TỪNG THẰNG)
     for (const engineNode of engineNodes) {
         try {
             const inputEdge = edges.find(e => e.target === engineNode.id && e.targetHandle === 'Data');
@@ -168,14 +172,11 @@ export default function WorkflowEditor() {
                 inputUrls = parentNode.data.fields?.find(f => f.id === 'ref_img')?.cloudUrls || [];
             } 
             else if (parentNode.data.category === 'Output') {
-                // Ưu tiên đọc dữ liệu từ Runtime (Nếu vừa được Gen ra ở chu trình trước)
                 if (runtimeGalleryData[parentNode.id]) {
                     inputUrls = runtimeGalleryData[parentNode.id].urls;
-                    promptToSend = "Transform this media"; // Prompt mồi để Image2Video hoạt động
+                    promptToSend = "Transform this media"; 
                 } else {
-                    // Nếu không có runtime, đọc từ UI (Do user tự chọn)
                     inputUrls = parentNode.data.selectedMedia || [];
-                    // Tự động chọn ảnh đầu tiên nếu User chưa click chọn
                     if (inputUrls.length === 0 && parentNode.data.imageUrls?.length > 0) {
                         inputUrls = [parentNode.data.imageUrls[0]];
                     }
@@ -264,18 +265,16 @@ export default function WorkflowEditor() {
             
             updateNodeProgress(engineNode.id, `✅ Hoàn tất!`);
 
-            // Ghi vào Gallery Đích (Nếu có nối dây)
             const outEdge = edges.find(e => e.source === engineNode.id && e.sourceHandle === 'Media');
             if (outEdge) {
                 updateGalleryNode(engineNode.id, r2UrlsForGallery, config.mode, metaDict, outEdge.target);
-                // Lưu vào bộ nhớ Runtime để Node tiếp theo lấy xài luôn mà không cần chờ UI render
                 runtimeGalleryData[outEdge.target] = { urls: r2UrlsForGallery };
             }
 
         } catch (err) {
             updateNodeProgress(engineNode.id, `❌ ${err.message}`);
         }
-    } // Hết vòng lặp chạy Engine
+    } 
 
     setIsRunning(false);
   };
@@ -381,11 +380,11 @@ export default function WorkflowEditor() {
             </div>
         </div>
 
-        {/* 🚀 ÉP BUỘC STYLE DÂY NỐI BẰNG .map() TRONG RENDER */}
+        {/* 🚀 ĐÃ BỎ LỆNH ĐÈ STYLE TRONG ĐÂY ĐỂ TRẢ QUYỀN CHO ONCONNECT */}
         <div className="flex-1 w-full h-full relative z-0">
             <ReactFlow 
                 nodes={nodes} 
-                edges={edges.map(e => ({ ...e, type: 'default', animated: true, style: { stroke: '#8B5CF6', strokeWidth: 2, strokeDasharray: '5 5' } }))} 
+                edges={edges.map(e => ({ ...e, animated: isRunning || e.animated }))} 
                 onNodesChange={onNodesChange} 
                 onEdgesChange={onEdgesChange} 
                 onConnect={onConnect} 
@@ -422,6 +421,10 @@ export default function WorkflowEditor() {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
                 </div>
+              </div>
+              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
+                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><FolderGit2 size={16}/> Local Storage</h3>
+                <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Thư mục lưu Local</label><input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
               </div>
             </div>
             <div className="p-5 border-t border-[#2A2A30] bg-[#15151A]">

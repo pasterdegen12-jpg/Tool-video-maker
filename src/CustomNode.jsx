@@ -3,10 +3,16 @@ import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2, CheckCircle2, Play, Maximize2 } from 'lucide-react';
 
 const categoryColors = { Input: 'bg-gradient-to-r from-blue-900 to-blue-600', Generation: 'bg-gradient-to-r from-purple-800 to-purple-600', Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600' };
-const portColors = { session: '!bg-[#10B981]', prompts: '!bg-[#3B82F6]', media: '!bg-[#8B5CF6]', error: '!bg-[#EF4444]' };
+
+// 🚀 CSS Đã được nâng cấp để cục Handle to, rõ, có viền trắng nổi bật
+const portColors = { 
+    session: '!bg-[#10B981] !border-white shadow-[0_0_8px_#10B981]', 
+    prompts: '!bg-[#3B82F6] !border-white shadow-[0_0_8px_#3B82F6]', 
+    media: '!bg-[#8B5CF6] !border-white shadow-[0_0_8px_#8B5CF6]', 
+    error: '!bg-[#EF4444] !border-white' 
+};
 const categoryIcons = { Input: <Key size={14} className="text-white opacity-80" />, Generation: <Cpu size={14} className="text-white opacity-80" />, Output: <ImageIcon size={14} className="text-white opacity-80" /> };
 
-// Danh sách các Option Prompt có sẵn
 const PROMPT_OPTIONS = [
   { id: 'custom', label: '✍️ Tự nhập Prompt (Custom)' },
   { id: 'cinematic', label: '🎬 Phong cách Cinematic (Điện ảnh)' },
@@ -76,65 +82,50 @@ export default function CustomNode({ id, data }) {
       updateNodeData(id, { selectedMedia: newSelected });
   };
 
-  // Mở rạp chiếu phim (Bắn Event ra ngoài WorkflowEditor)
   const openFullScreen = (url, type, e) => {
       e.stopPropagation();
-      window.dispatchEvent(new CustomEvent('OPEN_LIGHTBOX', { detail: { url, type } }));
+      const metaInfo = data.mediaMetadata ? data.mediaMetadata[url] : null;
+      window.dispatchEvent(new CustomEvent('OPEN_LIGHTBOX', { detail: { url, type, meta: metaInfo } }));
   };
 
-  // Ra lệnh chạy độc lập cho Node này
   const runThisNode = () => {
       window.dispatchEvent(new CustomEvent('RUN_SINGLE_NODE', { detail: id }));
   };
 
   return (
-    <div className="w-[320px] rounded-xl shadow-2xl bg-[#1E1E24] border border-[#2A2A30] overflow-hidden font-sans transition-all hover:border-purple-500/50 relative group">
-      <div className={`h-[38px] flex items-center justify-between px-3 ${categoryColors[data.category] || categoryColors.Output}`}>
+    <div className="w-[320px] rounded-xl shadow-xl bg-[#1E1E24] border border-[#2A2A30] overflow-visible font-sans transition-all hover:border-purple-500/50 relative group">
+      <div className={`h-[38px] flex items-center justify-between px-3 rounded-t-xl ${categoryColors[data.category] || categoryColors.Output}`}>
         <div className="flex items-center gap-2">
           {categoryIcons[data.category] || <Settings2 size={14} className="text-white opacity-80" />}
           <span className="text-white text-[13px] font-bold tracking-wide">{data.label}</span>
         </div>
-        <div className="w-2 h-2 rounded-full bg-white/50 animate-pulse"></div>
       </div>
 
       <div className="p-4 relative flex flex-col gap-4">
-        
-        {/* ======================================= */}
-        {/* KHỐI 1: INPUT DATA (Có Option Prompt)   */}
-        {/* ======================================= */}
         {isInput && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
                <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Tùy chọn Ý tưởng</label>
-               <select 
-                  value={preset} 
-                  onChange={(e) => updateNodeData(id, { preset: e.target.value })} 
-                  className="w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-emerald-400 font-semibold focus:border-purple-500 focus:outline-none appearance-none cursor-pointer"
-               >
+               <select value={preset} onChange={(e) => updateNodeData(id, { preset: e.target.value })} className="w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-blue-400 font-semibold focus:border-blue-500 focus:outline-none appearance-none cursor-pointer">
                   {PROMPT_OPTIONS.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
                </select>
             </div>
-
-            {/* Chỉ hiện ô nhập text khi chọn Custom */}
             {preset === 'custom' && data.fields?.map((field, idx) => {
               if (field.type === 'textarea') return (
                 <div key={idx} className="flex flex-col gap-1.5 animate-in fade-in zoom-in duration-200">
                   <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{field.label}</label>
-                  <textarea className="nodrag nowheel w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-gray-200 focus:border-purple-500 focus:outline-none resize-y min-h-[80px] custom-scrollbar placeholder:text-gray-600" placeholder={field.placeholder} value={field.defaultValue || ''} onChange={(e) => handleTextChange(field.id, e.target.value)} />
+                  <textarea className="nodrag nowheel w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-gray-200 focus:border-blue-500 focus:outline-none resize-y min-h-[80px] custom-scrollbar placeholder:text-gray-600" placeholder={field.placeholder} value={field.defaultValue || ''} onChange={(e) => handleTextChange(field.id, e.target.value)} />
                 </div>
-              );
-              return null;
+              ); return null;
             })}
-
-            {/* Khối Upload File */}
             {data.fields?.map((field, idx) => {
               if (field.type === 'image') return (
                 <div key={idx} className="flex flex-col gap-1.5">
                   <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{field.label}</label>
-                  <div className="w-full bg-[#15151A] border border-dashed border-[#2A2A30] hover:border-purple-500 rounded-md p-3 flex flex-col gap-3 transition-colors relative min-h-[80px]">
+                  <div className="w-full bg-[#15151A] border border-dashed border-[#2A2A30] hover:border-blue-500 rounded-md p-3 flex flex-col gap-3 transition-colors relative min-h-[80px]">
                     <div className="relative flex flex-col items-center justify-center cursor-pointer w-full h-[60px] bg-[#1E1E24] rounded border border-[#2A2A30] hover:bg-[#2A2A30] transition-all">
                       <input type="file" accept="image/*" multiple className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={handleFileChange} disabled={isUploadingInput} />
-                      {isUploadingInput ? <Loader2 className="animate-spin text-purple-400 mb-1" size={18} /> : <ImageIcon size={18} className="mb-1 text-purple-400" />}
+                      {isUploadingInput ? <Loader2 className="animate-spin text-blue-400 mb-1" size={18} /> : <ImageIcon size={18} className="mb-1 text-blue-400" />}
                       <span className="text-[10px] text-gray-400 font-bold uppercase">{isUploadingInput ? 'Đang tải lên...' : 'Bấm để thêm ảnh'}</span>
                     </div>
                     {field.cloudUrls && field.cloudUrls.length > 0 && (
@@ -149,22 +140,17 @@ export default function CustomNode({ id, data }) {
                     )}
                   </div>
                 </div>
-              );
-              return null;
+              ); return null;
             })}
           </div>
         )}
 
-        {/* ======================================= */}
-        {/* KHỐI 2: AI ENGINE (Có Nút Run Độc lập) */}
-        {/* ======================================= */}
         {isEngine && (
           <div className="flex flex-col gap-3">
             <div className="flex bg-[#15151A] p-1 rounded-lg border border-[#2A2A30]">
               <button onClick={() => updateConfig('mode', 'image')} className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-bold rounded-md transition-all ${config.mode === 'image' ? 'bg-[#2A2A30] text-white shadow' : 'text-gray-500 hover:text-gray-300'}`}><ImageIcon size={14} /> Hình ảnh</button>
               <button onClick={() => updateConfig('mode', 'video')} className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-bold rounded-md transition-all ${config.mode === 'video' ? 'bg-[#2A2A30] text-white shadow' : 'text-gray-500 hover:text-gray-300'}`}><Video size={14} /> Video</button>
             </div>
-
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Khung hình</label>
               <div className="flex gap-1.5">
@@ -173,7 +159,6 @@ export default function CustomNode({ id, data }) {
                 <button onClick={() => updateConfig('ar', '9:16')} className={`flex-1 py-1.5 flex flex-col items-center gap-1 rounded-lg border transition-all ${config.ar === '9:16' ? 'bg-purple-500/20 border-purple-500 text-purple-400' : 'bg-[#15151A] border-[#2A2A30] text-gray-500 hover:border-gray-500'}`}><RectangleVertical size={14} /> <span className="text-[10px] font-bold">9:16</span></button>
               </div>
             </div>
-
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Cấu hình Model</label>
               <div className="bg-[#15151A] border border-[#2A2A30] rounded-lg p-2 flex flex-col gap-2">
@@ -192,21 +177,15 @@ export default function CustomNode({ id, data }) {
                 </div>
               </div>
             </div>
-
-            {/* 🚀 NÚT CHẠY RIÊNG CHO NODE NÀY */}
             <button onClick={runThisNode} className="w-full mt-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 shadow-lg cursor-pointer">
                 <Play size={14} fill="currentColor"/> Chạy Node Này
             </button>
-
             <div className="flex flex-col gap-1.5">
               <input readOnly value={data.progress || 'Đang đợi lệnh...'} className="w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-[11px] text-purple-400 font-bold outline-none cursor-default" />
             </div>
           </div>
         )}
 
-        {/* ======================================= */}
-        {/* KHỐI 3: OUTPUT GALLERY (Có Nút Zoom)    */}
-        {/* ======================================= */}
         {isOutput && data.preview && data.preview.type === 'gallery' && (
           <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
             {data.imageUrls && data.imageUrls.length > 0 ? (
@@ -220,15 +199,9 @@ export default function CustomNode({ id, data }) {
                             ) : (
                                 <img crossOrigin="anonymous" src={url} alt={`Result ${idx}`} className={`w-full h-auto rounded-md border-2 object-cover transition-all ${isSelected ? 'border-emerald-500 opacity-100' : 'border-[#2A2A30] opacity-80 group/media-hover:opacity-100'}`} style={{ maxHeight: '200px' }} />
                             )}
-                            
-                            {/* Dấu tích xanh khi được chọn */}
                             {isSelected && <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-0.5 shadow-lg"><CheckCircle2 size={16} /></div>}
                             {!isSelected && <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group/media-hover:opacity-100 transition-opacity rounded-md"><span className="text-white text-xs font-bold bg-black/60 px-2 py-1 rounded">Click để Dùng tiếp</span></div>}
-                            
-                            {/* 🚀 NÚT XEM FULL MÀN HÌNH TỈ LỆ GỐC */}
-                            <button onClick={(e) => openFullScreen(url, data.outputType, e)} className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/90 text-white p-1.5 rounded-md opacity-0 group/media-hover:opacity-100 transition-opacity" title="Xem tỷ lệ gốc">
-                                <Maximize2 size={14} />
-                            </button>
+                            <button onClick={(e) => openFullScreen(url, data.outputType, e)} className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/90 text-white p-1.5 rounded-md opacity-0 group/media-hover:opacity-100 transition-opacity" title="Xem tỷ lệ gốc"><Maximize2 size={14} /></button>
                         </div>
                     )
                 })}
@@ -240,9 +213,20 @@ export default function CustomNode({ id, data }) {
         )}
       </div>
 
-      {/* 🚀 LÀM TO ĐIỂM NỐI ĐỂ DỄ KÉO THẢ HƠN */}
-      {data.inputs?.map((input, idx) => <Handle key={`in-${idx}`} type="target" position={Position.Left} id={input.name} className={`!w-[16px] !h-[16px] border-4 border-[#1E1E24] -ml-[8px] transition-transform hover:scale-125 ${portColors[input.type]}`} style={{ top: `${45 + idx * 35}px` }} />)}
-      {data.outputs?.map((output, idx) => <Handle key={`out-${idx}`} type="source" position={Position.Right} id={output.name} className={`!w-[16px] !h-[16px] border-4 border-[#1E1E24] -mr-[8px] transition-transform hover:scale-125 ${portColors[output.type]}`} style={{ top: `${45 + idx * 35}px` }} />)}
+      {/* 🚀 ĐIỂM NỐI ĐƯỢC LÀM TO, VIỀN TRẮNG, ĐẨY RA NGOÀI ĐỂ DỄ BẮT */}
+      {data.inputs?.map((input, idx) => (
+        <div key={`in-wrap-${idx}`} className="absolute -left-[14px] flex items-center group/port" style={{ top: `${60 + idx * 35}px` }}>
+            <Handle type="target" position={Position.Left} id={input.name} className={`!w-[18px] !h-[18px] !border-[3px] !relative !transform-none !left-0 !top-0 transition-transform hover:scale-125 z-50 ${portColors[input.type]}`} />
+            <span className="text-[9px] font-bold text-gray-400 ml-1 opacity-0 group-hover/port:opacity-100 transition-opacity bg-[#15151A] px-1 rounded border border-[#2A2A30]">In</span>
+        </div>
+      ))}
+
+      {data.outputs?.map((output, idx) => (
+        <div key={`out-wrap-${idx}`} className="absolute -right-[14px] flex items-center flex-row-reverse group/port" style={{ top: `${60 + idx * 35}px` }}>
+            <Handle type="source" position={Position.Right} id={output.name} className={`!w-[18px] !h-[18px] !border-[3px] !relative !transform-none !right-0 !top-0 transition-transform hover:scale-125 z-50 ${portColors[output.type]}`} />
+            <span className="text-[9px] font-bold text-gray-400 mr-1 opacity-0 group-hover/port:opacity-100 transition-opacity bg-[#15151A] px-1 rounded border border-[#2A2A30]">Out</span>
+        </div>
+      ))}
     </div>
   );
 }
