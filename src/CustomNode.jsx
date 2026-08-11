@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2 } from 'lucide-react';
 
-const categoryColors = { Input: 'bg-gradient-to-r from-blue-900 to-blue-600', Generation: 'bg-gradient-to-r from-purple-800 to-purple-600', Editing: 'bg-gradient-to-r from-green-800 to-green-600', Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600', };
+const categoryColors = { Input: 'bg-gradient-to-r from-blue-900 to-blue-600', Generation: 'bg-gradient-to-r from-purple-800 to-purple-600', Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600' };
 const portColors = { session: '!bg-[#10B981]', prompts: '!bg-[#3B82F6]', media: '!bg-[#8B5CF6]', error: '!bg-[#EF4444]' };
 const categoryIcons = { Input: <Key size={14} className="text-white opacity-80" />, Generation: <Cpu size={14} className="text-white opacity-80" />, Output: <ImageIcon size={14} className="text-white opacity-80" /> };
 
@@ -71,7 +71,7 @@ export default function CustomNode({ id, data }) {
         const loadBase64FromCloud = async () => {
             try {
                 const b64s = await Promise.all(refField.cloudUrls.map(async url => {
-                    const res = await fetch(url); // 🚀 TẢI THẲNG TỪ R2 KHÔNG CẦN PROXY
+                    const res = await fetch(url);
                     const blob = await res.blob();
                     return new Promise(resolve => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result); reader.readAsDataURL(blob); });
                 }));
@@ -174,10 +174,10 @@ export default function CustomNode({ id, data }) {
               </div>
             ))}
 
-            {/* 🚀 GALLERY HIỂN THỊ LINK XỊN TỪ CLOUDFLARE R2 */}
+            {/* 🚀 CHỈ HIỂN THỊ KHI ĐÃ CÓ LINK XỊN TỪ R2 */}
             {data.preview && data.preview.type === 'gallery' && (
               <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
-                {data.imageUrls && data.imageUrls.length > 0 ? (
+                {data.imageUrls && data.imageUrls.length > 0 && !data.imageUrls[0].includes('flow-content') ? (
                   <div className="w-full grid grid-cols-1 gap-2">
                     {data.imageUrls.map((url, idx) => (
                         data.outputType === 'video' ? (
@@ -188,7 +188,7 @@ export default function CustomNode({ id, data }) {
                     ))}
                   </div>
                 ) : (
-                  <><ImageIcon size={24} className="text-gray-600 mb-1" /><span className="text-gray-500 text-[11px] text-center px-4">Kết quả render sẽ tự động xuất hiện tại đây...</span></>
+                  <><ImageIcon size={24} className="text-gray-600 mb-1" /><span className="text-gray-500 text-[11px] text-center px-4">Đang đợi tải video...</span></>
                 )}
               </div>
             )}

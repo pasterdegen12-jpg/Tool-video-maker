@@ -3,17 +3,20 @@ import { ReactFlow, Background, Controls, MiniMap, applyNodeChanges, applyEdgeCh
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2 } from 'lucide-react';
+
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
 
 const nodeTypes = { custom: CustomNode };
+
 const initialNodes = [
   { id: 'node-account', type: 'custom', position: { x: 50, y: 100 }, data: { label: 'Google Flow Account', category: 'Input', fields: [{ id: 'f1', label: 'Tên gợi nhớ (Profile)', type: 'text', placeholder: 'Account 1...' }, { id: 'f2', label: 'Trạng thái', type: 'text', defaultValue: 'Chưa kết nối Cookie', readOnly: true }], outputs: [{ name: 'Session', type: 'session' }] } },
   { id: 'node-prompts', type: 'custom', position: { x: 50, y: 320 }, data: { label: 'Prompt Manager', category: 'Input', fields: [{ id: 'f1', label: 'Nội dung Prompt (Hỗ trợ xuống dòng)', type: 'textarea', placeholder: 'a beautiful futuristic city...\ncyberpunk neon street...' }, { id: 'ref_img', label: 'Ảnh Tham Chiếu (Image-to-Image)', type: 'image' }], outputs: [{ name: 'Prompts', type: 'prompts' }] } },
   { id: 'node-engine', type: 'custom', position: { x: 450, y: 150 }, data: { label: 'Auto Flow Engine (Local Worker)', category: 'Generation', fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: 'Đang đợi lệnh...', readOnly: true }], inputs: [{ name: 'Session', type: 'session' }, { name: 'Prompts', type: 'prompts' }], outputs: [{ name: 'Media', type: 'media' }, { name: 'Error Log', type: 'error' }] } },
   { id: 'node-gallery', type: 'custom', position: { x: 850, y: 180 }, data: { label: 'Output Gallery', category: 'Output', preview: { type: 'gallery' }, inputs: [{ name: 'Media', type: 'media' }] } }
 ];
+
 const initialEdges = [
   { id: 'e-acc-eng', source: 'node-account', sourceHandle: 'Session', target: 'node-engine', targetHandle: 'Session', style: { stroke: '#10B981', strokeWidth: 3 } },
   { id: 'e-prm-eng', source: 'node-prompts', sourceHandle: 'Prompts', target: 'node-engine', targetHandle: 'Prompts', style: { stroke: '#3B82F6', strokeWidth: 3 } },
@@ -25,6 +28,7 @@ export default function WorkflowEditor() {
   const [edges, setEdges] = useState(initialEdges);
   const [isRunning, setIsRunning] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const { user } = useUser();
   const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out', chromeProfile: 'chrome-profile', runHidden: true, threads: 2, delayMin: 5, delayMax: 15 });
 
@@ -32,7 +36,10 @@ export default function WorkflowEditor() {
     const savedId = localStorage.getItem('current_autoflow_id');
     return savedId || `flow_${Date.now()}`;
   });
-  useEffect(() => { localStorage.setItem('current_autoflow_id', appProjectId); }, [appProjectId]);
+
+  useEffect(() => {
+    localStorage.setItem('current_autoflow_id', appProjectId);
+  }, [appProjectId]);
 
   useEffect(() => {
     if (!user || !appProjectId) return;
@@ -43,7 +50,8 @@ export default function WorkflowEditor() {
           if (cleanNode.id === 'node-prompts') {
              const cleanedFields = cleanNode.data.fields.map(f => f.id === 'ref_img' ? { ...f, tempBase64: [] } : f);
              cleanNode.data = { ...cleanNode.data, fields: cleanedFields };
-          } return cleanNode;
+          }
+          return cleanNode;
         });
         await setDoc(doc(db, "autoflow_projects", appProjectId), { userId: user.id, projectName: "Auto Flow Project", updatedAt: Date.now(), workspace: { nodes: cleanNodes, edges } }, { merge: true });
       } catch (error) { console.error("Lỗi Auto-save:", error); }
@@ -64,7 +72,7 @@ export default function WorkflowEditor() {
             if (data.workspace.edges && data.workspace.edges.length > 0) setEdges(data.workspace.edges);
           }
         }
-      } catch (error) { console.error("Lỗi khi tải dự án:", error); }
+      } catch (error) {}
     };
     loadWorkspace();
   }, [user, appProjectId]);
@@ -116,7 +124,7 @@ export default function WorkflowEditor() {
     try { base64Images = JSON.parse(base64DataStr); } catch(e) {}
 
     const EXT_ID = settings.extensionId.trim();
-    if (!window.chrome || !window.chrome.runtime) { alert("❌ Lỗi: Không tìm thấy trình duyệt Chrome hoặc chế độ Extension."); return; }
+    if (!window.chrome || !window.chrome.runtime) { alert("❌ Lỗi: Không tìm thấy Extension."); return; }
     setIsRunning(true);
 
     setNodes(nds => nds.map(node => {
@@ -126,7 +134,7 @@ export default function WorkflowEditor() {
 
     try {
         window.chrome.runtime.sendMessage(EXT_ID, { type: "RUN_GOOGLE_API", payload: { prompt: promptToSend, mode, model, aspectRatio, outputCount, duration, base64Images, projectId: settings.projectId } }, async (response) => {
-            if (!response || chrome.runtime.lastError) { alert("❌ Lỗi kết nối Extension: " + (chrome.runtime.lastError?.message || "ID Extension bị sai.")); setIsRunning(false); return; }
+            if (!response || chrome.runtime.lastError) { alert("❌ Lỗi kết nối Extension: " + (chrome.runtime.lastError?.message || "ID Extension sai.")); setIsRunning(false); return; }
             if (!response.success) { alert("❌ Lỗi Google API: " + response.error); setIsRunning(false); return; }
 
             let apiData = response.data;
@@ -163,6 +171,12 @@ export default function WorkflowEditor() {
             }
 
             if (mediaUrls.length > 0) {
+                setNodes(nds => nds.map(node => {
+                    if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `☁️ Nhờ Extension tải file sang Cloud R2...`, readOnly: true }] };
+                    // ❌ KHÔNG UPDATE GALLERY BẰNG LINK GOOGLE NỮA
+                    return node;
+                }));
+
                 try {
                     const finalOutputs = [];
                     const r2UrlsForGallery = [];
@@ -189,13 +203,7 @@ export default function WorkflowEditor() {
                         });
                         const { uploadUrl } = await urlRes.json();
 
-                        // Cập nhật trạng thái
-                        setNodes(nds => nds.map(node => {
-                            if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `☁️ Đang nhờ Extension Upload File ${i+1}...`, readOnly: true }] };
-                            return node;
-                        }));
-
-                        // 🚀 NHỜ EXTENSION KÉO TỪ GOOGLE RỒI ĐẨY LÊN R2 (Tránh lỗi 500 Vercel)
+                        // 🚀 GIAO VIỆC UPLOAD CHO EXTENSION
                         const extUploadRes = await new Promise(resolve => {
                             window.chrome.runtime.sendMessage(EXT_ID, {
                                 type: "UPLOAD_TO_R2",
@@ -210,32 +218,19 @@ export default function WorkflowEditor() {
                         const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
                         r2UrlsForGallery.push(publicR2Url);
                         
-                        finalOutputs.push({
-                            id: `media_${Date.now()}_${i}`,
-                            url: publicR2Url,        
-                            googleCdnUrl: url,      
-                            type: mode,
-                            prompt: promptToSend,
-                            createdAt: Date.now()
-                        });
+                        finalOutputs.push({ id: `media_${Date.now()}_${i}`, url: publicR2Url, googleCdnUrl: url, type: mode, prompt: promptToSend, createdAt: Date.now() });
                     }
 
-                    await updateDoc(doc(db, "autoflow_projects", appProjectId), {
-                        outputs: arrayUnion(...finalOutputs),
-                        updatedAt: Date.now()
-                    });
+                    await updateDoc(doc(db, "autoflow_projects", appProjectId), { outputs: arrayUnion(...finalOutputs), updatedAt: Date.now() });
 
-                    // 🚀 HIỂN THỊ LINK R2 TRỰC TIẾP LÊN GALLERY THAY VÌ LINK GOOGLE
+                    // 🚀 BÂY GIỜ MỚI ĐẨY LINK R2 LÊN GALLERY
                     setNodes(nds => nds.map(node => {
                         if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `✅ Đã lưu Cloud & Database thành công!`, readOnly: true }] };
                         if (node.id === 'node-gallery') node.data = { ...node.data, imageUrls: r2UrlsForGallery, outputType: mode };
                         return node;
                     }));
 
-                } catch (cloudErr) {
-                    console.error("Lỗi Upload R2:", cloudErr);
-                    alert("⚠️ Lỗi tải file lên Cloudflare R2: " + cloudErr.message);
-                }
+                } catch (cloudErr) { alert("⚠️ Lỗi tải file lên Cloudflare R2: " + cloudErr.message); }
             } else { alert(`✅ Lỗi logic: Không tìm thấy link tải từ Google.`); }
             setIsRunning(false);
         });
@@ -247,10 +242,10 @@ export default function WorkflowEditor() {
       <div className="h-[60px] bg-[#15151A] border-b border-[#2A2A30] flex items-center justify-between px-6 shrink-0 shadow-md relative z-10">
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-blue-500 flex items-center justify-center"><RefreshCw size={16} className="text-white" /></div>
-          <div><h1 className="text-[15px] font-bold tracking-wide">Google Flow Web Automation</h1><p className="text-[11px] text-gray-500">Node-based Engine (Local Worker)</p></div>
+          <div><h1 className="text-[15px] font-bold tracking-wide">Google Flow Web Automation</h1><p className="text-[11px] text-gray-500">Node-based Engine</p></div>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 bg-[#1E1E24] hover:bg-[#2A2A30] border border-[#2A2A30] px-4 py-2 rounded-lg font-semibold text-sm transition-all text-gray-300 cursor-pointer"><Settings size={16} className="text-gray-400" /> Cài đặt hệ thống</button>
+          <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-2 bg-[#1E1E24] hover:bg-[#2A2A30] border border-[#2A2A30] px-4 py-2 rounded-lg font-semibold text-sm transition-all text-gray-300"><Settings size={16} className="text-gray-400" /> Cài đặt hệ thống</button>
           <button className={`flex items-center gap-2 px-5 py-2 rounded-lg font-bold text-sm transition-all shadow-lg cursor-pointer ${isRunning ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 shadow-emerald-500/20'}`} onClick={handleRunWorkflow}>
             {isRunning ? <><div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div> Dừng tiến trình</> : <><Play size={16} fill="currentColor" /> Chạy Workflow</>}
           </button>
@@ -271,43 +266,27 @@ export default function WorkflowEditor() {
           <div className="relative w-full max-w-md h-full bg-[#121214] border-l border-[#2A2A30] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-between p-5 border-b border-[#2A2A30] bg-[#15151A]">
               <div className="flex items-center gap-3"><Settings className="text-emerald-500" size={20} /><h2 className="text-lg font-bold text-white tracking-wide">Thiết lập Toàn cục</h2></div>
-              <button onClick={() => setIsSettingsOpen(false)} className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 transition-colors cursor-pointer"><X size={20} /></button>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 transition-colors"><X size={20} /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar text-sm">
               <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
-                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Server size={16}/> 01 - Thông tin Tài khoản Google Labs</h3>
-                
+                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Server size={16}/> 01 - Thông tin Tài khoản</h3>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Web (User ID)</label>
-                  <input 
-                    type="text" readOnly value={user?.id || ''} 
-                    onClick={(e) => { navigator.clipboard.writeText(e.target.value); alert("✅ Đã copy Mã kết nối!"); }}
-                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" title="Bấm để Copy"
-                  />
-                  <p className="text-[10px] text-gray-500">Bấm vào ô trên để copy, sau đó dán vào Extension để đồng bộ Cookie.</p>
+                  <input type="text" readOnly value={user?.id || ''} onClick={(e) => { navigator.clipboard.writeText(e.target.value); alert("✅ Đã copy!"); }} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" />
                 </div>
-
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Extension ID (Bắt buộc)</label>
-                  <input 
-                    type="text" name="extensionId" value={settings.extensionId} onChange={handleInputChange} 
-                    placeholder="VD: abcdefghijklmnop..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" 
-                  />
-                  <p className="text-[10px] text-gray-500">Vào chrome://extensions, copy ID của Extension dán vào đây.</p>
+                  <input type="text" name="extensionId" value={settings.extensionId} onChange={handleInputChange} placeholder="VD: abcdefghijklmnop..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" />
                 </div>
-
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID (Bắt buộc)</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
                 </div>
               </div>
-              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
-                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><FolderGit2 size={16}/> 02 - Storage & Profile (Local)</h3>
-                <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Thư mục lưu ảnh/video (Local)</label><input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
-              </div>
             </div>
             <div className="p-5 border-t border-[#2A2A30] bg-[#15151A]">
-              <button onClick={handleSaveSettings} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-emerald-500/20 cursor-pointer">
+              <button onClick={handleSaveSettings} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-emerald-500/20">
                 <Save size={18} /> Lưu Cài Đặt Lên Cloud Database
               </button>
             </div>
