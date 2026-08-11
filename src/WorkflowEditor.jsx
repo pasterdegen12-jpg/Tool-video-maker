@@ -329,6 +329,21 @@ export default function WorkflowEditor() {
             <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar text-sm">
               <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
                 <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Server size={16}/> 01 - Thông tin Tài khoản Google Labs</h3>
+                
+                {/* 🚀 Ô HIỂN THỊ MÃ USER ID ĐỂ COPY */}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Extension (User ID)</label>
+                  <input 
+                    type="text" 
+                    readOnly 
+                    value={user?.id || ''} 
+                    onClick={(e) => { navigator.clipboard.writeText(e.target.value); alert("✅ Đã copy Mã kết nối!"); }}
+                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" 
+                    title="Bấm để Copy"
+                  />
+                  <p className="text-[10px] text-gray-500">Bấm vào ô trên để copy, sau đó dán vào Extension để đồng bộ Cookie.</p>
+                </div>
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID (Bắt buộc)</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
