@@ -11,7 +11,6 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     if (request.type === "RUN_GOOGLE_API") { executeApiInFlowTab(request.payload).then(sendResponse); return true; }
     if (request.type === "POLL_GOOGLE_API") { executePollInFlowTab(request.payload).then(sendResponse); return true; }
     
-    // 🚀 TÍNH NĂNG MỚI: TẢI VIDEO TỪ GOOGLE VÀ ĐẨY THẲNG LÊN CLOUDFLARE R2
     if (request.type === "UPLOAD_TO_R2") {
         executeUploadToR2(request.payload).then(sendResponse);
         return true;
@@ -101,11 +100,37 @@ async function executeApiInFlowTab(payload) {
                     let referenceMediaIds = [];
                     if (requestData.base64Images && requestData.base64Images.length > 0) {
                         const uploadPromises = requestData.base64Images.map(async (b64, index) => {
-                            const base64Data = b64.split(',')[1]; const mimeType = b64.split(';')[0].split(':')[1];
-                            const uploadPayload = { clientContext: { projectId: PROJECT_ID, tool: "PINHOLE" }, fileName: `upload_${Date.now()}_${index}.${mimeType.split('/')[1]}`, imageBytes: base64Data, isHidden: false, isUserUploaded: true, mimeType: mimeType };
-                            const uploadRes = await fetch(`https://aisandbox-pa.googleapis.com/v1/flow/uploadImage`, { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8", "Authorization": `Bearer ${bearerToken}` }, credentials: "include", body: JSON.stringify(uploadPayload) });
-                            if (!uploadRes.ok) throw new Error(`API Upload ảnh thất bại!`);
-                            const uploadData = await uploadRes.json(); return uploadData.media?.name; 
+                            const base64Data = b64.split(',')[1]; 
+                            const mimeType = b64.split(';')[0].split(':')[1];
+                            
+                            // 🚀 ĐÃ SỬA: Cấp thẻ thông hành clientContext (chứa reCAPTCHA) cho luồng Upload
+                            const uploadPayload = { 
+                                clientContext: clientContext, // Sử dụng chung context đã vượt bot
+                                fileName: `upload_${Date.now()}_${index}.${mimeType.split('/')[1]}`, 
+                                imageBytes: base64Data, 
+                                isHidden: false, 
+                                isUserUploaded: true, 
+                                mimeType: mimeType 
+                            };
+                            
+                            const uploadRes = await fetch(`https://aisandbox-pa.googleapis.com/v1/flow/uploadImage`, { 
+                                method: "POST", 
+                                headers: { 
+                                    "Content-Type": "application/json", // Chuyển sang chuẩn JSON
+                                    "Authorization": `Bearer ${bearerToken}` 
+                                }, 
+                                credentials: "include", 
+                                body: JSON.stringify(uploadPayload) 
+                            });
+                            
+                            // 🚀 ĐÃ SỬA: Ép Google "nôn" ra nguyên nhân lỗi chi tiết nếu thất bại
+                            if (!uploadRes.ok) {
+                                const errText = await uploadRes.text();
+                                throw new Error(`HTTP ${uploadRes.status}: ${errText}`);
+                            }
+                            
+                            const uploadData = await uploadRes.json(); 
+                            return uploadData.media?.name; 
                         });
                         referenceMediaIds = await Promise.all(uploadPromises);
                     }
@@ -136,7 +161,7 @@ async function executeApiInFlowTab(payload) {
                         API_URL = `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/flowMedia:batchGenerateImages`;
                     }
 
-                    const apiRes = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=UTF-8", "Authorization": `Bearer ${bearerToken}` }, credentials: "include", body: JSON.stringify(apiPayload) });
+                    const apiRes = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${bearerToken}` }, credentials: "include", body: JSON.stringify(apiPayload) });
                     const apiText = await apiRes.text();
                     if (apiRes.status >= 400) return { success: false, error: `HTTP ${apiRes.status}: ${apiText}` };
                     return { success: true, data: JSON.parse(apiText), projectId: PROJECT_ID };
