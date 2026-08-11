@@ -2,19 +2,12 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { ReactFlow, Background, Controls, MiniMap, applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
-import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2, Menu, Key, Cpu, Image as ImageIcon } from 'lucide-react';
+import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2, Menu, Key, Cpu, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
 
 const nodeTypes = { custom: CustomNode };
-
-const PRESET_OPTIONS = [
-  { id: 'custom', label: '✍️ Tự nhập Prompt (Custom)' },
-  { id: 'cinematic', label: '🎬 Phong cách Cinematic (Điện ảnh)' },
-  { id: 'anime', label: '🌸 Phong cách Anime (Ghibli)' },
-  { id: 'cyberpunk', label: '🤖 Phong cách Cyberpunk (Tương lai)' }
-];
 
 const PRESET_DICTIONARY = {
     'cinematic': 'Cinematic lighting, 8k resolution, photorealistic, highly detailed, masterpiece, epic composition, dramatic shadows',
@@ -28,10 +21,9 @@ const initialNodes = [
   { id: 'node-gallery-1', type: 'custom', position: { x: 850, y: 150 }, data: { label: 'Output Gallery', category: 'Output', preview: { type: 'gallery' }, imageUrls: [], selectedMedia: [], inputs: [{ name: 'Media', type: 'media' }], outputs: [{ name: 'Selected Media', type: 'media' }] } }
 ];
 
-// 🚀 ĐÃ SỬA: Đổi style dây nối thành cong Parabol, nét đứt, nhỏ hơn
 const initialEdges = [
-  { id: 'e-in1-eng1', source: 'node-input-1', sourceHandle: 'Data', target: 'node-engine-1', targetHandle: 'Data', animated: true, type: 'default', style: { stroke: '#3B82F6', strokeWidth: 2, strokeDasharray: '5 5' } },
-  { id: 'e-eng1-gal1', source: 'node-engine-1', sourceHandle: 'Media', target: 'node-gallery-1', targetHandle: 'Media', animated: true, type: 'default', style: { stroke: '#8B5CF6', strokeWidth: 2, strokeDasharray: '5 5' } },
+  { id: 'e-in1-eng1', source: 'node-input-1', sourceHandle: 'Data', target: 'node-engine-1', targetHandle: 'Data' },
+  { id: 'e-eng1-gal1', source: 'node-engine-1', sourceHandle: 'Media', target: 'node-gallery-1', targetHandle: 'Media' },
 ];
 
 export default function WorkflowEditor() {
@@ -40,8 +32,6 @@ export default function WorkflowEditor() {
   const [isRunning, setIsRunning] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  // 🚀 Cấu trúc state Rạp Chiếu Phim chứa thêm siêu dữ liệu (meta)
   const [lightBox, setLightBox] = useState({ isOpen: false, url: '', type: 'image', meta: null });
 
   const { user } = useUser();
@@ -53,13 +43,9 @@ export default function WorkflowEditor() {
   useEffect(() => {
     const handleOpenLightbox = (e) => setLightBox({ isOpen: true, url: e.detail.url, type: e.detail.type, meta: e.detail.meta });
     const handleRunSingleNode = (e) => handleRunWorkflow(e.detail);
-
     window.addEventListener('OPEN_LIGHTBOX', handleOpenLightbox);
     window.addEventListener('RUN_SINGLE_NODE', handleRunSingleNode);
-    return () => {
-        window.removeEventListener('OPEN_LIGHTBOX', handleOpenLightbox);
-        window.removeEventListener('RUN_SINGLE_NODE', handleRunSingleNode);
-    };
+    return () => { window.removeEventListener('OPEN_LIGHTBOX', handleOpenLightbox); window.removeEventListener('RUN_SINGLE_NODE', handleRunSingleNode); };
   }); 
 
   useEffect(() => {
@@ -84,9 +70,7 @@ export default function WorkflowEditor() {
 
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-  
-  // Nối dây mới cũng sẽ tự động áp dụng style nét đứt, cong mềm mại
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params, animated: true, type: 'default', style: { stroke: '#8B5CF6', strokeWidth: 2, strokeDasharray: '5 5' } }, eds)), []);
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge({ ...params }, eds)), []);
 
   const handleInputChange = (e) => { const { name, value } = e.target; setSettings(prev => ({ ...prev, [name]: value })); };
 
@@ -104,16 +88,26 @@ export default function WorkflowEditor() {
     alert('✅ Đã lưu Cài đặt!'); setIsSettingsOpen(false);
   };
 
+  // Nút dọn dẹp Graph cũ
+  const handleClearGraph = () => {
+      if(window.confirm("Xóa toàn bộ bản vẽ hiện tại để tạo mới?")) {
+          setNodes(initialNodes);
+          setEdges(initialEdges);
+      }
+  };
+
   const addNode = (type) => {
     const newNodeId = `node-${type}-${Date.now()}`;
     let newNodeData = {};
     if (type === 'input') newNodeData = { label: 'Input Prompt & Media', category: 'Input', preset: 'custom', fields: [{ id: 'f1', label: 'Nội dung Prompt', type: 'textarea' }, { id: 'ref_img', label: 'Media Tham Chiếu', type: 'image', cloudUrls: [] }], outputs: [{ name: 'Data', type: 'prompts' }] };
     if (type === 'engine') newNodeData = { label: 'AI Engine', category: 'Generation', config: { mode: 'image', ar: '9:16', model: 'GEM_PIX_2', count: 1, duration: 4 }, progress: 'Đang đợi...', inputs: [{ name: 'Data', type: 'prompts' }], outputs: [{ name: 'Media', type: 'media' }] };
     if (type === 'gallery') newNodeData = { label: 'Output Gallery', category: 'Output', preview: { type: 'gallery' }, imageUrls: [], selectedMedia: [], inputs: [{ name: 'Media', type: 'media' }], outputs: [{ name: 'Selected Media', type: 'media' }] };
-
     setNodes(nds => [...nds, { id: newNodeId, type: 'custom', position: { x: window.innerWidth/2 - 150, y: window.innerHeight/2 - 100 }, data: newNodeData }]);
   };
 
+  // ==========================================
+  // 🧠 THUẬT TOÁN CHẠY TUẦN TỰ (DAG - TOPOLOGICAL SORT)
+  // ==========================================
   const handleRunWorkflow = async (targetEngineId = null) => {
     if (isRunning) return setIsRunning(false);
     if (!settings.extensionId) return alert("❌ Thiếu Extension ID!");
@@ -123,25 +117,42 @@ export default function WorkflowEditor() {
     if (typeof targetEngineId === 'string') {
         engineNodes = engineNodes.filter(n => n.id === targetEngineId);
     }
-    
     if (engineNodes.length === 0) return alert("❌ Không tìm thấy AI Engine nào để chạy!");
 
+    // Thuật toán đếm cấp độ phụ thuộc (Để biết thằng nào chạy trước, thằng nào chạy sau)
+    const getDependencyLevel = (nodeId, visited = new Set()) => {
+        if (visited.has(nodeId)) return 0;
+        visited.add(nodeId);
+        const inputEdge = edges.find(e => e.target === nodeId);
+        if (!inputEdge) return 0;
+        const parentNode = nodes.find(n => n.id === inputEdge.source);
+        if (!parentNode) return 0;
+        if (parentNode.data.category === 'Generation') return 1 + getDependencyLevel(parentNode.id, visited);
+        
+        const parentInputEdge = edges.find(e => e.target === parentNode.id);
+        if (parentInputEdge) return 1 + getDependencyLevel(parentInputEdge.source, visited);
+        return 0;
+    };
+
+    // Sắp xếp các Engine theo thứ tự: Không phụ thuộc chạy trước, Phụ thuộc chạy sau
+    engineNodes.sort((a, b) => getDependencyLevel(a.id) - getDependencyLevel(b.id));
+
     setIsRunning(true);
+    const EXT_ID = settings.extensionId.trim();
+
+    // 🚀 BỘ NHỚ TẠM THỜI (Runtime Memory) để truyền dữ liệu giữa các Node đang chạy
+    const runtimeGalleryData = {};
 
     const updateNodeProgress = (nodeId, text) => {
       setNodes(nds => nds.map(n => n.id === nodeId ? { ...n, data: { ...n.data, progress: text } } : n));
     };
 
-    const updateGalleryNode = (engineId, urls, outputType, metaDict) => {
-      const outEdge = edges.find(e => e.source === engineId && e.sourceHandle === 'Media');
-      if (outEdge) {
-        setNodes(nds => nds.map(n => n.id === outEdge.target && n.data.category === 'Output' ? { ...n, data: { ...n.data, imageUrls: urls, outputType, mediaMetadata: metaDict } } : n));
-      }
+    const updateGalleryNode = (engineId, urls, outputType, metaDict, targetGalleryId) => {
+      setNodes(nds => nds.map(n => n.id === targetGalleryId ? { ...n, data: { ...n.data, imageUrls: urls, outputType, mediaMetadata: metaDict } } : n));
     };
 
-    const EXT_ID = settings.extensionId.trim();
-
-    const promises = engineNodes.map(async (engineNode) => {
+    // 🚀 CHẠY TUẦN TỰ (AWAIT TỪNG THẰNG)
+    for (const engineNode of engineNodes) {
         try {
             const inputEdge = edges.find(e => e.target === engineNode.id && e.targetHandle === 'Data');
             if (!inputEdge) throw new Error("⚠️ Chưa cắm dây Input!");
@@ -153,16 +164,23 @@ export default function WorkflowEditor() {
 
             if (parentNode.data.category === 'Input') {
                 presetId = parentNode.data.preset || 'custom';
-                if (presetId === 'custom') {
-                    promptToSend = parentNode.data.fields?.find(f => f.id === 'f1')?.defaultValue || '';
-                } else {
-                    promptToSend = PRESET_DICTIONARY[presetId] || '';
-                }
+                promptToSend = presetId === 'custom' ? (parentNode.data.fields?.find(f => f.id === 'f1')?.defaultValue || '') : (PRESET_DICTIONARY[presetId] || '');
                 inputUrls = parentNode.data.fields?.find(f => f.id === 'ref_img')?.cloudUrls || [];
             } 
             else if (parentNode.data.category === 'Output') {
-                inputUrls = parentNode.data.selectedMedia || [];
-                promptToSend = inputUrls.length > 0 ? "Transform this media into a masterpiece" : "";
+                // Ưu tiên đọc dữ liệu từ Runtime (Nếu vừa được Gen ra ở chu trình trước)
+                if (runtimeGalleryData[parentNode.id]) {
+                    inputUrls = runtimeGalleryData[parentNode.id].urls;
+                    promptToSend = "Transform this media"; // Prompt mồi để Image2Video hoạt động
+                } else {
+                    // Nếu không có runtime, đọc từ UI (Do user tự chọn)
+                    inputUrls = parentNode.data.selectedMedia || [];
+                    // Tự động chọn ảnh đầu tiên nếu User chưa click chọn
+                    if (inputUrls.length === 0 && parentNode.data.imageUrls?.length > 0) {
+                        inputUrls = [parentNode.data.imageUrls[0]];
+                    }
+                    promptToSend = inputUrls.length > 0 ? "Transform this media" : "";
+                }
             }
 
             if (!promptToSend && inputUrls.length === 0) throw new Error("⚠️ Input trống không!");
@@ -217,7 +235,7 @@ export default function WorkflowEditor() {
             updateNodeProgress(engineNode.id, `☁️ Đang đẩy file lên R2...`);
             const finalOutputs = []; 
             const r2UrlsForGallery = [];
-            const metaDict = {}; // 🚀 TỪ ĐIỂN CHỨA HỒ SƠ CỦA TỪNG ẢNH TRẢ VỀ CHO LIGHTBOX
+            const metaDict = {}; 
 
             for (let i = 0; i < mediaUrls.length; i++) {
                 const url = mediaUrls[i];
@@ -238,7 +256,6 @@ export default function WorkflowEditor() {
                 const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
                 r2UrlsForGallery.push(publicR2Url);
                 
-                // Đính kèm siêu dữ liệu (Hồ sơ)
                 metaDict[publicR2Url] = { presetId, prompt: promptToSend, referenceImages: inputUrls };
                 finalOutputs.push({ id: `media_${Date.now()}_${i}`, url: publicR2Url, googleCdnUrl: url, type: config.mode, prompt: promptToSend, referenceImages: inputUrls, createdAt: Date.now() });
             }
@@ -246,28 +263,31 @@ export default function WorkflowEditor() {
             await updateDoc(doc(db, "autoflow_projects", appProjectId), { outputs: arrayUnion(...finalOutputs), updatedAt: Date.now() });
             
             updateNodeProgress(engineNode.id, `✅ Hoàn tất!`);
-            updateGalleryNode(engineNode.id, r2UrlsForGallery, config.mode, metaDict);
+
+            // Ghi vào Gallery Đích (Nếu có nối dây)
+            const outEdge = edges.find(e => e.source === engineNode.id && e.sourceHandle === 'Media');
+            if (outEdge) {
+                updateGalleryNode(engineNode.id, r2UrlsForGallery, config.mode, metaDict, outEdge.target);
+                // Lưu vào bộ nhớ Runtime để Node tiếp theo lấy xài luôn mà không cần chờ UI render
+                runtimeGalleryData[outEdge.target] = { urls: r2UrlsForGallery };
+            }
+
         } catch (err) {
             updateNodeProgress(engineNode.id, `❌ ${err.message}`);
         }
-    });
+    } // Hết vòng lặp chạy Engine
 
-    await Promise.all(promises);
     setIsRunning(false);
   };
 
   return (
     <div className="h-full w-full flex flex-col bg-[#0E0E10] text-white overflow-hidden relative">
       
-      {/* ======================================= */}
-      {/* 🎬 RẠP CHIẾU PHIM BẢN NÂNG CẤP            */}
-      {/* ======================================= */}
+      {/* 🎬 RẠP CHIẾU PHIM */}
       {lightBox.isOpen && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex justify-center backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <button onClick={() => setLightBox({isOpen: false, url: '', type: '', meta: null})} className="absolute top-6 right-6 text-white/50 hover:text-white bg-[#15151A] hover:bg-red-500 p-2 rounded-full z-50 transition-all cursor-pointer"><X size={24} /></button>
             <div className="w-full max-w-6xl flex flex-col md:flex-row gap-6 items-center md:items-start pt-10">
-                
-                {/* BÊN TRÁI: MÀN HÌNH CHÍNH (FULL TỈ LỆ GỐC) */}
                 <div className="flex-1 flex justify-center items-center w-full">
                     {lightBox.type === 'video' ? (
                         <video src={lightBox.url} controls autoPlay className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
@@ -276,17 +296,15 @@ export default function WorkflowEditor() {
                     )}
                 </div>
 
-                {/* BÊN PHẢI: BẢNG HỒ SƠ PHÂN TÍCH */}
                 <div className="w-full md:w-[350px] bg-[#15151A] border border-[#2A2A30] rounded-xl p-5 shrink-0 overflow-y-auto max-h-[85vh] custom-scrollbar">
                     <h3 className="text-emerald-400 font-bold mb-4 border-b border-[#2A2A30] pb-2">Hồ Sơ Nguồn Cội</h3>
                     
                     <div className="mb-4">
                         <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Tùy chọn Ý tưởng (Task)</label>
                         <div className="bg-[#0E0E10] text-blue-400 font-semibold text-xs p-3 rounded border border-[#2A2A30] mb-2">
-                            {lightBox.meta?.presetId === 'custom' ? '✍️ Tự nhập Prompt (Custom)' : (PRESET_OPTIONS.find(p => p.id === lightBox.meta?.presetId)?.label || 'Không rõ')}
+                            {lightBox.meta?.presetId === 'custom' ? '✍️ Tự nhập Prompt (Custom)' : (PRESET_DICTIONARY[lightBox.meta?.presetId] ? '🚀 Mẫu Prompt Có Sẵn' : 'Không rõ')}
                         </div>
                         
-                        {/* Chỉ show Nội dung Custom nếu User tự gõ */}
                         {lightBox.meta?.presetId === 'custom' && (
                             <div className="mt-2 animate-in fade-in">
                                 <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Nội dung Prompt User nhập</label>
@@ -316,7 +334,7 @@ export default function WorkflowEditor() {
         </div>
       )}
 
-      {/* HEADER BARS */}
+      {/* HEADER */}
       <div className="h-[60px] bg-[#15151A] border-b border-[#2A2A30] flex items-center justify-between px-6 shrink-0 shadow-md relative z-20">
         <div className="flex items-center gap-4">
           <button onMouseEnter={() => setIsSidebarOpen(true)} className="p-2 bg-[#1E1E24] hover:bg-[#2A2A30] rounded-md transition-colors cursor-pointer"><Menu size={20} className="text-gray-400" /></button>
@@ -324,6 +342,7 @@ export default function WorkflowEditor() {
           <div><h1 className="text-[15px] font-bold tracking-wide">Flow Workspace</h1><p className="text-[11px] text-gray-500">Multi-task Graph Engine</p></div>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={handleClearGraph} className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer"><Trash2 size={16}/> Dọn Dẹp</button>
           <button className={`flex items-center gap-2 px-6 py-2 rounded-lg font-bold text-sm transition-all shadow-lg cursor-pointer ${isRunning ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 shadow-emerald-500/20'}`} onClick={() => handleRunWorkflow()}>
             {isRunning ? <><div className="w-2 h-2 bg-white rounded-full animate-ping mr-1"></div> Đang xử lý Đa luồng...</> : <><Play size={16} fill="currentColor" /> Chạy Tất Cả Engine</>}
           </button>
@@ -332,7 +351,7 @@ export default function WorkflowEditor() {
 
       <div className="flex-1 relative w-full h-full flex">
         
-        {/* BẢNG SIDEBAR KÉO THẢ */}
+        {/* BẢNG SIDEBAR */}
         <div className={`absolute top-0 left-0 h-full bg-[#15151A] border-r border-[#2A2A30] z-30 transition-transform duration-300 w-[300px] flex flex-col shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} onMouseLeave={() => setIsSidebarOpen(false)}>
             <div className="p-4 border-b border-[#2A2A30] bg-[#1A1A1F]">
                 <h2 className="font-bold text-emerald-400 flex items-center gap-2 mb-3"><Server size={16}/> Trạng Thái Kết Nối</h2>
@@ -362,10 +381,17 @@ export default function WorkflowEditor() {
             </div>
         </div>
 
-        {/* WORKSPACE GRAPH */}
+        {/* 🚀 ÉP BUỘC STYLE DÂY NỐI BẰNG .map() TRONG RENDER */}
         <div className="flex-1 w-full h-full relative z-0">
-            {/* 🚀 ĐÃ BỎ smoothstep RA KHỎI defaultEdgeOptions */}
-            <ReactFlow nodes={nodes} edges={edges.map(e => ({ ...e, animated: isRunning }))} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={onConnect} nodeTypes={nodeTypes} fitView minZoom={0.2} maxZoom={1.5}>
+            <ReactFlow 
+                nodes={nodes} 
+                edges={edges.map(e => ({ ...e, type: 'default', animated: true, style: { stroke: '#8B5CF6', strokeWidth: 2, strokeDasharray: '5 5' } }))} 
+                onNodesChange={onNodesChange} 
+                onEdgesChange={onEdgesChange} 
+                onConnect={onConnect} 
+                nodeTypes={nodeTypes} 
+                fitView minZoom={0.2} maxZoom={1.5}
+            >
             <Background color="#2A2A30" gap={24} size={2} variant="dots" />
             <Controls className="!bg-[#15151A] !border-[#2A2A30] !fill-gray-400 !shadow-xl" />
             <MiniMap className="!bg-[#15151A]/90 !border !border-[#2A2A30] !rounded-xl overflow-hidden shadow-2xl" maskColor="rgba(0, 0, 0, 0.6)" nodeColor="#3B82F6" />
@@ -396,10 +422,6 @@ export default function WorkflowEditor() {
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
                 </div>
-              </div>
-              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
-                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><FolderGit2 size={16}/> Local Storage</h3>
-                <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Thư mục lưu Local</label><input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
               </div>
             </div>
             <div className="p-5 border-t border-[#2A2A30] bg-[#15151A]">
