@@ -30,7 +30,8 @@ export default function WorkflowEditor() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { user } = useUser();
-  const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', outFolder: 'out', chromeProfile: 'chrome-profile', runHidden: true, threads: 2, delayMin: 5, delayMax: 15 });
+  // 🚀 BỔ SUNG TRƯỜNG extensionId VÀO SETTINGS
+  const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out', chromeProfile: 'chrome-profile', runHidden: true, threads: 2, delayMin: 5, delayMax: 15 });
 
   const [appProjectId, setAppProjectId] = useState(() => {
     const savedId = localStorage.getItem('current_autoflow_id');
@@ -108,11 +109,15 @@ export default function WorkflowEditor() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.sessionCookie && data.sessionCookie !== settings.sessionCookie) {
-          setSettings(prev => ({ ...prev, sessionCookie: data.sessionCookie, projectId: data.projectId || '' }));
+          // Cập nhật cả extensionId từ Cloud về
+          setSettings(prev => ({ ...prev, sessionCookie: data.sessionCookie, projectId: data.projectId || '', extensionId: data.extensionId || '' }));
           setNodes(nds => nds.map(node => {
             if (node.id === 'node-account') { node.data = { ...node.data, fields: [ ...node.data.fields.filter(f => f.id !== 'f2'), { id: 'f2', label: 'Trạng thái', type: 'text', defaultValue: '✅ Đã nhận Cookie', readOnly: true } ] }; }
             return node;
           }));
+        } else if (data) {
+          // Load cấu hình settings lần đầu nếu có
+          setSettings(prev => ({ ...prev, ...data }));
         }
       }
     });
@@ -127,6 +132,11 @@ export default function WorkflowEditor() {
 
   const handleRunWorkflow = async () => {
     if (isRunning) { setIsRunning(false); return; }
+    
+    // 🚀 BẮT LỖI THIẾU ID
+    if (!settings.extensionId || settings.extensionId.trim() === '') {
+        alert("❌ Vui lòng vào Cài đặt hệ thống để nhập ID của Extension Chrome!"); return;
+    }
     if (!settings.projectId) { alert("❌ Vui lòng vào Cài đặt hệ thống để nhập Project ID của tài khoản Google Flow hiện tại!"); return; }
 
     const promptTextarea = document.querySelector('.react-flow__node-custom textarea');
@@ -143,14 +153,16 @@ export default function WorkflowEditor() {
     let base64Images = [];
     try { base64Images = JSON.parse(base64DataStr); } catch(e) {}
 
-    const HARDCODED_EXT_ID = "fmaedcjldkghbdfhhdccciddbllnaklj"; 
-    if (!window.chrome || !window.chrome.runtime) { alert("❌ Lỗi: Không tìm thấy Extension! Hãy dùng Chrome."); return; }
+    // 🚀 LẤY ID TỪ CÀI ĐẶT THAY VÌ GẮN CỨNG
+    const EXT_ID = settings.extensionId.trim();
+    
+    if (!window.chrome || !window.chrome.runtime) { alert("❌ Lỗi: Không tìm thấy trình duyệt Chrome hoặc chế độ Extension."); return; }
 
     setIsRunning(true);
 
     setNodes(nds => nds.map(node => {
       if (node.id === 'node-engine') {
-          const statusText = mode === 'video' ? '⏳ Tự động bám đuôi Video (Bản 9.0)...' : '🚀 Đang gửi lệnh Hình Ảnh...';
+          const statusText = mode === 'video' ? '⏳ Tự động bám đuôi Video...' : '🚀 Đang gửi lệnh Hình Ảnh...';
           node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: statusText, readOnly: true }] };
       }
       return node;
@@ -158,11 +170,11 @@ export default function WorkflowEditor() {
 
     try {
         window.chrome.runtime.sendMessage(
-            HARDCODED_EXT_ID, 
+            EXT_ID, // DÙNG ID ĐỘNG
             { type: "RUN_GOOGLE_API", payload: { prompt: promptToSend, mode, model, aspectRatio, outputCount, duration, base64Images, projectId: settings.projectId } },
             async (response) => {
                 if (!response || chrome.runtime.lastError) { 
-                    alert("❌ Lỗi Extension: " + (chrome.runtime.lastError?.message || "Mất kết nối.")); setIsRunning(false); return; 
+                    alert("❌ Lỗi kết nối Extension (" + EXT_ID + "): " + (chrome.runtime.lastError?.message || "Extension chưa được bật hoặc ID bị sai.")); setIsRunning(false); return; 
                 }
                 if (!response.success) {
                     alert("❌ Lỗi Google API: " + (response.error || "Không rõ nguyên nhân.")); setIsRunning(false); return;
@@ -191,7 +203,7 @@ export default function WorkflowEditor() {
                         }));
 
                         const pollResp = await new Promise(resolve => {
-                            window.chrome.runtime.sendMessage(HARDCODED_EXT_ID, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve);
+                            window.chrome.runtime.sendMessage(EXT_ID, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve);
                         });
                         
                         if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { 
@@ -216,9 +228,6 @@ export default function WorkflowEditor() {
                         return node;
                     }));
 
-                    // ========================================================
-                    // HÀNH ĐỘNG KÉP: TẢI LOCAL + UPLOAD LÊN CLOUDFLARE R2
-                    // ========================================================
                     try {
                         const finalOutputs = [];
 
@@ -229,7 +238,6 @@ export default function WorkflowEditor() {
                             const fileName = `GoogleFlow_${Date.now()}_${i + 1}.${ext}`;
                             const uniqueCloudName = `autoflow/${appProjectId}/${fileName}`;
 
-                            // 1. XỬ LÝ MIXED CONTENT: Chỉ tải Local khi đang chạy ở máy tính ở nhà (localhost)
                             const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                             if (isLocalhost) {
                                 const downloadApiUrl = `http://localhost:48321/api/download`;
@@ -239,13 +247,11 @@ export default function WorkflowEditor() {
                                 }).catch(e => console.warn("Local worker không bật, bỏ qua tải Local."));
                             }
 
-                            // 2. VƯỢT RÀO BẢO MẬT COEP BẰNG PROXY
                             const proxyUrl = `/api/proxy-media?url=${encodeURIComponent(url)}`;
                             const blobRes = await fetch(proxyUrl);
                             if (!blobRes.ok) throw new Error("Proxy Vercel không thể lấy file");
                             const blob = await blobRes.blob();
 
-                            // 3. XIN LINK R2 VÀ UPLOAD
                             const urlRes = await fetch('/api/get-upload-url', {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType })
@@ -257,7 +263,6 @@ export default function WorkflowEditor() {
 
                             const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
                             
-                            // 4. TẠO OBJECT LƯU DATABASE
                             finalOutputs.push({
                                 id: `media_${Date.now()}_${i}`,
                                 url: publicR2Url,        
@@ -268,7 +273,6 @@ export default function WorkflowEditor() {
                             });
                         }
 
-                        // LƯU FIREBASE
                         await updateDoc(doc(db, "autoflow_projects", appProjectId), {
                             outputs: arrayUnion(...finalOutputs),
                             updatedAt: Date.now()
@@ -330,9 +334,8 @@ export default function WorkflowEditor() {
               <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
                 <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Server size={16}/> 01 - Thông tin Tài khoản Google Labs</h3>
                 
-                {/* 🚀 Ô HIỂN THỊ MÃ USER ID ĐỂ COPY */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Extension (User ID)</label>
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Web (User ID)</label>
                   <input 
                     type="text" 
                     readOnly 
@@ -344,7 +347,21 @@ export default function WorkflowEditor() {
                   <p className="text-[10px] text-gray-500">Bấm vào ô trên để copy, sau đó dán vào Extension để đồng bộ Cookie.</p>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                {/* 🚀 Ô NHẬP EXTENSION ID */}
+                <div className="flex flex-col gap-1.5 mt-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase">Extension ID (Bắt buộc)</label>
+                  <input 
+                    type="text" 
+                    name="extensionId" 
+                    value={settings.extensionId} 
+                    onChange={handleInputChange} 
+                    placeholder="VD: abcdefghijklmnop..." 
+                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" 
+                  />
+                  <p className="text-[10px] text-gray-500">Vào chrome://extensions, copy ID của Extension dán vào đây.</p>
+                </div>
+
+                <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID (Bắt buộc)</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
                   <p className="text-[10px] text-gray-500">Mở F12 trên labs.google, tìm lệnh generate và copy projectId dán vào đây.</p>
