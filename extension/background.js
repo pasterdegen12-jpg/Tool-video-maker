@@ -23,29 +23,30 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
     }
 });
 
-// CHIẾN THUẬT MỚI: BỎ QUA JSON, KIỂM TRA TRỰC TIẾP LINK VIDEO!
 async function executePollInFlowTab(payload) {
     try {
         const tabs = await chrome.tabs.query({ url: "*://labs.google/*" });
         if (!tabs || tabs.length === 0) return { success: false, error: "Tab Labs đã đóng!" };
         
+        // Bắt tab chuẩn: Ưu tiên link Project hoặc Flow, nếu không có thì lấy tab đang Active
+        let flowTab = tabs.find(t => t.url && (t.url.includes('/fx/tools/flow') || t.url.includes('/fx/project')));
+        if (!flowTab) flowTab = tabs.find(t => t.active) || tabs[0];
+        
         const [result] = await chrome.scripting.executeScript({
-            target: { tabId: tabs[0].id },
+            target: { tabId: flowTab.id },
             world: "MAIN",
             func: async (req) => {
                 try {
                     if (req.mode === 'video' && req.mediaId) {
                         const checkUrl = `https://labs.google/fx/api/trpc/media.getMediaUrlRedirect?name=${req.mediaId}`;
                         
-                        // Đâm thẳng vào link xem video đã tồn tại chưa
                         const controller = new AbortController();
                         const res = await fetch(checkUrl, { signal: controller.signal }).catch(() => null);
                         
                         if (res) {
                             const finalUrl = res.url;
-                            controller.abort(); // Dừng tải body video để khỏi tốn RAM
+                            controller.abort(); 
                             
-                            // Nếu link đã nhảy sang CDN công khai của Google -> Video đã xong!
                             if (finalUrl && finalUrl.includes("Signature=")) {
                                 return { success: true, isDone: true, cdnUrl: finalUrl };
                             }
@@ -65,8 +66,10 @@ async function executePollInFlowTab(payload) {
 async function executeApiInFlowTab(payload) {
     try {
         const tabs = await chrome.tabs.query({ url: "*://labs.google/*" });
-        if (!tabs || tabs.length === 0) return { success: false, error: "Vui lòng mở một tab labs.google/fx/tools/flow và đăng nhập!" };
-        const flowTab = tabs[0];
+        if (!tabs || tabs.length === 0) return { success: false, error: "Vui lòng mở một tab labs.google và đăng nhập!" };
+        
+        let flowTab = tabs.find(t => t.url && (t.url.includes('/fx/tools/flow') || t.url.includes('/fx/project')));
+        if (!flowTab) flowTab = tabs.find(t => t.active) || tabs[0];
 
         const [result] = await chrome.scripting.executeScript({
             target: { tabId: flowTab.id },
@@ -78,17 +81,32 @@ async function executeApiInFlowTab(payload) {
 
                     const sessionRes = await fetch("/fx/api/auth/session", { credentials: "include" });
                     const sessionData = await sessionRes.json();
-                    if (!sessionData || !sessionData.access_token) throw new Error("Thiếu Access Token");
+                    if (!sessionData || !sessionData.access_token) throw new Error("Thiếu Access Token. Đảm bảo bạn đã đăng nhập tài khoản Google trên tab Labs!");
                     const bearerToken = sessionData.access_token;
 
                     const waitGre = async () => {
+                        // 🚀 CHIÊU CUỐI: TỰ ĐỘNG CẤY SCRIPT CHỐNG BOT NẾU GOOGLE KHÔNG CHỊU TẢI
+                        if (!window.grecaptcha || !window.grecaptcha.enterprise) {
+                            console.log("[AutoFlow] Đang tự động ép tải hệ thống chống Bot (reCAPTCHA)...");
+                            const script = document.createElement('script');
+                            script.src = "https://www.google.com/recaptcha/enterprise.js?render=6LdsFiUsAAAAAIjVDZcuLhaHiDn5nnHVXVRQGeMV";
+                            script.async = true;
+                            document.head.appendChild(script);
+                        }
+
                         const t0 = Date.now();
                         while (!(window.grecaptcha && window.grecaptcha.enterprise)) {
-                            if (Date.now() - t0 > 12000) throw new Error("grecaptcha timeout");
+                            if (Date.now() - t0 > 20000) {
+                                throw new Error("Google chặn kết nối tự động. Vui lòng TẮT HẲN các tiện ích chặn quảng cáo (Adblock/Brave Shields) trên trang labs.google và thử lại!");
+                            }
                             await new Promise(r => setTimeout(r, 200));
                         }
+                        
+                        // Đợi thêm 1 chút cho reCAPTCHA khởi tạo hoàn tất
+                        await new Promise(r => setTimeout(r, 1000));
                     };
                     await waitGre();
+
                     const actionType = requestData.mode === 'video' ? "VIDEO_GENERATION" : "IMAGE_GENERATION";
                     const captchaToken = await window.grecaptcha.enterprise.execute("6LdsFiUsAAAAAIjVDZcuLhaHiDn5nnHVXVRQGeMV", { action: actionType });
 

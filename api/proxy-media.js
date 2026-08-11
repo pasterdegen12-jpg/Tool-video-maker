@@ -1,25 +1,40 @@
 // File: api/proxy-media.js
-export default async function handler(req, res) {
-  const { url } = req.query;
-  
-  if (!url) {
-    return res.status(400).json({ error: 'Thiếu tham số URL' });
+
+// 🚀 Kích hoạt sức mạnh Edge Stream để phá vỡ giới hạn 4.5MB của Vercel
+export const config = {
+  runtime: 'edge', 
+};
+
+export default async function handler(req) {
+  // Vì là Edge Runtime nên sử dụng chuẩn Web API thay vì req.query
+  const { searchParams } = new URL(req.url);
+  const targetUrl = searchParams.get('url');
+
+  if (!targetUrl) {
+    return new Response(JSON.stringify({ error: 'Thiếu tham số URL' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Không thể tải file từ Google CDN');
+    const response = await fetch(targetUrl);
+    if (!response.ok) throw new Error('Không thể tải file từ Server gốc');
 
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // 🚀 BÙA HỘ MỆNH: Cấp phép cho file xuyên qua tường lửa COEP của Firebase
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); 
-    res.setHeader('Content-Type', response.headers.get('content-type') || 'video/mp4');
-
-    res.status(200).send(buffer);
+    // Bê nguyên dòng chảy (stream) từ Google ném thẳng cho User, kèm theo "bùa hộ mệnh" COEP
+    return new Response(response.body, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
+        'Content-Type': response.headers.get('content-type') || 'video/mp4',
+        'Cache-Control': 'public, max-age=86400' // Cho phép trình duyệt lưu cache 1 ngày cho mượt
+      }
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
