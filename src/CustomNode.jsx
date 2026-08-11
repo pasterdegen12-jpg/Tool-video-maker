@@ -2,22 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
 import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2 } from 'lucide-react';
 
-const categoryColors = {
-  Input: 'bg-gradient-to-r from-blue-900 to-blue-600',
-  Generation: 'bg-gradient-to-r from-purple-800 to-purple-600',
-  Editing: 'bg-gradient-to-r from-green-800 to-green-600',
-  Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600',
-};
-
-const portColors = {
-  session: '!bg-[#10B981]', prompts: '!bg-[#3B82F6]', media: '!bg-[#8B5CF6]', error: '!bg-[#EF4444]',   
-};
-
-const categoryIcons = {
-  Input: <Key size={14} className="text-white opacity-80" />,
-  Generation: <Cpu size={14} className="text-white opacity-80" />,
-  Output: <ImageIcon size={14} className="text-white opacity-80" />,
-};
+const categoryColors = { Input: 'bg-gradient-to-r from-blue-900 to-blue-600', Generation: 'bg-gradient-to-r from-purple-800 to-purple-600', Editing: 'bg-gradient-to-r from-green-800 to-green-600', Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600', };
+const portColors = { session: '!bg-[#10B981]', prompts: '!bg-[#3B82F6]', media: '!bg-[#8B5CF6]', error: '!bg-[#EF4444]' };
+const categoryIcons = { Input: <Key size={14} className="text-white opacity-80" />, Generation: <Cpu size={14} className="text-white opacity-80" />, Output: <ImageIcon size={14} className="text-white opacity-80" /> };
 
 export default function CustomNode({ id, data }) {
   const { updateNodeData } = useReactFlow(); 
@@ -28,13 +15,10 @@ export default function CustomNode({ id, data }) {
   const [model, setModel] = useState('GEM_PIX_2');
   const [count, setCount] = useState(1);
   const [duration, setDuration] = useState(4);
-
   const [uploadedImages, setUploadedImages] = useState([]);
   const [isUploadingInput, setIsUploadingInput] = useState(false);
 
-  useEffect(() => { 
-    if (isEngine) setModel(mode === 'image' ? 'GEM_PIX_2' : 'OMNI_FLASH'); 
-  }, [mode, isEngine]);
+  useEffect(() => { if (isEngine) setModel(mode === 'image' ? 'GEM_PIX_2' : 'OMNI_FLASH'); }, [mode, isEngine]);
 
   const handleTextChange = (fieldId, newValue) => {
     const newFields = data.fields.map(f => f.id === fieldId ? { ...f, defaultValue: newValue } : f);
@@ -45,12 +29,9 @@ export default function CustomNode({ id, data }) {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     setIsUploadingInput(true);
-
     try {
         const base64Promises = files.map(file => new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(file);
+            const reader = new FileReader(); reader.onloadend = () => resolve(reader.result); reader.readAsDataURL(file);
         }));
         const newBase64Array = await Promise.all(base64Promises);
         setUploadedImages(prev => [...prev, ...newBase64Array]);
@@ -59,50 +40,26 @@ export default function CustomNode({ id, data }) {
         const newCloudUrls = [];
 
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const mimeType = file.type;
-            const ext = mimeType.split('/')[1] || 'jpg';
+            const file = files[i]; const mimeType = file.type; const ext = mimeType.split('/')[1] || 'jpg';
             const fileName = `input_${Date.now()}_${i}.${ext}`;
             const uniqueCloudName = `autoflow/${appId}/inputs/${fileName}`;
             
-            const urlRes = await fetch('/api/get-upload-url', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType })
-            });
+            const urlRes = await fetch('/api/get-upload-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType }) });
             const { uploadUrl } = await urlRes.json();
-            
             await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': mimeType } });
-            
-            const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
-            newCloudUrls.push(publicR2Url);
+            newCloudUrls.push(`${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`);
         }
-
         if (newCloudUrls.length > 0) {
-            const newFields = data.fields.map(f => {
-                if (f.id === 'ref_img') {
-                    return { ...f, cloudUrls: [...(f.cloudUrls || []), ...newCloudUrls] };
-                }
-                return f;
-            });
+            const newFields = data.fields.map(f => { if (f.id === 'ref_img') { return { ...f, cloudUrls: [...(f.cloudUrls || []), ...newCloudUrls] }; } return f; });
             updateNodeData(id, { fields: newFields });
         }
-    } catch (err) {
-        console.error("Lỗi khi upload ảnh Input:", err);
-        alert("Có lỗi khi lưu ảnh lên Cloud!");
-    } finally {
-        setIsUploadingInput(false);
-        e.target.value = ''; 
-    }
+    } catch (err) { alert("Có lỗi khi lưu ảnh lên Cloud!"); } finally { setIsUploadingInput(false); e.target.value = ''; }
   };
 
   const handleRemoveImage = (indexToRemove) => {
     setUploadedImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
-    
     const newFields = data.fields.map(f => {
-        if (f.id === 'ref_img' && f.cloudUrls) {
-            const newUrls = f.cloudUrls.filter((_, idx) => idx !== indexToRemove);
-            return { ...f, cloudUrls: newUrls };
-        }
+        if (f.id === 'ref_img' && f.cloudUrls) { return { ...f, cloudUrls: f.cloudUrls.filter((_, idx) => idx !== indexToRemove) }; }
         return f;
     });
     updateNodeData(id, { fields: newFields });
@@ -114,19 +71,12 @@ export default function CustomNode({ id, data }) {
         const loadBase64FromCloud = async () => {
             try {
                 const b64s = await Promise.all(refField.cloudUrls.map(async url => {
-                    const proxyUrl = `/api/proxy-media?url=${encodeURIComponent(url)}`;
-                    const res = await fetch(proxyUrl);
+                    const res = await fetch(url); // 🚀 TẢI THẲNG TỪ R2 KHÔNG CẦN PROXY
                     const blob = await res.blob();
-                    return new Promise(resolve => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.readAsDataURL(blob);
-                    });
+                    return new Promise(resolve => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result); reader.readAsDataURL(blob); });
                 }));
                 setUploadedImages(b64s);
-            } catch(e) { 
-                console.error("Lỗi phục hồi ảnh Base64 từ Cloud:", e); 
-            }
+            } catch(e) {}
         };
         loadBase64FromCloud();
     }
@@ -197,41 +147,21 @@ export default function CustomNode({ id, data }) {
                 {field.type === 'textarea' ? (
                   <textarea 
                     className="nodrag nowheel w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-gray-200 focus:border-purple-500 focus:outline-none resize-y min-h-[80px] custom-scrollbar placeholder:text-gray-600" 
-                    placeholder={field.placeholder} 
-                    value={field.defaultValue || ''} 
-                    onChange={(e) => handleTextChange(field.id, e.target.value)}
+                    placeholder={field.placeholder} value={field.defaultValue || ''} onChange={(e) => handleTextChange(field.id, e.target.value)}
                   />
                 ) : field.type === 'image' ? (
                   <div className="w-full bg-[#15151A] border border-dashed border-[#2A2A30] hover:border-purple-500 rounded-md p-3 flex flex-col gap-3 transition-colors relative min-h-[80px]">
                     <div className="relative flex flex-col items-center justify-center cursor-pointer w-full h-[60px] bg-[#1E1E24] rounded border border-[#2A2A30] hover:bg-[#2A2A30] transition-all">
-                      <input 
-                        type="file" accept="image/*" multiple 
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        onChange={handleFileChange}
-                        disabled={isUploadingInput}
-                      />
-                      {isUploadingInput ? (
-                        <Loader2 className="animate-spin text-purple-400 mb-1" size={18} />
-                      ) : (
-                        <ImageIcon size={18} className="mb-1 text-purple-400" />
-                      )}
-                      <span className="text-[10px] text-gray-400 font-bold uppercase">
-                        {isUploadingInput ? 'Đang lưu Cloud...' : 'Bấm để tải thêm ảnh'}
-                      </span>
+                      <input type="file" accept="image/*" multiple className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onChange={handleFileChange} disabled={isUploadingInput} />
+                      {isUploadingInput ? <Loader2 className="animate-spin text-purple-400 mb-1" size={18} /> : <ImageIcon size={18} className="mb-1 text-purple-400" />}
+                      <span className="text-[10px] text-gray-400 font-bold uppercase">{isUploadingInput ? 'Đang lưu Cloud...' : 'Bấm để tải thêm ảnh'}</span>
                     </div>
-
                     {uploadedImages.length > 0 && (
                       <div className="grid grid-cols-3 gap-2 w-full">
                         {uploadedImages.map((b64, imgIdx) => (
                           <div key={imgIdx} className="relative group w-full pt-[100%] rounded overflow-hidden border border-[#2A2A30]">
                             <img src={b64} className="absolute top-0 left-0 w-full h-full object-cover" alt="upload preview" />
-                            <button 
-                              onClick={() => handleRemoveImage(imgIdx)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer shadow"
-                              title="Xóa ảnh này"
-                            >
-                              <XIcon size={12} />
-                            </button>
+                            <button onClick={() => handleRemoveImage(imgIdx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer shadow" title="Xóa ảnh này"><XIcon size={12} /></button>
                           </div>
                         ))}
                       </div>
@@ -239,34 +169,23 @@ export default function CustomNode({ id, data }) {
                     <input type="hidden" id={`base64_${field.id}`} value={JSON.stringify(uploadedImages)} />
                   </div>
                 ) : (
-                  <input 
-                    type={field.type} 
-                    className="nodrag w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-gray-200 focus:border-purple-500 focus:outline-none placeholder:text-gray-600" 
-                    placeholder={field.placeholder} 
-                    value={field.defaultValue || ''}
-                    onChange={(e) => handleTextChange(field.id, e.target.value)}
-                  />
+                  <input type={field.type} className="nodrag w-full bg-[#15151A] border border-[#2A2A30] rounded-md p-2 text-xs text-gray-200 focus:border-purple-500 focus:outline-none placeholder:text-gray-600" placeholder={field.placeholder} value={field.defaultValue || ''} onChange={(e) => handleTextChange(field.id, e.target.value)} />
                 )}
               </div>
             ))}
 
-            {/* HIỂN THỊ KẾT QUẢ RENDER VỚI PROXY */}
+            {/* 🚀 GALLERY HIỂN THỊ LINK XỊN TỪ CLOUDFLARE R2 */}
             {data.preview && data.preview.type === 'gallery' && (
               <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
                 {data.imageUrls && data.imageUrls.length > 0 ? (
                   <div className="w-full grid grid-cols-1 gap-2">
-                    {data.imageUrls.map((url, idx) => {
-                        // Tự động bọc Proxy cho mọi link http/https để vượt rào CORS & COEP
-                        const safeUrl = url.startsWith('http') && !url.includes('/api/proxy-media')
-                            ? `/api/proxy-media?url=${encodeURIComponent(url)}`
-                            : url;
-
-                        return data.outputType === 'video' ? (
-                            <video key={idx} crossOrigin="anonymous" src={safeUrl} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                    {data.imageUrls.map((url, idx) => (
+                        data.outputType === 'video' ? (
+                            <video key={idx} crossOrigin="anonymous" src={url} autoPlay loop muted controls className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
                         ) : (
-                            <img key={idx} crossOrigin="anonymous" src={safeUrl} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
-                        );
-                    })}
+                            <img key={idx} crossOrigin="anonymous" src={url} alt={`Result ${idx + 1}`} className="w-full h-auto rounded-md border border-[#2A2A30] object-cover" style={{ maxHeight: '200px' }} />
+                        )
+                    ))}
                   </div>
                 ) : (
                   <><ImageIcon size={24} className="text-gray-600 mb-1" /><span className="text-gray-500 text-[11px] text-center px-4">Kết quả render sẽ tự động xuất hiện tại đây...</span></>

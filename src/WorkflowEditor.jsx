@@ -3,20 +3,17 @@ import { ReactFlow, Background, Controls, MiniMap, applyNodeChanges, applyEdgeCh
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2 } from 'lucide-react';
-
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
 
 const nodeTypes = { custom: CustomNode };
-
 const initialNodes = [
   { id: 'node-account', type: 'custom', position: { x: 50, y: 100 }, data: { label: 'Google Flow Account', category: 'Input', fields: [{ id: 'f1', label: 'Tên gợi nhớ (Profile)', type: 'text', placeholder: 'Account 1...' }, { id: 'f2', label: 'Trạng thái', type: 'text', defaultValue: 'Chưa kết nối Cookie', readOnly: true }], outputs: [{ name: 'Session', type: 'session' }] } },
   { id: 'node-prompts', type: 'custom', position: { x: 50, y: 320 }, data: { label: 'Prompt Manager', category: 'Input', fields: [{ id: 'f1', label: 'Nội dung Prompt (Hỗ trợ xuống dòng)', type: 'textarea', placeholder: 'a beautiful futuristic city...\ncyberpunk neon street...' }, { id: 'ref_img', label: 'Ảnh Tham Chiếu (Image-to-Image)', type: 'image' }], outputs: [{ name: 'Prompts', type: 'prompts' }] } },
   { id: 'node-engine', type: 'custom', position: { x: 450, y: 150 }, data: { label: 'Auto Flow Engine (Local Worker)', category: 'Generation', fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: 'Đang đợi lệnh...', readOnly: true }], inputs: [{ name: 'Session', type: 'session' }, { name: 'Prompts', type: 'prompts' }], outputs: [{ name: 'Media', type: 'media' }, { name: 'Error Log', type: 'error' }] } },
   { id: 'node-gallery', type: 'custom', position: { x: 850, y: 180 }, data: { label: 'Output Gallery', category: 'Output', preview: { type: 'gallery' }, inputs: [{ name: 'Media', type: 'media' }] } }
 ];
-
 const initialEdges = [
   { id: 'e-acc-eng', source: 'node-account', sourceHandle: 'Session', target: 'node-engine', targetHandle: 'Session', style: { stroke: '#10B981', strokeWidth: 3 } },
   { id: 'e-prm-eng', source: 'node-prompts', sourceHandle: 'Prompts', target: 'node-engine', targetHandle: 'Prompts', style: { stroke: '#3B82F6', strokeWidth: 3 } },
@@ -28,61 +25,38 @@ export default function WorkflowEditor() {
   const [edges, setEdges] = useState(initialEdges);
   const [isRunning, setIsRunning] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
   const { user } = useUser();
-  // 🚀 BỔ SUNG TRƯỜNG extensionId VÀO SETTINGS
   const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out', chromeProfile: 'chrome-profile', runHidden: true, threads: 2, delayMin: 5, delayMax: 15 });
 
   const [appProjectId, setAppProjectId] = useState(() => {
     const savedId = localStorage.getItem('current_autoflow_id');
     return savedId || `flow_${Date.now()}`;
   });
+  useEffect(() => { localStorage.setItem('current_autoflow_id', appProjectId); }, [appProjectId]);
 
-  useEffect(() => {
-    localStorage.setItem('current_autoflow_id', appProjectId);
-  }, [appProjectId]);
-
-  // AUTO-SAVE GIAO DIỆN
   useEffect(() => {
     if (!user || !appProjectId) return;
-
     const timeoutId = setTimeout(async () => {
       try {
         const cleanNodes = nodes.map(node => {
           const cleanNode = { ...node };
           if (cleanNode.id === 'node-prompts') {
-             const cleanedFields = cleanNode.data.fields.map(f => 
-                 f.id === 'ref_img' ? { ...f, tempBase64: [] } : f
-             );
+             const cleanedFields = cleanNode.data.fields.map(f => f.id === 'ref_img' ? { ...f, tempBase64: [] } : f);
              cleanNode.data = { ...cleanNode.data, fields: cleanedFields };
-          }
-          return cleanNode;
+          } return cleanNode;
         });
-
-        await setDoc(doc(db, "autoflow_projects", appProjectId), {
-          userId: user.id,
-          projectName: "Auto Flow Project",
-          updatedAt: Date.now(),
-          workspace: { nodes: cleanNodes, edges }
-        }, { merge: true });
-        
-      } catch (error) {
-        console.error("Lỗi Auto-save:", error);
-      }
+        await setDoc(doc(db, "autoflow_projects", appProjectId), { userId: user.id, projectName: "Auto Flow Project", updatedAt: Date.now(), workspace: { nodes: cleanNodes, edges } }, { merge: true });
+      } catch (error) { console.error("Lỗi Auto-save:", error); }
     }, 2000); 
-
     return () => clearTimeout(timeoutId);
   }, [nodes, edges, user, appProjectId]);
 
-  // PHỤC HỒI DỮ LIỆU F5
   useEffect(() => {
     if (!user || !appProjectId) return;
-
     const loadWorkspace = async () => {
       try {
         const docRef = doc(db, "autoflow_projects", appProjectId);
         const docSnap = await getDoc(docRef);
-
         if (docSnap.exists()) {
           const data = docSnap.data();
           if (data.workspace) {
@@ -90,17 +64,13 @@ export default function WorkflowEditor() {
             if (data.workspace.edges && data.workspace.edges.length > 0) setEdges(data.workspace.edges);
           }
         }
-      } catch (error) {
-        console.error("Lỗi khi tải dự án:", error);
-      }
+      } catch (error) { console.error("Lỗi khi tải dự án:", error); }
     };
-
     loadWorkspace();
   }, [user, appProjectId]);
 
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
-
   const handleInputChange = (e) => { const { name, value, type, checked } = e.target; setSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
 
   useEffect(() => {
@@ -109,16 +79,12 @@ export default function WorkflowEditor() {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.sessionCookie && data.sessionCookie !== settings.sessionCookie) {
-          // Cập nhật cả extensionId từ Cloud về
           setSettings(prev => ({ ...prev, sessionCookie: data.sessionCookie, projectId: data.projectId || '', extensionId: data.extensionId || '' }));
           setNodes(nds => nds.map(node => {
             if (node.id === 'node-account') { node.data = { ...node.data, fields: [ ...node.data.fields.filter(f => f.id !== 'f2'), { id: 'f2', label: 'Trạng thái', type: 'text', defaultValue: '✅ Đã nhận Cookie', readOnly: true } ] }; }
             return node;
           }));
-        } else if (data) {
-          // Load cấu hình settings lần đầu nếu có
-          setSettings(prev => ({ ...prev, ...data }));
-        }
+        } else if (data) { setSettings(prev => ({ ...prev, ...data })); }
       }
     });
     return () => unsubscribe(); 
@@ -132,16 +98,12 @@ export default function WorkflowEditor() {
 
   const handleRunWorkflow = async () => {
     if (isRunning) { setIsRunning(false); return; }
-    
-    // 🚀 BẮT LỖI THIẾU ID
-    if (!settings.extensionId || settings.extensionId.trim() === '') {
-        alert("❌ Vui lòng vào Cài đặt hệ thống để nhập ID của Extension Chrome!"); return;
-    }
-    if (!settings.projectId) { alert("❌ Vui lòng vào Cài đặt hệ thống để nhập Project ID của tài khoản Google Flow hiện tại!"); return; }
+    if (!settings.extensionId || settings.extensionId.trim() === '') { alert("❌ Vui lòng vào Cài đặt hệ thống để nhập ID của Extension Chrome!"); return; }
+    if (!settings.projectId) { alert("❌ Vui lòng nhập Project ID của tài khoản Google Flow!"); return; }
 
     const promptTextarea = document.querySelector('.react-flow__node-custom textarea');
     const promptToSend = promptTextarea ? promptTextarea.value.trim() : '';
-    if (!promptToSend) { alert("❌ Vui lòng nhập nội dung Prompt vào ô Textarea!"); return; }
+    if (!promptToSend) { alert("❌ Vui lòng nhập nội dung Prompt!"); return; }
 
     const mode = document.querySelector('#opt_mode')?.value || 'image';
     const model = document.querySelector('#opt_model')?.value || 'GEM_PIX_2';
@@ -153,150 +115,131 @@ export default function WorkflowEditor() {
     let base64Images = [];
     try { base64Images = JSON.parse(base64DataStr); } catch(e) {}
 
-    // 🚀 LẤY ID TỪ CÀI ĐẶT THAY VÌ GẮN CỨNG
     const EXT_ID = settings.extensionId.trim();
-    
     if (!window.chrome || !window.chrome.runtime) { alert("❌ Lỗi: Không tìm thấy trình duyệt Chrome hoặc chế độ Extension."); return; }
-
     setIsRunning(true);
 
     setNodes(nds => nds.map(node => {
-      if (node.id === 'node-engine') {
-          const statusText = mode === 'video' ? '⏳ Tự động bám đuôi Video...' : '🚀 Đang gửi lệnh Hình Ảnh...';
-          node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: statusText, readOnly: true }] };
-      }
+      if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: mode === 'video' ? '⏳ Tự động bám đuôi Video...' : '🚀 Đang gửi lệnh Hình Ảnh...', readOnly: true }] };
       return node;
     }));
 
     try {
-        window.chrome.runtime.sendMessage(
-            EXT_ID, // DÙNG ID ĐỘNG
-            { type: "RUN_GOOGLE_API", payload: { prompt: promptToSend, mode, model, aspectRatio, outputCount, duration, base64Images, projectId: settings.projectId } },
-            async (response) => {
-                if (!response || chrome.runtime.lastError) { 
-                    alert("❌ Lỗi kết nối Extension (" + EXT_ID + "): " + (chrome.runtime.lastError?.message || "Extension chưa được bật hoặc ID bị sai.")); setIsRunning(false); return; 
-                }
-                if (!response.success) {
-                    alert("❌ Lỗi Google API: " + (response.error || "Không rõ nguyên nhân.")); setIsRunning(false); return;
-                }
+        window.chrome.runtime.sendMessage(EXT_ID, { type: "RUN_GOOGLE_API", payload: { prompt: promptToSend, mode, model, aspectRatio, outputCount, duration, base64Images, projectId: settings.projectId } }, async (response) => {
+            if (!response || chrome.runtime.lastError) { alert("❌ Lỗi kết nối Extension: " + (chrome.runtime.lastError?.message || "ID Extension bị sai.")); setIsRunning(false); return; }
+            if (!response.success) { alert("❌ Lỗi Google API: " + response.error); setIsRunning(false); return; }
 
-                let apiData = response.data;
-                let mediaUrls = [];
-                let mediaId = null;
+            let apiData = response.data;
+            let mediaUrls = [];
+            let mediaId = null;
 
-                const initStr = JSON.stringify(apiData);
-                const primaryMatch = initStr.match(/"primaryMediaId"\s*:\s*"([^"]+)"/);
-                if (primaryMatch) {
-                    mediaId = primaryMatch[1];
-                } else {
-                    const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g;
-                    const matches = initStr.match(uuidRegex);
-                    if (matches && matches.length > 0) mediaId = matches[matches.length - 1]; 
+            const initStr = JSON.stringify(apiData);
+            const primaryMatch = initStr.match(/"primaryMediaId"\s*:\s*"([^"]+)"/);
+            if (primaryMatch) { mediaId = primaryMatch[1]; } 
+            else {
+                const matches = initStr.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g);
+                if (matches && matches.length > 0) mediaId = matches[matches.length - 1]; 
+            }
+
+            if (mode === 'video' && mediaId) {
+                let allDone = false;
+                for (let i = 0; i < 60; i++) { 
+                    setNodes(nds => nds.map(node => {
+                        if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `⏳ Chờ Google Render... (${i * 5}s)`, readOnly: true }] };
+                        return node;
+                    }));
+                    const pollResp = await new Promise(resolve => { window.chrome.runtime.sendMessage(EXT_ID, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve); });
+                    if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { 
+                        mediaUrls = [pollResp.cdnUrl]; allDone = true; break; 
+                    }
+                    await new Promise(r => setTimeout(r, 5000));
                 }
+                if (!allDone) alert("⏳ Đã vượt quá 5 phút. Video có thể vẫn đang được render.");
+            } else {
+                const regex = /"fifeUrl"\s*:\s*"([^"]+)"/g;
+                let match;
+                while ((match = regex.exec(initStr)) !== null) { mediaUrls.push(match[1]); }
+                mediaUrls = [...new Set(mediaUrls)].filter(url => url && url.startsWith('http'));
+            }
 
-                if (mode === 'video' && mediaId) {
-                    let allDone = false;
-                    for (let i = 0; i < 60; i++) { 
+            if (mediaUrls.length > 0) {
+                try {
+                    const finalOutputs = [];
+                    const r2UrlsForGallery = [];
+
+                    for (let i = 0; i < mediaUrls.length; i++) {
+                        const url = mediaUrls[i];
+                        const ext = mode === 'video' ? 'mp4' : 'jpg';
+                        const mimeType = mode === 'video' ? 'video/mp4' : 'image/jpeg';
+                        const fileName = `GoogleFlow_${Date.now()}_${i + 1}.${ext}`;
+                        const uniqueCloudName = `autoflow/${appProjectId}/${fileName}`;
+
+                        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                        if (isLocalhost) {
+                            fetch(`http://localhost:48321/api/download`, {
+                                method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ videoUrl: url, outFolder: settings.outFolder, fileName: fileName })
+                            }).catch(() => {});
+                        }
+
+                        // Lấy link Upload rỗng từ Vercel
+                        const urlRes = await fetch('/api/get-upload-url', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType })
+                        });
+                        const { uploadUrl } = await urlRes.json();
+
+                        // Cập nhật trạng thái
                         setNodes(nds => nds.map(node => {
-                            if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `⏳ Chờ Google Render... (${i * 5}s)`, readOnly: true }] };
+                            if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `☁️ Đang nhờ Extension Upload File ${i+1}...`, readOnly: true }] };
                             return node;
                         }));
 
-                        const pollResp = await new Promise(resolve => {
-                            window.chrome.runtime.sendMessage(EXT_ID, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve);
+                        // 🚀 NHỜ EXTENSION KÉO TỪ GOOGLE RỒI ĐẨY LÊN R2 (Tránh lỗi 500 Vercel)
+                        const extUploadRes = await new Promise(resolve => {
+                            window.chrome.runtime.sendMessage(EXT_ID, {
+                                type: "UPLOAD_TO_R2",
+                                payload: { sourceUrl: url, uploadUrl: uploadUrl, mimeType: mimeType }
+                            }, resolve);
                         });
-                        
-                        if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { 
-                            mediaUrls = [pollResp.cdnUrl];
-                            allDone = true; 
-                            break; 
-                        }
-                        await new Promise(r => setTimeout(r, 5000));
-                    }
-                    if (!allDone) alert("⏳ Đã vượt quá 5 phút. Video có thể vẫn đang được render.");
-                } else {
-                    const regex = /"fifeUrl"\s*:\s*"([^"]+)"/g;
-                    let match;
-                    while ((match = regex.exec(initStr)) !== null) { mediaUrls.push(match[1]); }
-                    mediaUrls = [...new Set(mediaUrls)].filter(url => url && url.startsWith('http'));
-                }
 
-                if (mediaUrls.length > 0) {
+                        if (!extUploadRes || !extUploadRes.success) {
+                            throw new Error(extUploadRes?.error || "Extension Upload thất bại");
+                        }
+
+                        const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
+                        r2UrlsForGallery.push(publicR2Url);
+                        
+                        finalOutputs.push({
+                            id: `media_${Date.now()}_${i}`,
+                            url: publicR2Url,        
+                            googleCdnUrl: url,      
+                            type: mode,
+                            prompt: promptToSend,
+                            createdAt: Date.now()
+                        });
+                    }
+
+                    await updateDoc(doc(db, "autoflow_projects", appProjectId), {
+                        outputs: arrayUnion(...finalOutputs),
+                        updatedAt: Date.now()
+                    });
+
+                    // 🚀 HIỂN THỊ LINK R2 TRỰC TIẾP LÊN GALLERY THAY VÌ LINK GOOGLE
                     setNodes(nds => nds.map(node => {
-                        if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `☁️ Đang đẩy lên Cloud R2...`, readOnly: true }] };
-                        if (node.id === 'node-gallery') node.data = { ...node.data, imageUrls: mediaUrls, outputType: mode };
+                        if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `✅ Đã lưu Cloud & Database thành công!`, readOnly: true }] };
+                        if (node.id === 'node-gallery') node.data = { ...node.data, imageUrls: r2UrlsForGallery, outputType: mode };
                         return node;
                     }));
 
-                    try {
-                        const finalOutputs = [];
-
-                        for (let i = 0; i < mediaUrls.length; i++) {
-                            const url = mediaUrls[i];
-                            const ext = mode === 'video' ? 'mp4' : 'jpg';
-                            const mimeType = mode === 'video' ? 'video/mp4' : 'image/jpeg';
-                            const fileName = `GoogleFlow_${Date.now()}_${i + 1}.${ext}`;
-                            const uniqueCloudName = `autoflow/${appProjectId}/${fileName}`;
-
-                            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                            if (isLocalhost) {
-                                const downloadApiUrl = `http://localhost:48321/api/download`;
-                                fetch(downloadApiUrl, {
-                                    method: "POST", headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ videoUrl: url, outFolder: settings.outFolder, fileName: fileName })
-                                }).catch(e => console.warn("Local worker không bật, bỏ qua tải Local."));
-                            }
-
-                            const proxyUrl = `/api/proxy-media?url=${encodeURIComponent(url)}`;
-                            const blobRes = await fetch(proxyUrl);
-                            if (!blobRes.ok) throw new Error("Proxy Vercel không thể lấy file");
-                            const blob = await blobRes.blob();
-
-                            const urlRes = await fetch('/api/get-upload-url', {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType })
-                            });
-                            const { uploadUrl } = await urlRes.json();
-                            if (!uploadUrl) throw new Error("Không lấy được Link Upload từ Vercel");
-
-                            await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': mimeType } });
-
-                            const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
-                            
-                            finalOutputs.push({
-                                id: `media_${Date.now()}_${i}`,
-                                url: publicR2Url,        
-                                googleCdnUrl: url,      
-                                type: mode,
-                                prompt: promptToSend,
-                                createdAt: Date.now()
-                            });
-                        }
-
-                        await updateDoc(doc(db, "autoflow_projects", appProjectId), {
-                            outputs: arrayUnion(...finalOutputs),
-                            updatedAt: Date.now()
-                        });
-
-                        setNodes(nds => nds.map(node => {
-                            if (node.id === 'node-engine') node.data = { ...node.data, fields: [{ id: 'f1', label: 'Tiến trình', type: 'text', defaultValue: `✅ Đã lưu Cloud & Database thành công!`, readOnly: true }] };
-                            return node;
-                        }));
-
-                    } catch (cloudErr) {
-                        console.error("Lỗi khi xử lý Cloud:", cloudErr);
-                        alert("⚠️ Quá trình đẩy lên Cloud R2 gặp lỗi. Hãy kiểm tra Console.");
-                    }
-                } else {
-                    alert(`✅ Lỗi logic: Không tìm thấy link tải. Vui lòng check tab Console (F12) để xem chi tiết!`);
+                } catch (cloudErr) {
+                    console.error("Lỗi Upload R2:", cloudErr);
+                    alert("⚠️ Lỗi tải file lên Cloudflare R2: " + cloudErr.message);
                 }
-                setIsRunning(false);
-            }
-        );
-    } catch (error) { 
-        alert("❌ Lỗi hệ thống: " + error.message); 
-        setIsRunning(false); 
-    }
+            } else { alert(`✅ Lỗi logic: Không tìm thấy link tải từ Google.`); }
+            setIsRunning(false);
+        });
+    } catch (error) { alert("❌ Lỗi hệ thống: " + error.message); setIsRunning(false); }
   };
 
   return (
@@ -337,26 +280,18 @@ export default function WorkflowEditor() {
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Web (User ID)</label>
                   <input 
-                    type="text" 
-                    readOnly 
-                    value={user?.id || ''} 
+                    type="text" readOnly value={user?.id || ''} 
                     onClick={(e) => { navigator.clipboard.writeText(e.target.value); alert("✅ Đã copy Mã kết nối!"); }}
-                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" 
-                    title="Bấm để Copy"
+                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" title="Bấm để Copy"
                   />
                   <p className="text-[10px] text-gray-500">Bấm vào ô trên để copy, sau đó dán vào Extension để đồng bộ Cookie.</p>
                 </div>
 
-                {/* 🚀 Ô NHẬP EXTENSION ID */}
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Extension ID (Bắt buộc)</label>
                   <input 
-                    type="text" 
-                    name="extensionId" 
-                    value={settings.extensionId} 
-                    onChange={handleInputChange} 
-                    placeholder="VD: abcdefghijklmnop..." 
-                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" 
+                    type="text" name="extensionId" value={settings.extensionId} onChange={handleInputChange} 
+                    placeholder="VD: abcdefghijklmnop..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" 
                   />
                   <p className="text-[10px] text-gray-500">Vào chrome://extensions, copy ID của Extension dán vào đây.</p>
                 </div>
@@ -364,13 +299,11 @@ export default function WorkflowEditor() {
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID (Bắt buộc)</label>
                   <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
-                  <p className="text-[10px] text-gray-500">Mở F12 trên labs.google, tìm lệnh generate và copy projectId dán vào đây.</p>
                 </div>
               </div>
               <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
                 <h3 className="text-emerald-400 font-bold flex items-center gap-2"><FolderGit2 size={16}/> 02 - Storage & Profile (Local)</h3>
                 <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Thư mục lưu ảnh/video (Local)</label><input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
-                <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Chrome user-data (Profile gen)</label><input type="text" name="chromeProfile" value={settings.chromeProfile} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
               </div>
             </div>
             <div className="p-5 border-t border-[#2A2A30] bg-[#15151A]">
