@@ -8,24 +8,48 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
         });
         return true;
     }
-    if (request.type === "RUN_GOOGLE_API") { executeApiInFlowTab(request.payload).then(sendResponse); return true; }
-    if (request.type === "POLL_GOOGLE_API") { executePollInFlowTab(request.payload).then(sendResponse); return true; }
-    
-    if (request.type === "UPLOAD_TO_R2") {
-        executeUploadToR2(request.payload).then(sendResponse);
-        return true;
+    if (request.type === "RUN_GOOGLE_API") { 
+        prepareAndExecuteApi(request.payload).then(sendResponse); 
+        return true; 
     }
+    if (request.type === "POLL_GOOGLE_API") { executePollInFlowTab(request.payload).then(sendResponse); return true; }
+    if (request.type === "UPLOAD_TO_R2") { executeUploadToR2(request.payload).then(sendResponse); return true; }
 });
+
+// 🚀 TÍNH NĂNG MỚI: Tự động tải Input URLs và chuyển thành Base64 bên trong Extension (Né CORS 100%)
+async function prepareAndExecuteApi(payload) {
+    try {
+        const b64Array = [...(payload.base64Images || [])];
+        if (payload.inputUrls && payload.inputUrls.length > 0) {
+            for (const url of payload.inputUrls) {
+                try {
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    const b64 = await new Promise(resolve => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.readAsDataURL(blob);
+                    });
+                    b64Array.push(b64);
+                } catch (e) {
+                    console.error("[AutoFlow] Lỗi tải ảnh Input:", url, e);
+                }
+            }
+        }
+        payload.base64Images = b64Array; 
+        return await executeApiInFlowTab(payload);
+    } catch (e) { return { success: false, error: e.message }; }
+}
 
 async function executeUploadToR2(payload) {
     try {
         const { sourceUrl, uploadUrl, mimeType } = payload;
         const res = await fetch(sourceUrl);
-        if (!res.ok) throw new Error("Không thể kéo file gốc từ Google CDN");
+        if (!res.ok) throw new Error("Google CDN fetch failed: " + res.status);
         const blob = await res.blob();
         
         const putRes = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': mimeType } });
-        if (!putRes.ok) throw new Error("Không thể tải lên Cloudflare R2");
+        if (!putRes.ok) throw new Error("R2 Upload failed: " + putRes.status);
         return { success: true };
     } catch (error) { return { success: false, error: error.message }; }
 }
@@ -102,32 +126,10 @@ async function executeApiInFlowTab(payload) {
                         const uploadPromises = requestData.base64Images.map(async (b64, index) => {
                             const base64Data = b64.split(',')[1]; 
                             const mimeType = b64.split(';')[0].split(':')[1];
+                            const uploadPayload = { clientContext: clientContext, fileName: `upload_${Date.now()}_${index}.${mimeType.split('/')[1]}`, imageBytes: base64Data, isHidden: false, isUserUploaded: true, mimeType: mimeType };
                             
-                            // 🚀 ĐÃ SỬA: Cấp thẻ thông hành clientContext (chứa reCAPTCHA) cho luồng Upload
-                            const uploadPayload = { 
-                                clientContext: clientContext, // Sử dụng chung context đã vượt bot
-                                fileName: `upload_${Date.now()}_${index}.${mimeType.split('/')[1]}`, 
-                                imageBytes: base64Data, 
-                                isHidden: false, 
-                                isUserUploaded: true, 
-                                mimeType: mimeType 
-                            };
-                            
-                            const uploadRes = await fetch(`https://aisandbox-pa.googleapis.com/v1/flow/uploadImage`, { 
-                                method: "POST", 
-                                headers: { 
-                                    "Content-Type": "application/json", // Chuyển sang chuẩn JSON
-                                    "Authorization": `Bearer ${bearerToken}` 
-                                }, 
-                                credentials: "include", 
-                                body: JSON.stringify(uploadPayload) 
-                            });
-                            
-                            // 🚀 ĐÃ SỬA: Ép Google "nôn" ra nguyên nhân lỗi chi tiết nếu thất bại
-                            if (!uploadRes.ok) {
-                                const errText = await uploadRes.text();
-                                throw new Error(`HTTP ${uploadRes.status}: ${errText}`);
-                            }
+                            const uploadRes = await fetch(`https://aisandbox-pa.googleapis.com/v1/flow/uploadImage`, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${bearerToken}` }, credentials: "include", body: JSON.stringify(uploadPayload) });
+                            if (!uploadRes.ok) { const errText = await uploadRes.text(); throw new Error(`HTTP ${uploadRes.status}: ${errText}`); }
                             
                             const uploadData = await uploadRes.json(); 
                             return uploadData.media?.name; 
@@ -155,7 +157,10 @@ async function executeApiInFlowTab(payload) {
                     let apiPayload, API_URL;
                     if (isVideo) {
                         apiPayload = { mediaGenerationContext: { batchId: crypto.randomUUID(), audioFailurePreference: "BLOCK_SILENCED_VIDEOS" }, clientContext: clientContext, useV2ModelConfig: true, requests: requestArray };
-                        API_URL = referenceMediaIds.length > 0 ? `https://aisandbox-pa.googleapis.com/v1/video:batchAsyncGenerateVideoReferenceImages` : `https://aisandbox-pa.googleapis.com/v1/video:batchGenerateAsync`;
+                        // 🚀 VÁ LỖI 404 BẰNG CÁCH CHÈN ĐÚNG PROJECT_ID VÀO ĐƯỜNG DẪN
+                        API_URL = referenceMediaIds.length > 0 
+                            ? `https://aisandbox-pa.googleapis.com/v1/video:batchAsyncGenerateVideoReferenceImages` 
+                            : `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/video:batchGenerateAsync`;
                     } else {
                         apiPayload = { clientContext: clientContext, mediaGenerationContext: { batchId: crypto.randomUUID() }, useNewMedia: true, requests: requestArray };
                         API_URL = `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/flowMedia:batchGenerateImages`;

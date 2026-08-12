@@ -10,11 +10,7 @@
     "storage"
   ],
   "host_permissions": [
-    "*://*.google.com/*",
-    "*://labs.google/*",
-    "*://flow-content.google/*",
-    "*://*.googleusercontent.com/*",
-    "*://*.r2.cloudflarestorage.com/*"
+    "<all_urls>"
   ],
   "externally_connectable": {
     "matches": [

@@ -71,17 +71,16 @@ export default function WorkflowEditor() {
   const onNodesChange = useCallback((changes) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
   
-  // 🚀 TỰ ĐỘNG ĐỔI MÀU DÂY NỐI DỰA VÀO ĐIỂM XUẤT PHÁT
   const onConnect = useCallback((params) => {
-    let strokeColor = '#8B5CF6'; // Tím mặc định (Media)
-    if (params.sourceHandle === 'Data') strokeColor = '#3B82F6'; // Xanh dương (Prompt)
-    else if (params.sourceHandle === 'Selected Media') strokeColor = '#10B981'; // Xanh lá (Kết quả lọc)
+    let strokeColor = '#8B5CF6'; 
+    if (params.sourceHandle === 'Data') strokeColor = '#3B82F6'; 
+    else if (params.sourceHandle === 'Selected Media') strokeColor = '#10B981'; 
 
     setEdges((eds) => addEdge({ 
         ...params, 
-        type: 'default', // Dây Parabol mềm mại
+        type: 'default', 
         animated: true, 
-        style: { stroke: strokeColor, strokeWidth: 2.5, strokeDasharray: '6 4' } // Nét đứt
+        style: { stroke: strokeColor, strokeWidth: 2.5, strokeDasharray: '6 4' } 
     }, eds));
   }, []);
 
@@ -186,22 +185,24 @@ export default function WorkflowEditor() {
 
             if (!promptToSend && inputUrls.length === 0) throw new Error("⚠️ Input trống không!");
 
-            updateNodeProgress(engineNode.id, '🔄 Nạp Base64...');
-            const base64Images = await Promise.all(inputUrls.map(async (url) => {
-                try {
-                    const res = await fetch(url); const blob = await res.blob();
-                    return await new Promise(resolve => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result); reader.readAsDataURL(blob); });
-                } catch(e) { return null; }
-            }));
-            const validBase64 = base64Images.filter(Boolean);
-
             const config = engineNode.data.config || { mode: 'image', model: 'GEM_PIX_2', ar: '9:16', count: 1, duration: 4 };
 
+            // 🚀 ĐÃ SỬA: Không tự fetch Base64 ở đây nữa, ném thẳng inputUrls cho Extension làm việc!
             updateNodeProgress(engineNode.id, `🚀 Đang gửi lệnh (Luồng ${config.mode})...`);
             const response = await new Promise(resolve => {
                 window.chrome.runtime.sendMessage(EXT_ID, {
                     type: "RUN_GOOGLE_API",
-                    payload: { prompt: promptToSend, mode: config.mode, model: config.model, aspectRatio: config.ar, outputCount: config.count, duration: config.duration, base64Images: validBase64, projectId: settings.projectId }
+                    payload: { 
+                        prompt: promptToSend, 
+                        mode: config.mode, 
+                        model: config.model, 
+                        aspectRatio: config.ar, 
+                        outputCount: config.count, 
+                        duration: config.duration, 
+                        inputUrls: inputUrls, // Truyền thẳng mảng URL
+                        base64Images: [], 
+                        projectId: settings.projectId 
+                    }
                 }, resolve);
             });
 
@@ -282,7 +283,6 @@ export default function WorkflowEditor() {
   return (
     <div className="h-full w-full flex flex-col bg-[#0E0E10] text-white overflow-hidden relative">
       
-      {/* 🎬 RẠP CHIẾU PHIM */}
       {lightBox.isOpen && (
         <div className="fixed inset-0 z-[100] bg-black/95 flex justify-center backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <button onClick={() => setLightBox({isOpen: false, url: '', type: '', meta: null})} className="absolute top-6 right-6 text-white/50 hover:text-white bg-[#15151A] hover:bg-red-500 p-2 rounded-full z-50 transition-all cursor-pointer"><X size={24} /></button>
@@ -333,7 +333,6 @@ export default function WorkflowEditor() {
         </div>
       )}
 
-      {/* HEADER */}
       <div className="h-[60px] bg-[#15151A] border-b border-[#2A2A30] flex items-center justify-between px-6 shrink-0 shadow-md relative z-20">
         <div className="flex items-center gap-4">
           <button onMouseEnter={() => setIsSidebarOpen(true)} className="p-2 bg-[#1E1E24] hover:bg-[#2A2A30] rounded-md transition-colors cursor-pointer"><Menu size={20} className="text-gray-400" /></button>
@@ -350,7 +349,6 @@ export default function WorkflowEditor() {
 
       <div className="flex-1 relative w-full h-full flex">
         
-        {/* BẢNG SIDEBAR */}
         <div className={`absolute top-0 left-0 h-full bg-[#15151A] border-r border-[#2A2A30] z-30 transition-transform duration-300 w-[300px] flex flex-col shadow-2xl ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} onMouseLeave={() => setIsSidebarOpen(false)}>
             <div className="p-4 border-b border-[#2A2A30] bg-[#1A1A1F]">
                 <h2 className="font-bold text-emerald-400 flex items-center gap-2 mb-3"><Server size={16}/> Trạng Thái Kết Nối</h2>
@@ -380,7 +378,6 @@ export default function WorkflowEditor() {
             </div>
         </div>
 
-        {/* 🚀 ĐÃ BỎ LỆNH ĐÈ STYLE TRONG ĐÂY ĐỂ TRẢ QUYỀN CHO ONCONNECT */}
         <div className="flex-1 w-full h-full relative z-0">
             <ReactFlow 
                 nodes={nodes} 
