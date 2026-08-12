@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Background, Controls, MiniMap, applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
@@ -157,49 +157,64 @@ export default function WorkflowEditor() {
 
     for (const engineNode of engineNodes) {
         try {
-            const inputEdge = edges.find(e => e.target === engineNode.id && e.targetHandle === 'Data');
-            if (!inputEdge) throw new Error("⚠️ Chưa cắm dây Input!");
+            // 🚀 ĐÃ SỬA: Dùng filter để gom TOÀN BỘ dây cắm vào Engine này
+            const inputEdges = edges.filter(e => e.target === engineNode.id && e.targetHandle === 'Data');
+            if (inputEdges.length === 0) throw new Error("⚠️ Chưa cắm dây Input!");
             
-            const parentNode = nodes.find(n => n.id === inputEdge.source);
-            let promptToSend = '';
-            let inputUrls = [];
+            let combinedPrompt = '';
+            let combinedInputUrls = [];
             let presetId = 'custom';
 
-            if (parentNode.data.category === 'Input') {
-                presetId = parentNode.data.preset || 'custom';
-                promptToSend = presetId === 'custom' ? (parentNode.data.fields?.find(f => f.id === 'f1')?.defaultValue || '') : (PRESET_DICTIONARY[presetId] || '');
-                inputUrls = parentNode.data.fields?.find(f => f.id === 'ref_img')?.cloudUrls || [];
-            } 
-            else if (parentNode.data.category === 'Output') {
-                if (runtimeGalleryData[parentNode.id]) {
-                    inputUrls = runtimeGalleryData[parentNode.id].urls;
-                    promptToSend = "Transform this media"; 
-                } else {
-                    inputUrls = parentNode.data.selectedMedia || [];
-                    if (inputUrls.length === 0 && parentNode.data.imageUrls?.length > 0) {
-                        inputUrls = [parentNode.data.imageUrls[0]];
+            // Quét từng Node cha đang cắm dây vào
+            for (const edge of inputEdges) {
+                const parentNode = nodes.find(n => n.id === edge.source);
+                if (!parentNode) continue;
+
+                if (parentNode.data.category === 'Input') {
+                    presetId = parentNode.data.preset || 'custom';
+                    const promptText = presetId === 'custom' ? (parentNode.data.fields?.find(f => f.id === 'f1')?.defaultValue || '') : (PRESET_DICTIONARY[presetId] || '');
+                    
+                    // Gom prompt lại (nếu có nhiều prompt từ nhiều node input)
+                    if (promptText && !combinedPrompt) combinedPrompt = promptText;
+                    else if (promptText) combinedPrompt += ` and ${promptText}`;
+
+                    const urls = parentNode.data.fields?.find(f => f.id === 'ref_img')?.cloudUrls || [];
+                    combinedInputUrls.push(...urls);
+                } 
+                else if (parentNode.data.category === 'Output') {
+                    let urls = [];
+                    if (runtimeGalleryData[parentNode.id]) {
+                        urls = runtimeGalleryData[parentNode.id].urls;
+                    } else {
+                        urls = parentNode.data.selectedMedia || [];
+                        if (urls.length === 0 && parentNode.data.imageUrls?.length > 0) {
+                            urls = [parentNode.data.imageUrls[0]]; // Lấy tạm ảnh đầu tiên nếu user lười chọn
+                        }
                     }
-                    promptToSend = inputUrls.length > 0 ? "Transform this media" : "";
+                    combinedInputUrls.push(...urls);
                 }
             }
 
-            if (!promptToSend && inputUrls.length === 0) throw new Error("⚠️ Input trống không!");
+            if (!combinedPrompt && combinedInputUrls.length > 0) {
+                combinedPrompt = "Combine these references to generate a detailed output"; // Prompt mồi mặc định
+            }
+
+            if (!combinedPrompt && combinedInputUrls.length === 0) throw new Error("⚠️ Input trống không!");
 
             const config = engineNode.data.config || { mode: 'image', model: 'GEM_PIX_2', ar: '9:16', count: 1, duration: 4 };
 
-            // 🚀 ĐÃ SỬA: Không tự fetch Base64 ở đây nữa, ném thẳng inputUrls cho Extension làm việc!
             updateNodeProgress(engineNode.id, `🚀 Đang gửi lệnh (Luồng ${config.mode})...`);
             const response = await new Promise(resolve => {
                 window.chrome.runtime.sendMessage(EXT_ID, {
                     type: "RUN_GOOGLE_API",
                     payload: { 
-                        prompt: promptToSend, 
+                        prompt: combinedPrompt, 
                         mode: config.mode, 
                         model: config.model, 
                         aspectRatio: config.ar, 
                         outputCount: config.count, 
                         duration: config.duration, 
-                        inputUrls: inputUrls, // Truyền thẳng mảng URL
+                        inputUrls: combinedInputUrls, // Truyền thẳng mảng URL đã gom
                         base64Images: [], 
                         projectId: settings.projectId 
                     }
@@ -258,8 +273,8 @@ export default function WorkflowEditor() {
                 const publicR2Url = `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`;
                 r2UrlsForGallery.push(publicR2Url);
                 
-                metaDict[publicR2Url] = { presetId, prompt: promptToSend, referenceImages: inputUrls };
-                finalOutputs.push({ id: `media_${Date.now()}_${i}`, url: publicR2Url, googleCdnUrl: url, type: config.mode, prompt: promptToSend, referenceImages: inputUrls, createdAt: Date.now() });
+                metaDict[publicR2Url] = { presetId, prompt: combinedPrompt, referenceImages: combinedInputUrls };
+                finalOutputs.push({ id: `media_${Date.now()}_${i}`, url: publicR2Url, googleCdnUrl: url, type: config.mode, prompt: combinedPrompt, referenceImages: combinedInputUrls, createdAt: Date.now() });
             }
 
             await updateDoc(doc(db, "autoflow_projects", appProjectId), { outputs: arrayUnion(...finalOutputs), updatedAt: Date.now() });

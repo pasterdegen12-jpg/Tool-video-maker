@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
-import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2, CheckCircle2, Play, Maximize2 } from 'lucide-react';
+import { Settings2, Key, Cpu, Image as ImageIcon, Video, Square, RectangleHorizontal, RectangleVertical, X as XIcon, Loader2, CheckCircle2, Play, Maximize2, MousePointerClick } from 'lucide-react';
 
 const categoryColors = { Input: 'bg-gradient-to-r from-blue-900 to-blue-600', Generation: 'bg-gradient-to-r from-purple-800 to-purple-600', Output: 'bg-gradient-to-r from-emerald-800 to-emerald-600' };
-
-// 🚀 CSS Đã được nâng cấp để cục Handle to, rõ, có viền trắng nổi bật
-const portColors = { 
-    session: '!bg-[#10B981] !border-white shadow-[0_0_8px_#10B981]', 
-    prompts: '!bg-[#3B82F6] !border-white shadow-[0_0_8px_#3B82F6]', 
-    media: '!bg-[#8B5CF6] !border-white shadow-[0_0_8px_#8B5CF6]', 
-    error: '!bg-[#EF4444] !border-white' 
-};
+const portColors = { session: '!bg-[#10B981] !border-white shadow-[0_0_8px_#10B981]', prompts: '!bg-[#3B82F6] !border-white shadow-[0_0_8px_#3B82F6]', media: '!bg-[#8B5CF6] !border-white shadow-[0_0_8px_#8B5CF6]', error: '!bg-[#EF4444] !border-white' };
 const categoryIcons = { Input: <Key size={14} className="text-white opacity-80" />, Generation: <Cpu size={14} className="text-white opacity-80" />, Output: <ImageIcon size={14} className="text-white opacity-80" /> };
 
 const PROMPT_OPTIONS = [
@@ -74,6 +67,7 @@ export default function CustomNode({ id, data }) {
     updateNodeData(id, { fields: newFields });
   };
 
+  // 🚀 XỬ LÝ CHỌN ẢNH TỪ GALLERY RÕ RÀNG HƠN
   const toggleSelectGalleryImage = (url, e) => {
       e.stopPropagation();
       const currentSelected = data.selectedMedia || [];
@@ -186,34 +180,45 @@ export default function CustomNode({ id, data }) {
           </div>
         )}
 
+        {/* 🚀 GIAO DIỆN NÚT CHỌN RÕ RÀNG Ở GALLERY */}
         {isOutput && data.preview && data.preview.type === 'gallery' && (
-          <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 items-center justify-center min-h-[120px]">
+          <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 min-h-[120px]">
             {data.imageUrls && data.imageUrls.length > 0 ? (
-              <div className="w-full grid grid-cols-1 gap-2">
+              <div className="w-full grid grid-cols-1 gap-3">
                 {data.imageUrls.map((url, idx) => {
                     const isSelected = data.selectedMedia && data.selectedMedia.includes(url);
                     return (
-                        <div key={idx} className="relative cursor-pointer group/media" onClick={(e) => toggleSelectGalleryImage(url, e)}>
+                        <div key={idx} className={`relative flex flex-col p-1.5 rounded-md border-2 transition-all ${isSelected ? 'border-emerald-500 bg-emerald-500/10' : 'border-[#2A2A30] bg-[#0E0E10]'}`}>
+                            
                             {data.outputType === 'video' ? (
-                                <video crossOrigin="anonymous" src={url} autoPlay loop muted className={`w-full h-auto rounded-md border-2 object-cover transition-all ${isSelected ? 'border-emerald-500 opacity-100' : 'border-[#2A2A30] opacity-80 group/media-hover:opacity-100'}`} style={{ maxHeight: '200px' }} />
+                                <video crossOrigin="anonymous" src={url} autoPlay loop muted className="w-full h-auto rounded object-cover" style={{ maxHeight: '200px' }} />
                             ) : (
-                                <img crossOrigin="anonymous" src={url} alt={`Result ${idx}`} className={`w-full h-auto rounded-md border-2 object-cover transition-all ${isSelected ? 'border-emerald-500 opacity-100' : 'border-[#2A2A30] opacity-80 group/media-hover:opacity-100'}`} style={{ maxHeight: '200px' }} />
+                                <img crossOrigin="anonymous" src={url} alt={`Result ${idx}`} className="w-full h-auto rounded object-cover" style={{ maxHeight: '200px' }} />
                             )}
-                            {isSelected && <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-0.5 shadow-lg"><CheckCircle2 size={16} /></div>}
-                            {!isSelected && <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group/media-hover:opacity-100 transition-opacity rounded-md"><span className="text-white text-xs font-bold bg-black/60 px-2 py-1 rounded">Click để Dùng tiếp</span></div>}
-                            <button onClick={(e) => openFullScreen(url, data.outputType, e)} className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/90 text-white p-1.5 rounded-md opacity-0 group/media-hover:opacity-100 transition-opacity" title="Xem tỷ lệ gốc"><Maximize2 size={14} /></button>
+                            
+                            {/* KHỐI 2 NÚT BẤM VẬT LÝ NẰM DƯỚI ẢNH */}
+                            <div className="flex items-center gap-2 mt-2">
+                                <button onClick={(e) => toggleSelectGalleryImage(url, e)} className={`flex-1 py-2 rounded flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${isSelected ? 'bg-emerald-500 text-white' : 'bg-[#1E1E24] text-gray-400 hover:text-white border border-[#2A2A30] hover:border-gray-500'}`}>
+                                    {isSelected ? <><CheckCircle2 size={14}/> Đang Chọn Làm Input</> : <><MousePointerClick size={14}/> Chọn File Này</>}
+                                </button>
+                                <button onClick={(e) => openFullScreen(url, data.outputType, e)} className="px-3 py-2 rounded bg-[#1E1E24] text-gray-400 hover:text-white transition-all cursor-pointer border border-[#2A2A30] hover:border-gray-500" title="Xem Toàn Màn Hình">
+                                    <Maximize2 size={14} />
+                                </button>
+                            </div>
                         </div>
                     )
                 })}
               </div>
             ) : (
-              <><ImageIcon size={24} className="text-gray-600 mb-1" /><span className="text-gray-500 text-[11px] text-center px-4">Chờ kết quả render...</span></>
+              <div className="flex flex-col items-center justify-center h-full opacity-50 py-6">
+                <ImageIcon size={24} className="text-gray-600 mb-2" />
+                <span className="text-gray-400 text-[11px] text-center px-4">Chờ kết quả render...</span>
+              </div>
             )}
           </div>
         )}
       </div>
 
-      {/* 🚀 ĐIỂM NỐI ĐƯỢC LÀM TO, VIỀN TRẮNG, ĐẨY RA NGOÀI ĐỂ DỄ BẮT */}
       {data.inputs?.map((input, idx) => (
         <div key={`in-wrap-${idx}`} className="absolute -left-[14px] flex items-center group/port" style={{ top: `${60 + idx * 35}px` }}>
             <Handle type="target" position={Position.Left} id={input.name} className={`!w-[18px] !h-[18px] !border-[3px] !relative !transform-none !left-0 !top-0 transition-transform hover:scale-125 z-50 ${portColors[input.type]}`} />
