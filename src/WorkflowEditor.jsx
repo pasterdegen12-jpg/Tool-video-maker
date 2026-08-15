@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { ReactFlow, Background, Controls, MiniMap, applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
@@ -6,6 +6,7 @@ import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2, Menu, Key, Cpu,
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
+import { useParams, useNavigate } from 'react-router-dom'; // 🚀 IMPORT THÊM ĐỂ ĐỌC ĐƯỜNG LINK
 
 const nodeTypes = { custom: CustomNode };
 
@@ -36,9 +37,24 @@ export default function WorkflowEditor() {
 
   const { user } = useUser();
   const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out' });
-  const [appProjectId, setAppProjectId] = useState(() => localStorage.getItem('current_autoflow_id') || `flow_${Date.now()}`);
 
-  useEffect(() => { localStorage.setItem('current_autoflow_id', appProjectId); }, [appProjectId]);
+  // 🚀 TÍNH NĂNG MỚI: ĐỌC ID DỰ ÁN TỪ ĐƯỜNG LINK TRÌNH DUYỆT
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  const [appProjectId, setAppProjectId] = useState(() => {
+      if (id) return id;
+      const savedId = localStorage.getItem('current_autoflow_id');
+      return savedId || `flow_${Date.now()}`;
+  });
+
+  // Tự động gán ID lên URL nếu người dùng truy cập link trắng
+  useEffect(() => {
+      if (!id) {
+          navigate(`/autoflow/${appProjectId}`, { replace: true });
+      }
+      localStorage.setItem('current_autoflow_id', appProjectId);
+  }, [id, appProjectId, navigate]);
 
   useEffect(() => {
     const handleOpenLightbox = (e) => setLightBox({ isOpen: true, url: e.detail.url, type: e.detail.type, meta: e.detail.meta });
@@ -157,7 +173,6 @@ export default function WorkflowEditor() {
 
     for (const engineNode of engineNodes) {
         try {
-            // 🚀 ĐÃ SỬA: Dùng filter để gom TOÀN BỘ dây cắm vào Engine này
             const inputEdges = edges.filter(e => e.target === engineNode.id && e.targetHandle === 'Data');
             if (inputEdges.length === 0) throw new Error("⚠️ Chưa cắm dây Input!");
             
@@ -165,7 +180,6 @@ export default function WorkflowEditor() {
             let combinedInputUrls = [];
             let presetId = 'custom';
 
-            // Quét từng Node cha đang cắm dây vào
             for (const edge of inputEdges) {
                 const parentNode = nodes.find(n => n.id === edge.source);
                 if (!parentNode) continue;
@@ -174,7 +188,6 @@ export default function WorkflowEditor() {
                     presetId = parentNode.data.preset || 'custom';
                     const promptText = presetId === 'custom' ? (parentNode.data.fields?.find(f => f.id === 'f1')?.defaultValue || '') : (PRESET_DICTIONARY[presetId] || '');
                     
-                    // Gom prompt lại (nếu có nhiều prompt từ nhiều node input)
                     if (promptText && !combinedPrompt) combinedPrompt = promptText;
                     else if (promptText) combinedPrompt += ` and ${promptText}`;
 
@@ -188,7 +201,7 @@ export default function WorkflowEditor() {
                     } else {
                         urls = parentNode.data.selectedMedia || [];
                         if (urls.length === 0 && parentNode.data.imageUrls?.length > 0) {
-                            urls = [parentNode.data.imageUrls[0]]; // Lấy tạm ảnh đầu tiên nếu user lười chọn
+                            urls = [parentNode.data.imageUrls[0]];
                         }
                     }
                     combinedInputUrls.push(...urls);
@@ -196,13 +209,14 @@ export default function WorkflowEditor() {
             }
 
             if (!combinedPrompt && combinedInputUrls.length > 0) {
-                combinedPrompt = "Combine these references to generate a detailed output"; // Prompt mồi mặc định
+                combinedPrompt = "Combine these references to generate a detailed output"; 
             }
 
             if (!combinedPrompt && combinedInputUrls.length === 0) throw new Error("⚠️ Input trống không!");
 
             const config = engineNode.data.config || { mode: 'image', model: 'GEM_PIX_2', ar: '9:16', count: 1, duration: 4 };
 
+            // 🚀 ĐÃ SỬA: Extension giờ sẽ tự fetch URL R2, Web App không làm nữa để tránh CORS
             updateNodeProgress(engineNode.id, `🚀 Đang gửi lệnh (Luồng ${config.mode})...`);
             const response = await new Promise(resolve => {
                 window.chrome.runtime.sendMessage(EXT_ID, {
@@ -214,7 +228,7 @@ export default function WorkflowEditor() {
                         aspectRatio: config.ar, 
                         outputCount: config.count, 
                         duration: config.duration, 
-                        inputUrls: combinedInputUrls, // Truyền thẳng mảng URL đã gom
+                        inputUrls: combinedInputUrls, 
                         base64Images: [], 
                         projectId: settings.projectId 
                     }

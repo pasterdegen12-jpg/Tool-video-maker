@@ -73,10 +73,9 @@ export default function App() {
               <PlaySquare size={16} /> Edit Tool
             </button>
             
-            {/* 🚀 THÊM NÚT ĐI TỚI GIAO DIỆN COMFY UI (AUTO FLOW) BÊN CẠNH CÁC NÚT CŨ */}
             <button 
               onClick={() => navigate('/autoflow')}
-              className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${currentPath === '/autoflow' ? (darkMode ? 'bg-[#2A2A30] text-emerald-400' : 'bg-white text-emerald-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500 hover:text-zinc-900')}`}
+              className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 transition-all cursor-pointer ${currentPath.includes('/autoflow') ? (darkMode ? 'bg-[#2A2A30] text-emerald-400' : 'bg-white text-emerald-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500 hover:text-zinc-900')}`}
             >
               <Workflow size={16} /> Auto Flow
             </button>
@@ -110,8 +109,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<MainEditor ffmpeg={ffmpegRef.current} isFfmpegLoaded={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
             
-            {/* 🚀 ĐĂNG KÝ ROUTE MỚI CHO GIAO DIỆN KÉO THẢ */}
-            <Route path="/autoflow" element={<WorkflowEditor />} />
+            {/* 🚀 ĐÃ SỬA: Thêm tham số :id tùy chọn để hỗ trợ link riêng biệt cho từng dự án Auto Flow */}
+            <Route path="/autoflow/:id?" element={<WorkflowEditor />} />
             
             <Route path="/history" element={<HistoryModel darkMode={darkMode} />} />
             <Route path="/project/:projectId" element={<Workspace ffmpeg={ffmpegRef.current} isFfmpegReady={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
