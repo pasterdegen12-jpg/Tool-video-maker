@@ -327,12 +327,13 @@ export default function WorkflowEditor() {
             
             <div 
                 className="relative max-w-6xl max-h-[90vh] flex justify-center items-center"
-                onClick={(e) => e.stopPropagation()} /* Chặn click xuyên thủng khi ấn vào Video */
+                onClick={(e) => e.stopPropagation()} 
             >
+                {/* 🚀 BỔ SUNG crossOrigin="anonymous" VÀO ĐÂY */}
                 {lightBox.type === 'video' ? (
-                    <video src={lightBox.url} controls autoPlay className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+                    <video crossOrigin="anonymous" src={lightBox.url} controls autoPlay className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
                 ) : (
-                    <img src={lightBox.url} className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
+                    <img crossOrigin="anonymous" src={lightBox.url} className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
                 )}
             </div>
         </div>
