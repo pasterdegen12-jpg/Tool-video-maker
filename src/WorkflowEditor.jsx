@@ -6,7 +6,7 @@ import { Play, Save, RefreshCw, Settings, X, Server, FolderGit2, Menu, Key, Cpu,
 import { useUser } from "@clerk/clerk-react";
 import { db } from './firebase.js'; 
 import { doc, setDoc, onSnapshot, getDoc, updateDoc, arrayUnion } from "firebase/firestore"; 
-import { useParams, useNavigate } from 'react-router-dom'; // 🚀 IMPORT THÊM ĐỂ ĐỌC ĐƯỜNG LINK
+import { useParams, useNavigate } from 'react-router-dom';
 
 const nodeTypes = { custom: CustomNode };
 
@@ -38,7 +38,6 @@ export default function WorkflowEditor() {
   const { user } = useUser();
   const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out' });
 
-  // 🚀 TÍNH NĂNG MỚI: ĐỌC ID DỰ ÁN TỪ ĐƯỜNG LINK TRÌNH DUYỆT
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -48,7 +47,6 @@ export default function WorkflowEditor() {
       return savedId || `flow_${Date.now()}`;
   });
 
-  // Tự động gán ID lên URL nếu người dùng truy cập link trắng
   useEffect(() => {
       if (!id) {
           navigate(`/autoflow/${appProjectId}`, { replace: true });
@@ -216,7 +214,6 @@ export default function WorkflowEditor() {
 
             const config = engineNode.data.config || { mode: 'image', model: 'GEM_PIX_2', ar: '9:16', count: 1, duration: 4 };
 
-            // 🚀 ĐÃ SỬA: Extension giờ sẽ tự fetch URL R2, Web App không làm nữa để tránh CORS
             updateNodeProgress(engineNode.id, `🚀 Đang gửi lệnh (Luồng ${config.mode})...`);
             const response = await new Promise(resolve => {
                 window.chrome.runtime.sendMessage(EXT_ID, {
@@ -312,52 +309,31 @@ export default function WorkflowEditor() {
   return (
     <div className="h-full w-full flex flex-col bg-[#0E0E10] text-white overflow-hidden relative">
       
+      {/* 🎬 RẠP CHIẾU PHIM ĐÃ ĐƯỢC TỐI GIẢN (Chỉ hiển thị Ảnh/Video) */}
       {lightBox.isOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/95 flex justify-center backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <button onClick={() => setLightBox({isOpen: false, url: '', type: '', meta: null})} className="absolute top-6 right-6 text-white/50 hover:text-white bg-[#15151A] hover:bg-red-500 p-2 rounded-full z-50 transition-all cursor-pointer"><X size={24} /></button>
-            <div className="w-full max-w-6xl flex flex-col md:flex-row gap-6 items-center md:items-start pt-10">
-                <div className="flex-1 flex justify-center items-center w-full">
-                    {lightBox.type === 'video' ? (
-                        <video src={lightBox.url} controls autoPlay className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" />
-                    ) : (
-                        <img src={lightBox.url} className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
-                    )}
-                </div>
-
-                <div className="w-full md:w-[350px] bg-[#15151A] border border-[#2A2A30] rounded-xl p-5 shrink-0 overflow-y-auto max-h-[85vh] custom-scrollbar">
-                    <h3 className="text-emerald-400 font-bold mb-4 border-b border-[#2A2A30] pb-2">Hồ Sơ Nguồn Cội</h3>
-                    
-                    <div className="mb-4">
-                        <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Tùy chọn Ý tưởng (Task)</label>
-                        <div className="bg-[#0E0E10] text-blue-400 font-semibold text-xs p-3 rounded border border-[#2A2A30] mb-2">
-                            {lightBox.meta?.presetId === 'custom' ? '✍️ Tự nhập Prompt (Custom)' : (PRESET_DICTIONARY[lightBox.meta?.presetId] ? '🚀 Mẫu Prompt Có Sẵn' : 'Không rõ')}
-                        </div>
-                        
-                        {lightBox.meta?.presetId === 'custom' && (
-                            <div className="mt-2 animate-in fade-in">
-                                <label className="text-[10px] text-gray-500 font-bold uppercase mb-1 block">Nội dung Prompt User nhập</label>
-                                <div className="bg-[#0E0E10] text-gray-300 text-xs p-3 rounded border border-[#2A2A30] leading-relaxed">
-                                    {lightBox.meta?.prompt || "Không có thông tin prompt"}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div>
-                        <label className="text-[10px] text-gray-500 font-bold uppercase mb-2 block">Media Đầu Vào (Input)</label>
-                        {lightBox.meta?.referenceImages && lightBox.meta.referenceImages.length > 0 ? (
-                            <div className="grid grid-cols-2 gap-2">
-                                {lightBox.meta.referenceImages.map((img, i) => (
-                                    <div key={i} className="relative pt-[100%] rounded overflow-hidden border border-[#2A2A30]">
-                                        <img src={img} crossOrigin="anonymous" className="absolute top-0 left-0 w-full h-full object-cover" alt="input" />
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-xs text-gray-500 italic bg-[#0E0E10] p-3 rounded border border-[#2A2A30]">Không sử dụng ảnh tham chiếu.</div>
-                        )}
-                    </div>
-                </div>
+        <div 
+            className="fixed inset-0 z-[100] bg-black/95 flex justify-center items-center backdrop-blur-sm p-4 animate-in fade-in duration-200 cursor-pointer"
+            onClick={() => setLightBox({isOpen: false, url: '', type: '', meta: null})}
+        >
+            <button 
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setLightBox({isOpen: false, url: '', type: '', meta: null});
+                }} 
+                className="absolute top-6 right-6 text-white/50 hover:text-white bg-[#15151A] hover:bg-red-500 p-2 rounded-full z-50 transition-all cursor-pointer"
+            >
+                <X size={24} />
+            </button>
+            
+            <div 
+                className="relative max-w-6xl max-h-[90vh] flex justify-center items-center"
+                onClick={(e) => e.stopPropagation()} /* Chặn click xuyên thủng khi ấn vào Video */
+            >
+                {lightBox.type === 'video' ? (
+                    <video src={lightBox.url} controls autoPlay className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+                ) : (
+                    <img src={lightBox.url} className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
+                )}
             </div>
         </div>
       )}
