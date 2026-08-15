@@ -309,7 +309,7 @@ export default function WorkflowEditor() {
   return (
     <div className="h-full w-full flex flex-col bg-[#0E0E10] text-white overflow-hidden relative">
       
-      {/* 🎬 RẠP CHIẾU PHIM ĐÃ ĐƯỢC TỐI GIẢN (Chỉ hiển thị Ảnh/Video) */}
+      {/* 🎬 RẠP CHIẾU PHIM (Cập nhật Cache-Busting để chống lỗi vỡ ảnh) */}
       {lightBox.isOpen && (
         <div 
             className="fixed inset-0 z-[100] bg-black/95 flex justify-center items-center backdrop-blur-sm p-4 animate-in fade-in duration-200 cursor-pointer"
@@ -329,11 +329,11 @@ export default function WorkflowEditor() {
                 className="relative max-w-6xl max-h-[90vh] flex justify-center items-center"
                 onClick={(e) => e.stopPropagation()} 
             >
-                {/* 🚀 BỔ SUNG crossOrigin="anonymous" VÀO ĐÂY */}
+                {/* 🚀 ĐÃ SỬA: Gắn cache buster ?cb=Date.now() để trình duyệt buộc tải lại ảnh xịn, không dùng ảnh cached lỗi */}
                 {lightBox.type === 'video' ? (
-                    <video crossOrigin="anonymous" src={lightBox.url} controls autoPlay className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
+                    <video crossOrigin="anonymous" src={`${lightBox.url}?cb=${Date.now()}`} controls autoPlay className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" />
                 ) : (
-                    <img crossOrigin="anonymous" src={lightBox.url} className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
+                    <img crossOrigin="anonymous" src={`${lightBox.url}?cb=${Date.now()}`} className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" alt="Full Preview" />
                 )}
             </div>
         </div>
