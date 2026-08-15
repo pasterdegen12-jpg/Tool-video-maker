@@ -67,7 +67,7 @@ export default function CustomNode({ id, data }) {
     updateNodeData(id, { fields: newFields });
   };
 
-  // 🚀 XỬ LÝ CHỌN ẢNH TỪ GALLERY RÕ RÀNG HƠN
+  // Nút [Chọn] vật lý
   const toggleSelectGalleryImage = (url, e) => {
       e.stopPropagation();
       const currentSelected = data.selectedMedia || [];
@@ -76,6 +76,7 @@ export default function CustomNode({ id, data }) {
       updateNodeData(id, { selectedMedia: newSelected });
   };
 
+  // Click vào ảnh để mở Rạp chiếu phim (Full kích thước + Prompt)
   const openFullScreen = (url, type, e) => {
       e.stopPropagation();
       const metaInfo = data.mediaMetadata ? data.mediaMetadata[url] : null;
@@ -180,7 +181,9 @@ export default function CustomNode({ id, data }) {
           </div>
         )}
 
-        {/* 🚀 GIAO DIỆN NÚT CHỌN RÕ RÀNG Ở GALLERY */}
+        {/* ============================================== */}
+        {/* 🚀 GIAO DIỆN CHỌN ẢNH VÀ XEM FULL RÕ RÀNG HƠN */}
+        {/* ============================================== */}
         {isOutput && data.preview && data.preview.type === 'gallery' && (
           <div className="w-full bg-[#15151A] rounded-lg border border-[#2A2A30] p-2 flex flex-col gap-2 min-h-[120px]">
             {data.imageUrls && data.imageUrls.length > 0 ? (
@@ -190,21 +193,31 @@ export default function CustomNode({ id, data }) {
                     return (
                         <div key={idx} className={`relative flex flex-col p-1.5 rounded-md border-2 transition-all ${isSelected ? 'border-emerald-500 bg-emerald-500/10' : 'border-[#2A2A30] bg-[#0E0E10]'}`}>
                             
-                            {data.outputType === 'video' ? (
-                                <video crossOrigin="anonymous" src={url} autoPlay loop muted className="w-full h-auto rounded object-cover" style={{ maxHeight: '200px' }} />
-                            ) : (
-                                <img crossOrigin="anonymous" src={url} alt={`Result ${idx}`} className="w-full h-auto rounded object-cover" style={{ maxHeight: '200px' }} />
-                            )}
-                            
-                            {/* KHỐI 2 NÚT BẤM VẬT LÝ NẰM DƯỚI ẢNH */}
-                            <div className="flex items-center gap-2 mt-2">
-                                <button onClick={(e) => toggleSelectGalleryImage(url, e)} className={`flex-1 py-2 rounded flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${isSelected ? 'bg-emerald-500 text-white' : 'bg-[#1E1E24] text-gray-400 hover:text-white border border-[#2A2A30] hover:border-gray-500'}`}>
-                                    {isSelected ? <><CheckCircle2 size={14}/> Đang Chọn Làm Input</> : <><MousePointerClick size={14}/> Chọn File Này</>}
-                                </button>
-                                <button onClick={(e) => openFullScreen(url, data.outputType, e)} className="px-3 py-2 rounded bg-[#1E1E24] text-gray-400 hover:text-white transition-all cursor-pointer border border-[#2A2A30] hover:border-gray-500" title="Xem Toàn Màn Hình">
-                                    <Maximize2 size={14} />
-                                </button>
+                            {/* VÙNG ẢNH TRỰC QUAN: Click để xem Full */}
+                            <div 
+                                className="relative cursor-pointer group/media rounded overflow-hidden bg-black"
+                                onClick={(e) => openFullScreen(url, data.outputType, e)}
+                                title="Bấm để xem chi tiết & Video gốc"
+                            >
+                                {data.outputType === 'video' ? (
+                                    <video crossOrigin="anonymous" src={url} autoPlay loop muted className="w-full h-auto object-cover opacity-90 group-hover/media:opacity-100 transition-opacity" style={{ maxHeight: '200px' }} />
+                                ) : (
+                                    <img crossOrigin="anonymous" src={url} alt={`Result ${idx}`} className="w-full h-auto object-cover opacity-90 group-hover/media:opacity-100 transition-opacity" style={{ maxHeight: '200px' }} />
+                                )}
+                                
+                                {/* Lớp phủ Hover báo hiệu Clickable */}
+                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/media:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Maximize2 size={32} className="text-white drop-shadow-lg" />
+                                </div>
                             </div>
+                            
+                            {/* NÚT CHỌN ĐỂ TRUYỀN SANG NODE KHÁC */}
+                            <button 
+                                onClick={(e) => toggleSelectGalleryImage(url, e)} 
+                                className={`mt-2 w-full py-2 rounded flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${isSelected ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-[#1E1E24] text-gray-400 hover:text-white border border-[#2A2A30] hover:border-emerald-500'}`}
+                            >
+                                {isSelected ? <><CheckCircle2 size={14}/> Đang Dùng Làm Input</> : <><MousePointerClick size={14}/> Chọn Làm Input</>}
+                            </button>
                         </div>
                     )
                 })}
