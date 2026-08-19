@@ -36,14 +36,23 @@ export default function WorkflowEditor() {
   const [lightBox, setLightBox] = useState({ isOpen: false, url: '', type: 'image', meta: null });
 
   const { user } = useUser();
-  // 🚀 TÍNH NĂNG MỚI: Thêm cấu hình listProfiles để Quản đốc biết phải bật Profile nào
-const [settings, setSettings] = useState({ 
+  const { id } = useParams(); // 🚀 DÒNG NÀY BỊ MẤT GÂY LỖI ID IS NOT DEFINED
+  const navigate = useNavigate();
+
+  // 🚀 Cấu trúc Settings chuẩn GOHA MMO
+  const [settings, setSettings] = useState({ 
     extensionId: '', 
     outFolder: 'out',
     chromePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     userDataPath: '',
     isHeadless: false,
-    accounts: [ { id: Date.now(), profileName: 'Default', proxy: '', status: 'active' } ] // Pool tài khoản
+    accounts: [ { id: Date.now(), profileName: 'Default', proxy: '', status: 'active' } ]
+  });
+
+  const [appProjectId, setAppProjectId] = useState(() => {
+      if (id) return id;
+      const savedId = localStorage.getItem('current_autoflow_id');
+      return savedId || `flow_${Date.now()}`;
   });
 
   useEffect(() => {
@@ -102,7 +111,9 @@ const [settings, setSettings] = useState({
   useEffect(() => {
     if (!user) return;
     const unsubscribe = onSnapshot(doc(db, "autoflow_settings", user.id), (docSnap) => {
-      if (docSnap.exists()) setSettings(prev => ({ ...prev, ...docSnap.data() }));
+      if (docSnap.exists() && docSnap.data().accounts) {
+          setSettings(prev => ({ ...prev, ...docSnap.data() }));
+      }
     });
     return () => unsubscribe(); 
   }, [user]);
@@ -110,7 +121,7 @@ const [settings, setSettings] = useState({
   const handleSaveSettings = async () => {
     if (!user) return alert("❌ Cần đăng nhập để lưu!");
     await setDoc(doc(db, "autoflow_settings", user.id), { ...settings, updatedAt: Date.now() }, { merge: true }); 
-    alert('✅ Đã lưu Cài đặt!'); setIsSettingsOpen(false);
+    alert('✅ Đã lưu Cấu Hình Farm!'); setIsSettingsOpen(false);
   };
 
   const handleClearGraph = () => {
@@ -130,7 +141,7 @@ const [settings, setSettings] = useState({
   };
 
   // =========================================================================
-  // 🚀 BƯỚC NGOẶT: HỆ THỐNG GIAO VIỆC CHO FARM QUA FIREBASE VÀ ĐÁNH THỨC LOCAL
+  // 🚀 AUTO FARM: GIAO VIỆC LÊN FIREBASE VÀ ĐÁNH THỨC LOCAL THEO CHUẨN GOHA
   // =========================================================================
   const handleRunWorkflow = async (targetEngineId = null) => {
     if (isRunning) return setIsRunning(false);
@@ -214,10 +225,6 @@ const [settings, setSettings] = useState({
 
             const config = engineNode.data.config || { mode: 'image', model: 'GEM_PIX_2', ar: '9:16', count: 1, duration: 4 };
 
-            // ==========================================
-            // QUY TRÌNH MỚI: NÉM LÊN FIREBASE VÀ ĐỢI
-            // ==========================================
-            
             // 1. Ghi Task lên Firebase
             updateNodeProgress(engineNode.id, `🚀 Đẩy Task lên Đám Mây...`);
             const taskRef = doc(collection(db, 'autoflow_tasks'));
@@ -241,7 +248,7 @@ const [settings, setSettings] = useState({
 
             // 2. Kích hoạt Local Server với cấu trúc GOHA
             const workerUrl = `${window.location.origin}/worker?uid=${user.id}&extId=${settings.extensionId}`;
-            const activeAccounts = settings.accounts.filter(acc => acc.status === 'active');
+            const activeAccounts = settings.accounts ? settings.accounts.filter(acc => acc.status === 'active') : [];
             
             if (activeAccounts.length > 0) {
                 fetch('http://localhost:48321/api/start-farm', {
@@ -255,7 +262,7 @@ const [settings, setSettings] = useState({
                         accounts: activeAccounts, 
                         targetUrl: workerUrl 
                     })
-                }).catch(err => console.log("⚠️ Quản đốc Local chưa bật."));
+                }).catch(err => console.log("⚠️ Quản đốc Local chưa bật. Farm sẽ đợi bot thủ công."));
             }
 
             // 3. Hóng tiến độ trực tiếp từ Firebase
@@ -348,7 +355,7 @@ const [settings, setSettings] = useState({
             <div className="p-4 border-b border-[#2A2A30] bg-[#1A1A1F]">
                 <h2 className="font-bold text-emerald-400 flex items-center gap-2 mb-3"><Server size={16}/> Quản Lý Trạm Cày (Farm)</h2>
                 <div className="bg-[#0E0E10] border border-[#2A2A30] rounded p-3 flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Số lượng Worker:</span><span className="text-blue-400 font-bold">{settings.listProfiles ? settings.listProfiles.split(',').length : 0} Bot</span></div>
+                    <div className="flex justify-between items-center text-xs"><span className="text-gray-400">Tài khoản Active:</span><span className="text-blue-400 font-bold">{settings.accounts ? settings.accounts.filter(a => a.status === 'active').length : 0} Bot</span></div>
                 </div>
                 <button onClick={() => setIsSettingsOpen(true)} className="mt-3 w-full py-2 text-xs font-bold bg-[#1E1E24] hover:bg-[#2A2A30] border border-[#2A2A30] rounded transition-colors text-gray-300 flex items-center justify-center gap-2 cursor-pointer"><Settings size={14}/> Cấu Hình Farm</button>
             </div>
@@ -390,7 +397,7 @@ const [settings, setSettings] = useState({
 
       </div>
 
-{/* ⚙️ BẢNG CÀI ĐẶT CHUẨN GOHA MMO */}
+      {/* ⚙️ BẢNG CÀI ĐẶT CHUẨN GOHA MMO */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)}></div>
@@ -432,7 +439,7 @@ const [settings, setSettings] = useState({
                 <div className="flex items-center justify-between border-b border-[#2A2A30] pb-2">
                     <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Users size={16}/> Pool Tài Khoản (Chrome Profiles)</h3>
                     <button 
-                        onClick={() => setSettings({...settings, accounts: [...settings.accounts, { id: Date.now(), profileName: '', proxy: '', status: 'active' }]})}
+                        onClick={() => setSettings({...settings, accounts: [...(settings.accounts || []), { id: Date.now(), profileName: '', proxy: '', status: 'active' }]})}
                         className="text-[11px] font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded transition-colors cursor-pointer"
                     >
                         + Thêm Tài Khoản
@@ -440,7 +447,7 @@ const [settings, setSettings] = useState({
                 </div>
                 
                 <div className="space-y-3">
-                    {settings.accounts.map((acc, index) => (
+                    {settings.accounts && settings.accounts.map((acc, index) => (
                         <div key={acc.id} className="flex items-center gap-3 bg-[#0E0E10] p-3 rounded-lg border border-[#2A2A30]">
                             <span className="text-gray-500 font-bold w-6">{index + 1}.</span>
                             
@@ -462,7 +469,7 @@ const [settings, setSettings] = useState({
                             <button onClick={() => setSettings({...settings, accounts: settings.accounts.filter(a => a.id !== acc.id)})} className="text-red-500/50 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={16} /></button>
                         </div>
                     ))}
-                    {settings.accounts.length === 0 && <div className="text-center text-gray-500 text-sm py-4">Chưa có tài khoản nào trong Pool.</div>}
+                    {(!settings.accounts || settings.accounts.length === 0) && <div className="text-center text-gray-500 text-sm py-4">Chưa có tài khoản nào trong Pool.</div>}
                 </div>
               </div>
 
