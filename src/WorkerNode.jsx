@@ -9,20 +9,55 @@ export default function WorkerNode() {
     
     const searchParams = new URLSearchParams(window.location.search);
     const uid = searchParams.get('uid');
-    const extId = searchParams.get('extId');
+
+    // 🚀 HÀM CẦU NỐI: Tự động nhắn tin với worker-bridge.js (100% không bị chặn)
+    const sendMessageToExtension = (type, payload) => {
+        return new Promise((resolve) => {
+            const messageId = Date.now().toString() + Math.random().toString();
+            const listener = (e) => {
+                if (e.detail.messageId === messageId) {
+                    window.removeEventListener("EXTENSION_TO_WEB", listener);
+                    resolve(e.detail.response);
+                }
+            };
+            window.addEventListener("EXTENSION_TO_WEB", listener);
+            window.dispatchEvent(new CustomEvent("WEB_TO_EXTENSION", {
+                detail: { type, payload, messageId }
+            }));
+        });
+    };
+
+    // Hàm đợi Extension bơm code cầu nối vào web
+    const waitForExtension = async () => {
+        for (let i = 0; i < 20; i++) { // Đợi tối đa 10 giây
+            const res = await new Promise(resolve => {
+                const timeout = setTimeout(() => resolve(false), 500);
+                sendMessageToExtension("GET_GOOGLE_COOKIES", {}).then((r) => {
+                    clearTimeout(timeout); 
+                    resolve(true);
+                }).catch(() => { 
+                    clearTimeout(timeout); 
+                    resolve(false); 
+                });
+            });
+            if (res) return true;
+            await new Promise(r => setTimeout(r, 500));
+        }
+        return false;
+    };
 
     useEffect(() => {
-        if (!uid || !extId) {
-            setStatus('❌ Lỗi: Thiếu thông tin User ID hoặc Extension ID!');
-            return;
+        if (!uid) { 
+            setStatus('❌ Lỗi: Thiếu thông tin User ID (uid) trên link URL!'); 
+            return; 
         }
 
         const q = query(collection(db, 'autoflow_tasks'), where('userId', '==', uid), where('status', '==', 'pending'), limit(1));
         
         const unsubscribe = onSnapshot(q, async (snapshot) => {
-            if (snapshot.empty) {
-                setStatus('👀 Đang hóng lệnh từ Giám Đốc...');
-                return;
+            if (snapshot.empty) { 
+                setStatus('👀 Đang hóng lệnh từ Giám Đốc...'); 
+                return; 
             }
 
             const taskDoc = snapshot.docs[0];
@@ -31,9 +66,7 @@ export default function WorkerNode() {
             try {
                 await runTransaction(db, async (transaction) => {
                     const sfDoc = await transaction.get(taskDoc.ref);
-                    if (!sfDoc.exists() || sfDoc.data().status !== 'pending') {
-                        throw new Error("Task đã bị Worker khác hớt tay trên!");
-                    }
+                    if (!sfDoc.exists() || sfDoc.data().status !== 'pending') throw new Error("Task bị giật!");
                     transaction.update(taskDoc.ref, { status: 'processing', workerAgent: navigator.userAgent, startedAt: Date.now() });
                 });
                 
@@ -41,42 +74,26 @@ export default function WorkerNode() {
                 setStatus(`🚀 Đã nhận Task: ${taskData.engineId}...`);
                 await executeGenerationTask(taskDoc.id, taskData);
 
-            } catch (e) {
-                console.log("Tranh task thất bại, hóng task khác...");
+            } catch (e) { 
+                console.log("Tranh task thất bại, hóng task khác..."); 
             }
         });
 
         return () => unsubscribe();
-    }, [uid, extId]);
-
-    // 🚀 HÀM ĐỢI EXTENSION KHỞI ĐỘNG (CHỐNG LỖI UNDEFINED)
-    const waitForExtension = async () => {
-        for (let i = 0; i < 15; i++) { // Đợi tối đa 7.5 giây
-            if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
-                return true;
-            }
-            await new Promise(r => setTimeout(r, 500));
-        }
-        return false;
-    };
+    }, [uid]);
 
     const executeGenerationTask = async (taskId, data) => {
         try {
             const { payload, appProjectId } = data;
             
-            setStatus('⏳ Đang kết nối với Extension...');
+            setStatus('⏳ Đang kết nối với Cầu Nối Extension...');
             const isExtReady = await waitForExtension();
-            
-            if (!isExtReady) {
-                throw new Error("Trình duyệt chặn Extension hoặc chưa cài đặt. Hãy kiểm tra Manifest và F5 lại Extension!");
-            }
+            if (!isExtReady) throw new Error("Không tìm thấy Extension! Hãy check chrome://extensions và F5 lại.");
 
             setStatus(`⏳ Bắn lệnh sang Extension (Luồng ${payload.mode})...`);
-            const response = await new Promise(resolve => {
-                window.chrome.runtime.sendMessage(extId, { type: "RUN_GOOGLE_API", payload: payload }, resolve);
-            });
+            const response = await sendMessageToExtension("RUN_GOOGLE_API", payload);
 
-            if (!response || !response.success) throw new Error(response?.error || "Extension từ chối kết nối. Check lại Extension ID!");
+            if (!response || !response.success) throw new Error(response?.error || "Extension từ chối kết nối.");
 
             let apiData = response.data;
             let mediaUrls = [];
@@ -89,7 +106,7 @@ export default function WorkerNode() {
                 let allDone = false;
                 for (let i = 0; i < 60; i++) {
                     setStatus(`⏳ Chờ Google Render Video... (${i * 5}s)`);
-                    const pollResp = await new Promise(resolve => { window.chrome.runtime.sendMessage(extId, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve); });
+                    const pollResp = await sendMessageToExtension("POLL_GOOGLE_API", { mode: 'video', mediaId: mediaId });
                     if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { mediaUrls = [pollResp.cdnUrl]; allDone = true; break; }
                     await new Promise(r => setTimeout(r, 5000));
                 }
@@ -112,7 +129,7 @@ export default function WorkerNode() {
                 const urlRes = await fetch(`${window.location.origin}/api/get-upload-url`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType }) });
                 const { uploadUrl } = await urlRes.json();
 
-                const extUploadRes = await new Promise(resolve => { window.chrome.runtime.sendMessage(extId, { type: "UPLOAD_TO_R2", payload: { sourceUrl: mediaUrls[i], uploadUrl: uploadUrl, mimeType: mimeType } }, resolve); });
+                const extUploadRes = await sendMessageToExtension("UPLOAD_TO_R2", { sourceUrl: mediaUrls[i], uploadUrl: uploadUrl, mimeType: mimeType });
                 if (!extUploadRes || !extUploadRes.success) throw new Error("Upload R2 thất bại");
 
                 finalOutputs.push(`${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`);
@@ -121,7 +138,7 @@ export default function WorkerNode() {
             await updateDoc(doc(db, 'autoflow_tasks', taskId), { status: 'completed', results: finalOutputs, completedAt: Date.now() });
             setStatus('✅ Xong việc! Đang thu hồi Tab...');
             
-            setTimeout(() => { window.chrome.runtime.sendMessage(extId, { type: "CLOSE_TAB" }); }, 2000);
+            setTimeout(() => { sendMessageToExtension("CLOSE_TAB", {}); }, 2000);
 
         } catch (error) {
             await updateDoc(doc(db, 'autoflow_tasks', taskId), { status: 'error', error: error.message });

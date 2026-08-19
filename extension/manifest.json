@@ -3,34 +3,13 @@
   "name": "Auto Flow Connector",
   "version": "1.0.0",
   "description": "Cầu nối Cookie và reCAPTCHA cho Auto Flow Web chạy trên nền tảng Cloud.",
-  "permissions": [
-    "cookies",
-    "tabs",
-    "scripting",
-    "storage"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
-  "externally_connectable": {
-    "matches": [
-      "http://localhost:*/*",
-      "http://127.0.0.1:*/*",
-      "https://aivideomaker.live/*",
-      "https://*.aivideomaker.live/*"
-    ]
-  },
-  "background": {
-    "service_worker": "background.js"
-  },
+  "permissions": ["cookies", "tabs", "scripting", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
   "content_scripts": [
     {
-      "matches": [
-        "https://labs.google/*"
-      ],
-      "js": [
-        "stealth-core.js"
-      ],
+      "matches": ["https://labs.google/*"],
+      "js": ["stealth-core.js"],
       "run_at": "document_start",
       "world": "MAIN",
       "all_frames": true
@@ -40,24 +19,24 @@
         "https://labs.google/fx/tools/flow*",
         "https://labs.google/fx/*/tools/flow*"
       ],
-      "js": [
-        "content.js"
-      ],
+      "js": ["content.js"],
       "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "http://localhost:*/*",
+        "https://*.aivideomaker.live/*",
+        "https://aivideomaker.live/*"
+      ],
+      "js": ["worker-bridge.js"],
+      "run_at": "document_idle"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "injected.js"
-      ],
-      "matches": [
-        "https://labs.google/*"
-      ]
+      "resources": ["injected.js"],
+      "matches": ["https://labs.google/*"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html",
-    "default_title": "Auto Flow Connector"
-  }
+  "action": { "default_popup": "popup.html", "default_title": "Auto Flow Connector" }
 }

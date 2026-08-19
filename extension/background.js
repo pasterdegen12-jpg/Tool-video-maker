@@ -1,4 +1,5 @@
-chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => {
+// Dùng chung 1 hàm xử lý thông điệp cho cả 2 cổng
+const messageHandler = (request, sender, sendResponse) => {
     if (request.type === "GET_GOOGLE_COOKIES") {
         chrome.cookies.getAll({ domain: ".google.com" }, (cookies) => {
             const neededKeys = ["SID", "HSID", "SSID", "APISID", "SAPISID", "__Secure-1PSID"];
@@ -8,15 +9,21 @@ chrome.runtime.onMessageExternal.addListener((request, sender, sendResponse) => 
         });
         return true;
     }
-    if (request.type === "RUN_GOOGLE_API") { 
-        prepareAndExecuteApi(request.payload).then(sendResponse); 
-        return true; 
-    }
+    if (request.type === "RUN_GOOGLE_API") { prepareAndExecuteApi(request.payload).then(sendResponse); return true; }
     if (request.type === "POLL_GOOGLE_API") { executePollInFlowTab(request.payload).then(sendResponse); return true; }
     if (request.type === "UPLOAD_TO_R2") { executeUploadToR2(request.payload).then(sendResponse); return true; }
-});
+    if (request.type === "CLOSE_TAB") {
+        if (sender.tab && sender.tab.id) chrome.tabs.remove(sender.tab.id);
+        sendResponse({ success: true });
+        return true;
+    }
+};
 
-// 🚀 TÍNH NĂNG MỚI: Tự động tải Input URLs và chuyển thành Base64 bên trong Extension (Né CORS 100%)
+// 🚀 Lắng nghe lệnh từ Content Script Bridge (Nội bộ - Không bao giờ bị chặn)
+chrome.runtime.onMessage.addListener(messageHandler);
+// Giữ lại cổng ngoài phòng hờ cho tương lai
+chrome.runtime.onMessageExternal.addListener(messageHandler);
+
 async function prepareAndExecuteApi(payload) {
     try {
         const b64Array = [...(payload.base64Images || [])];
@@ -157,7 +164,6 @@ async function executeApiInFlowTab(payload) {
                     let apiPayload, API_URL;
                     if (isVideo) {
                         apiPayload = { mediaGenerationContext: { batchId: crypto.randomUUID(), audioFailurePreference: "BLOCK_SILENCED_VIDEOS" }, clientContext: clientContext, useV2ModelConfig: true, requests: requestArray };
-                        // 🚀 VÁ LỖI 404 BẰNG CÁCH CHÈN ĐÚNG PROJECT_ID VÀO ĐƯỜNG DẪN
                         API_URL = referenceMediaIds.length > 0 
                             ? `https://aisandbox-pa.googleapis.com/v1/video:batchAsyncGenerateVideoReferenceImages` 
                             : `https://aisandbox-pa.googleapis.com/v1/projects/${PROJECT_ID}/video:batchGenerateAsync`;
