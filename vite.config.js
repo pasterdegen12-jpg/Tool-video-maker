@@ -14,7 +14,6 @@ export default defineConfig({
     host: true, 
     port: process.env.PORT ? parseInt(process.env.PORT) : 5173,
     
-    // 🚀 BỔ SUNG KHỐI NÀY ĐỂ FIX LỖI WEBSOCKET
     hmr: {
       protocol: 'ws',
       host: 'localhost',
@@ -24,5 +23,14 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Embedder-Policy": "require-corp",
     },
+
+    // 🚀 BỔ SUNG CỤC PROXY NÀY VÀO ĐÂY
+proxy: {
+      '/api': {
+        target: 'https://www.aivideomaker.live', // Thêm www. để không bị Vercel đá redirect
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 })
