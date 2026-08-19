@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase.js';
 import { collection, query, where, limit, onSnapshot, doc, runTransaction, updateDoc } from 'firebase/firestore';
-import { Loader2, Bot } from 'lucide-react';
+import { Loader2, Bot, AlertTriangle } from 'lucide-react';
 
 export default function WorkerNode() {
     const [status, setStatus] = useState('Đang khởi động Worker...');
     const [currentTask, setCurrentTask] = useState(null);
     
-    // Lấy thông tin từ thanh địa chỉ (URL) do Giám đốc Web App gửi gắm
     const searchParams = new URLSearchParams(window.location.search);
     const uid = searchParams.get('uid');
     const extId = searchParams.get('extId');
@@ -18,13 +17,7 @@ export default function WorkerNode() {
             return;
         }
 
-        // HÓNG VIỆC TỪ FIREBASE: Chỉ tìm task của đúng Giám Đốc (uid) đang chờ xử lý
-        const q = query(
-            collection(db, 'autoflow_tasks'), 
-            where('userId', '==', uid),
-            where('status', '==', 'pending'), 
-            limit(1)
-        );
+        const q = query(collection(db, 'autoflow_tasks'), where('userId', '==', uid), where('status', '==', 'pending'), limit(1));
         
         const unsubscribe = onSnapshot(q, async (snapshot) => {
             if (snapshot.empty) {
@@ -35,45 +28,55 @@ export default function WorkerNode() {
             const taskDoc = snapshot.docs[0];
             const taskData = taskDoc.data();
 
-            // 🚀 CƠ CHẾ GIẬT TASK: Dùng Transaction để tránh 2 Profile cướp chung 1 file
             try {
                 await runTransaction(db, async (transaction) => {
                     const sfDoc = await transaction.get(taskDoc.ref);
                     if (!sfDoc.exists() || sfDoc.data().status !== 'pending') {
                         throw new Error("Task đã bị Worker khác hớt tay trên!");
                     }
-                    // Khóa task lại thành của mình
-                    transaction.update(taskDoc.ref, { 
-                        status: 'processing', 
-                        workerAgent: navigator.userAgent,
-                        startedAt: Date.now() 
-                    });
+                    transaction.update(taskDoc.ref, { status: 'processing', workerAgent: navigator.userAgent, startedAt: Date.now() });
                 });
                 
                 setCurrentTask(taskData);
-                setStatus(`🚀 Đang cày Engine: ${taskData.engineId}...`);
-                
-                // Thực thi việc Gen ảnh/video qua Extension
+                setStatus(`🚀 Đã nhận Task: ${taskData.engineId}...`);
                 await executeGenerationTask(taskDoc.id, taskData);
 
             } catch (e) {
-                console.log("Tranh task thất bại, quay lại hóng tiếp...");
+                console.log("Tranh task thất bại, hóng task khác...");
             }
         });
 
         return () => unsubscribe();
     }, [uid, extId]);
 
+    // 🚀 HÀM ĐỢI EXTENSION KHỞI ĐỘNG (CHỐNG LỖI UNDEFINED)
+    const waitForExtension = async () => {
+        for (let i = 0; i < 15; i++) { // Đợi tối đa 7.5 giây
+            if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
+                return true;
+            }
+            await new Promise(r => setTimeout(r, 500));
+        }
+        return false;
+    };
+
     const executeGenerationTask = async (taskId, data) => {
         try {
             const { payload, appProjectId } = data;
             
+            setStatus('⏳ Đang kết nối với Extension...');
+            const isExtReady = await waitForExtension();
+            
+            if (!isExtReady) {
+                throw new Error("Trình duyệt chặn Extension hoặc chưa cài đặt. Hãy kiểm tra Manifest và F5 lại Extension!");
+            }
+
             setStatus(`⏳ Bắn lệnh sang Extension (Luồng ${payload.mode})...`);
             const response = await new Promise(resolve => {
                 window.chrome.runtime.sendMessage(extId, { type: "RUN_GOOGLE_API", payload: payload }, resolve);
             });
 
-            if (!response || !response.success) throw new Error(response?.error || "Extension mất kết nối");
+            if (!response || !response.success) throw new Error(response?.error || "Extension từ chối kết nối. Check lại Extension ID!");
 
             let apiData = response.data;
             let mediaUrls = [];
@@ -82,17 +85,12 @@ export default function WorkerNode() {
             const primaryMatch = initStr.match(/"primaryMediaId"\s*:\s*"([^"]+)"/);
             let mediaId = primaryMatch ? primaryMatch[1] : null;
 
-            // Đợi kết quả Render
             if (payload.mode === 'video' && mediaId) {
                 let allDone = false;
                 for (let i = 0; i < 60; i++) {
                     setStatus(`⏳ Chờ Google Render Video... (${i * 5}s)`);
-                    const pollResp = await new Promise(resolve => { 
-                        window.chrome.runtime.sendMessage(extId, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve); 
-                    });
-                    if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { 
-                        mediaUrls = [pollResp.cdnUrl]; allDone = true; break; 
-                    }
+                    const pollResp = await new Promise(resolve => { window.chrome.runtime.sendMessage(extId, { type: "POLL_GOOGLE_API", payload: { mode: 'video', mediaId: mediaId } }, resolve); });
+                    if (pollResp && pollResp.success && pollResp.isDone && pollResp.cdnUrl) { mediaUrls = [pollResp.cdnUrl]; allDone = true; break; }
                     await new Promise(r => setTimeout(r, 5000));
                 }
                 if (!allDone) throw new Error("Quá thời gian Render");
@@ -104,7 +102,6 @@ export default function WorkerNode() {
 
             if (mediaUrls.length === 0) throw new Error("Không lấy được link từ Google");
 
-            // Upload lên R2 qua Extension
             setStatus(`☁️ Đang đẩy ${mediaUrls.length} file lên R2...`);
             const finalOutputs = []; 
             for (let i = 0; i < mediaUrls.length; i++) {
@@ -121,23 +118,14 @@ export default function WorkerNode() {
                 finalOutputs.push(`${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`);
             }
 
-            // Báo cáo hoàn thành lên Firebase
-            await updateDoc(doc(db, 'autoflow_tasks', taskId), {
-                status: 'completed',
-                results: finalOutputs,
-                completedAt: Date.now()
-            });
-
+            await updateDoc(doc(db, 'autoflow_tasks', taskId), { status: 'completed', results: finalOutputs, completedAt: Date.now() });
             setStatus('✅ Xong việc! Đang thu hồi Tab...');
             
-            // 🚀 Bóp cò lệnh tự sát: Extension sẽ tự động tắt cái tab/profile này đi
-            setTimeout(() => {
-                window.chrome.runtime.sendMessage(extId, { type: "CLOSE_TAB" });
-            }, 2000);
+            setTimeout(() => { window.chrome.runtime.sendMessage(extId, { type: "CLOSE_TAB" }); }, 2000);
 
         } catch (error) {
             await updateDoc(doc(db, 'autoflow_tasks', taskId), { status: 'error', error: error.message });
-            setStatus('❌ Lỗi: ' + error.message);
+            setStatus('❌ ' + error.message);
         }
     };
 
@@ -149,8 +137,8 @@ export default function WorkerNode() {
             
             <div className="bg-[#15151A] border border-[#2A2A30] rounded-xl p-6 w-[400px] shadow-2xl">
                 <div className="flex items-center gap-3 mb-4">
-                    <Loader2 className="animate-spin text-blue-500" size={24} />
-                    <span className="font-semibold text-[15px] text-blue-400">{status}</span>
+                    {status.includes('❌') ? <AlertTriangle className="text-red-500" size={24} /> : <Loader2 className="animate-spin text-blue-500" size={24} />}
+                    <span className={`font-semibold text-[15px] ${status.includes('❌') ? 'text-red-400' : 'text-blue-400'}`}>{status}</span>
                 </div>
                 {currentTask && (
                     <div className="text-[11px] text-gray-500 border-t border-[#2A2A30] pt-4 mt-2">

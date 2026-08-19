@@ -14,10 +14,10 @@
   ],
   "externally_connectable": {
     "matches": [
-      "http://localhost:5173/*",
-      "http://192.168.1.9:5173/*",
-      "https://www.aivideomaker.live/*",
-      "https://aivideomaker.live/*"
+      "http://localhost:*/*",
+      "http://127.0.0.1:*/*",
+      "https://aivideomaker.live/*",
+      "https://*.aivideomaker.live/*"
     ]
   },
   "background": {
