@@ -37,15 +37,13 @@ export default function WorkflowEditor() {
 
   const { user } = useUser();
   // 🚀 TÍNH NĂNG MỚI: Thêm cấu hình listProfiles để Quản đốc biết phải bật Profile nào
-  const [settings, setSettings] = useState({ sessionCookie: '', projectId: '', extensionId: '', outFolder: 'out', listProfiles: 'Profile 1' });
-
-  const { id } = useParams();
-  const navigate = useNavigate();
-  
-  const [appProjectId, setAppProjectId] = useState(() => {
-      if (id) return id;
-      const savedId = localStorage.getItem('current_autoflow_id');
-      return savedId || `flow_${Date.now()}`;
+const [settings, setSettings] = useState({ 
+    extensionId: '', 
+    outFolder: 'out',
+    chromePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    userDataPath: '',
+    isHeadless: false,
+    accounts: [ { id: Date.now(), profileName: 'Default', proxy: '', status: 'active' } ] // Pool tài khoản
   });
 
   useEffect(() => {
@@ -241,16 +239,23 @@ export default function WorkflowEditor() {
                 }
             });
 
-            // 2. Kích hoạt Local Server mở trình duyệt ẩn
+            // 2. Kích hoạt Local Server với cấu trúc GOHA
             const workerUrl = `${window.location.origin}/worker?uid=${user.id}&extId=${settings.extensionId}`;
-            const profilesArr = settings.listProfiles ? settings.listProfiles.split(',').map(p => p.trim()).filter(Boolean) : [];
+            const activeAccounts = settings.accounts.filter(acc => acc.status === 'active');
             
-            if (profilesArr.length > 0) {
+            if (activeAccounts.length > 0) {
                 fetch('http://localhost:48321/api/start-farm', {
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ profiles: profilesArr, targetUrl: workerUrl })
-                }).catch(err => console.log("⚠️ Quản đốc Local chưa bật, hệ thống sẽ chờ Worker tự bắt việc..."));
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        globalSettings: {
+                            chromePath: settings.chromePath,
+                            userDataPath: settings.userDataPath,
+                            isHeadless: settings.isHeadless
+                        },
+                        accounts: activeAccounts, 
+                        targetUrl: workerUrl 
+                    })
+                }).catch(err => console.log("⚠️ Quản đốc Local chưa bật."));
             }
 
             // 3. Hóng tiến độ trực tiếp từ Firebase
@@ -385,55 +390,96 @@ export default function WorkflowEditor() {
 
       </div>
 
-      {/* ⚙️ BẢNG CÀI ĐẶT MỚI: CHỨA CẤU HÌNH ĐỘI QUÂN BOT */}
+{/* ⚙️ BẢNG CÀI ĐẶT CHUẨN GOHA MMO */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={() => setIsSettingsOpen(false)}></div>
-          <div className="relative w-full max-w-md h-full bg-[#121214] border-l border-[#2A2A30] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)}></div>
+          <div className="relative w-full max-w-2xl h-full bg-[#121214] border-l border-[#2A2A30] shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-between p-5 border-b border-[#2A2A30] bg-[#15151A]">
-              <div className="flex items-center gap-3"><Settings className="text-emerald-500" size={20} /><h2 className="text-lg font-bold text-white tracking-wide">Thiết lập Auto Farm</h2></div>
-              <button onClick={() => setIsSettingsOpen(false)} className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 transition-colors cursor-pointer"><X size={20} /></button>
+              <div className="flex items-center gap-3"><Settings className="text-emerald-500" size={20} /><h2 className="text-lg font-bold text-white tracking-wide">Cấu hình Hệ Thống & Trạm Cày</h2></div>
+              <button onClick={() => setIsSettingsOpen(false)} className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 cursor-pointer"><X size={20} /></button>
             </div>
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar text-sm">
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar text-sm">
               
-              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-emerald-500/30">
-                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Users size={16}/> Khai Báo Đội Quân Bot</h3>
-                <p className="text-[10px] text-gray-500 leading-relaxed">
-                    Nhập tên thư mục Profile Chrome của bạn, cách nhau bằng dấu phẩy (,). Trạm Quản Đốc sẽ dùng chúng để bật tab ẩn.
-                </p>
-                <textarea 
-                    name="listProfiles" 
-                    value={settings.listProfiles} 
-                    onChange={handleInputChange} 
-                    placeholder="VD: Profile 1, Profile 2, Profile 3" 
-                    className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none resize-y min-h-[80px]" 
-                />
+              {/* KHỐI 1: ĐƯỜNG DẪN & CHROME */}
+              <div className="space-y-4 bg-[#1A1A1F] p-5 rounded-xl border border-[#2A2A30]">
+                <h3 className="text-blue-400 font-bold flex items-center gap-2 border-b border-[#2A2A30] pb-2"><FolderGit2 size={16}/> Đường dẫn & Chrome</h3>
+                
+                <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">Đường dẫn thư mục lưu ảnh/video (Local)</label>
+                    <input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} placeholder="out" className="w-full mt-1 bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-blue-500 outline-none text-gray-200" />
+                </div>
+                
+                <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">Đường dẫn Chrome (chrome.exe)</label>
+                    <input type="text" name="chromePath" value={settings.chromePath} onChange={handleInputChange} placeholder="C:\Program Files\Google\Chrome\Application\chrome.exe" className="w-full mt-1 bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-blue-500 outline-none text-gray-200" />
+                </div>
+
+                <div>
+                    <label className="text-[11px] font-bold text-gray-500 uppercase">Đường dẫn Chrome User Data</label>
+                    <input type="text" name="userDataPath" value={settings.userDataPath} onChange={handleInputChange} placeholder="C:\Users\PC\AppData\Local\Google\Chrome\User Data" className="w-full mt-1 bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-blue-500 outline-none text-gray-200" />
+                </div>
+
+                <div className="flex items-center gap-2 mt-2">
+                    <input type="checkbox" id="headless" checked={settings.isHeadless} onChange={(e) => setSettings({...settings, isHeadless: e.target.checked})} className="w-4 h-4 rounded bg-[#0E0E10] border-[#2A2A30] text-blue-500 focus:ring-blue-500" />
+                    <label htmlFor="headless" className="text-sm font-semibold text-gray-300 cursor-pointer">Chạy Chrome ẩn (Headless - Giảm tốn RAM)</label>
+                </div>
               </div>
 
-              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Mã kết nối Web (User ID)</label>
-                  <input type="text" readOnly value={user?.id || ''} onClick={(e) => { navigator.clipboard.writeText(e.target.value); alert("✅ Đã copy!"); }} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-blue-400 font-mono outline-none cursor-copy hover:border-blue-500 transition-colors" />
+              {/* KHỐI 2: POOL TÀI KHOẢN (ACCOUNTS & PROXY) */}
+              <div className="space-y-4 bg-[#1A1A1F] p-5 rounded-xl border border-[#2A2A30]">
+                <div className="flex items-center justify-between border-b border-[#2A2A30] pb-2">
+                    <h3 className="text-emerald-400 font-bold flex items-center gap-2"><Users size={16}/> Pool Tài Khoản (Chrome Profiles)</h3>
+                    <button 
+                        onClick={() => setSettings({...settings, accounts: [...settings.accounts, { id: Date.now(), profileName: '', proxy: '', status: 'active' }]})}
+                        className="text-[11px] font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-white px-3 py-1 rounded transition-colors cursor-pointer"
+                    >
+                        + Thêm Tài Khoản
+                    </button>
                 </div>
-                <div className="flex flex-col gap-1.5 mt-2">
+                
+                <div className="space-y-3">
+                    {settings.accounts.map((acc, index) => (
+                        <div key={acc.id} className="flex items-center gap-3 bg-[#0E0E10] p-3 rounded-lg border border-[#2A2A30]">
+                            <span className="text-gray-500 font-bold w-6">{index + 1}.</span>
+                            
+                            <div className="flex-1">
+                                <input type="text" value={acc.profileName} onChange={(e) => { const newAccs = [...settings.accounts]; newAccs[index].profileName = e.target.value; setSettings({...settings, accounts: newAccs}); }} placeholder="Tên Profile (VD: Profile 1)" className="w-full bg-transparent border-b border-[#2A2A30] p-1 text-sm text-white focus:border-emerald-500 outline-none" />
+                            </div>
+                            
+                            <div className="flex-1">
+                                <input type="text" value={acc.proxy} onChange={(e) => { const newAccs = [...settings.accounts]; newAccs[index].proxy = e.target.value; setSettings({...settings, accounts: newAccs}); }} placeholder="Proxy (IP:Port)" className="w-full bg-transparent border-b border-[#2A2A30] p-1 text-sm text-yellow-400 focus:border-yellow-500 outline-none font-mono" />
+                            </div>
+
+                            <button 
+                                onClick={() => { const newAccs = [...settings.accounts]; newAccs[index].status = acc.status === 'active' ? 'inactive' : 'active'; setSettings({...settings, accounts: newAccs}); }} 
+                                className={`px-3 py-1 text-xs font-bold rounded cursor-pointer ${acc.status === 'active' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-800 text-gray-500'}`}
+                            >
+                                {acc.status === 'active' ? 'Bật' : 'Tắt'}
+                            </button>
+
+                            <button onClick={() => setSettings({...settings, accounts: settings.accounts.filter(a => a.id !== acc.id)})} className="text-red-500/50 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={16} /></button>
+                        </div>
+                    ))}
+                    {settings.accounts.length === 0 && <div className="text-center text-gray-500 text-sm py-4">Chưa có tài khoản nào trong Pool.</div>}
+                </div>
+              </div>
+
+              {/* KHỐI 3: KẾT NỐI API */}
+              <div className="space-y-3 bg-[#1A1A1F] p-5 rounded-xl border border-[#2A2A30]">
+                <h3 className="text-purple-400 font-bold flex items-center gap-2 border-b border-[#2A2A30] pb-2"><Key size={16}/> API Kết Nối Hệ Thống</h3>
+                <div>
                   <label className="text-[10px] font-bold text-gray-500 uppercase">Extension ID</label>
-                  <input type="text" name="extensionId" value={settings.extensionId} onChange={handleInputChange} placeholder="VD: abcdefghijklmnop..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-emerald-400 focus:border-emerald-500 outline-none" />
-                </div>
-                <div className="flex flex-col gap-1.5 mt-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Google Project ID</label>
-                  <input type="text" name="projectId" value={settings.projectId} onChange={handleInputChange} placeholder="VD: 2ac32c13-..." className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 text-xs text-white focus:border-emerald-500 outline-none" />
+                  <input type="text" name="extensionId" value={settings.extensionId} onChange={handleInputChange} placeholder="VD: abcdefghijklmnop..." className="w-full mt-1 bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-purple-500 outline-none text-gray-200" />
                 </div>
               </div>
 
-              <div className="space-y-3 bg-[#1A1A1F] p-4 rounded-xl border border-[#2A2A30]">
-                <h3 className="text-emerald-400 font-bold flex items-center gap-2"><FolderGit2 size={16}/> Local Storage</h3>
-                <div><label className="text-xs text-gray-400 font-semibold mb-1 block">Thư mục lưu Local</label><input type="text" name="outFolder" value={settings.outFolder} onChange={handleInputChange} className="w-full bg-[#0E0E10] border border-[#2A2A30] rounded p-2 focus:border-emerald-500 outline-none" /></div>
-              </div>
             </div>
             
             <div className="p-5 border-t border-[#2A2A30] bg-[#15151A]">
-              <button onClick={handleSaveSettings} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-emerald-500/20 cursor-pointer">
-                <Save size={18} /> Lưu Cài Đặt Farm
+              <button onClick={handleSaveSettings} className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-500 hover:to-blue-500 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-blue-500/20 cursor-pointer">
+                <Save size={18} /> Lưu Cài Đặt (Save)
               </button>
             </div>
           </div>
