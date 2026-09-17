@@ -91,6 +91,12 @@ Kịch bản: ${script}`);
       const parsedData = await callGeminiAPI(`You are an expert data extraction assistant. Read the provided script and return EXACTLY ONE JSON Object.
 
 CRITICAL INSTRUCTIONS:
+0. VERBATIM EXTRACTION (HIGHEST PRIORITY — OVERRIDES EVERYTHING BELOW): You are a DATA EXTRACTOR, not a writer. For EVERY text field ("Footage", "Effect", "Voiceover", "Translate", "Tone_of_Voice", "Character", "time_origin"), you MUST copy the text CHARACTER-FOR-CHARACTER exactly as it appears in the script.
+   - STRICTLY FORBIDDEN: paraphrasing, rewriting, summarizing, translating, shortening, expanding, fixing grammar/spelling, changing punctuation, or inventing any word that does not exist in the script.
+   - Only strip the field label itself (e.g. "Voiceover:", "Translate:", "Footage:") and surrounding quotes/whitespace. The remaining text must be an EXACT substring of the original script.
+   - If a field does not exist in the script for a scene, output an empty string "" for it — NEVER fabricate a value.
+   - Self-check before answering: for each field value, verify it appears verbatim in the script. If it does not, replace it with the exact original text or "".
+
 1. TIME EXTRACTION: The script may contain both 'Time' and 'Time_origin'. You MUST extract the EXACT value of 'Time_origin' (e.g., "03:12 - 03:20") and assign it to the "time_origin" field. Failing this will break the system.
 
 2. VOICEOVER HANDLING (STRICT BAN ON VIETNAMESE):

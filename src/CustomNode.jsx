@@ -34,7 +34,7 @@ export default function CustomNode({ id, data }) {
     updateNodeData(id, { fields: newFields });
   };
 
-  const handleFileChange = async (e) => {
+const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     setIsUploadingInput(true);
@@ -43,20 +43,51 @@ export default function CustomNode({ id, data }) {
         const newCloudUrls = [];
 
         for (let i = 0; i < files.length; i++) {
-            const file = files[i]; const mimeType = file.type; const ext = mimeType.split('/')[1] || 'jpg';
+            const file = files[i]; 
+            const mimeType = file.type; 
+            const ext = mimeType.split('/')[1] || 'jpg';
             const fileName = `input_${Date.now()}_${i}.${ext}`;
             const uniqueCloudName = `autoflow/${appId}/inputs/${fileName}`;
             
-            const urlRes = await fetch('/api/get-upload-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType }) });
+            // 🚀 ĐÃ SỬA: Dùng đường dẫn tương đối để đi qua Vite Proxy
+            const urlRes = await fetch('/api/get-upload-url', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ fileName: uniqueCloudName, fileType: mimeType }) 
+            });
+            
+            if (!urlRes.ok) {
+                const errText = await urlRes.text();
+                throw new Error(`API Vercel từ chối (Code ${urlRes.status}): ${errText}`);
+            }
+
             const { uploadUrl } = await urlRes.json();
-            await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': mimeType } });
+            
+            // 🚀 Đẩy file thẳng lên mây Cloudflare R2
+            const putRes = await fetch(uploadUrl, { 
+                method: 'PUT', 
+                body: file, 
+                headers: { 'Content-Type': mimeType } 
+            });
+            
+            if (!putRes.ok) {
+                throw new Error(`Cloudflare R2 chặn file (Code ${putRes.status}). Kiểm tra lại CORS trên Cloudflare!`);
+            }
+
             newCloudUrls.push(`${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueCloudName}`);
         }
+        
         if (newCloudUrls.length > 0) {
             const newFields = data.fields.map(f => { if (f.id === 'ref_img') { return { ...f, cloudUrls: [...(f.cloudUrls || []), ...newCloudUrls] }; } return f; });
             updateNodeData(id, { fields: newFields });
         }
-    } catch (err) { alert("Có lỗi khi lưu ảnh lên Cloud!"); } finally { setIsUploadingInput(false); e.target.value = ''; }
+    } catch (err) { 
+        console.error("❌ CHI TIẾT LỖI UPLOAD:", err);
+        alert("Lỗi Upload:\n" + err.message); 
+    } finally { 
+        setIsUploadingInput(false); 
+        e.target.value = ''; 
+    }
   };
 
   const handleRemoveImage = (indexToRemove) => {
