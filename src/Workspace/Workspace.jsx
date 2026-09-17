@@ -32,7 +32,7 @@ const MINIMAX_TTS_ENDPOINT = "https://api.wavespeed.ai/api/v3/minimax/speech-2.8
 // ⚠️ LƯU Ý: "id" phải là voice_id thật đã train trên Wavespeed (https://wavespeed.ai/models/minimax/voice-clone).
 // Nếu voice_id của giọng "semicook" khác chuỗi dưới đây, chỉ cần sửa trường id này.
 const MINIMAX_PRESET_VOICES = [
-  { id: "semicook", name: "SemiCook", desc: "Giọng AI riêng của SemiContent" },
+  { id: "Semicook", name: "Semicook", desc: "Giọng AI riêng của SemiContent" },
 ];
 
 export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode }) { 
