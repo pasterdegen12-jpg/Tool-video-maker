@@ -99,12 +99,11 @@ CRITICAL INSTRUCTIONS:
 
 1. TIME EXTRACTION: The script may contain both 'Time' and 'Time_origin'. You MUST extract the EXACT value of 'Time_origin' (e.g., "03:12 - 03:20") and assign it to the "time_origin" field. Failing this will break the system.
 
-2. VOICEOVER HANDLING (STRICT BAN ON VIETNAMESE):
-   - Extract the exact spoken dialogue (which is usually in English) into the "Voiceover" field.
-   - KILL-SWITCH FILTER: The "Voiceover" field MUST NEVER contain any Vietnamese words. IF you are about to include any Vietnamese text in the "Voiceover", you MUST consider it INVALID and LEAVE IT COMPLETELY EMPTY: "Voiceover": "" and "Word_count": 0.
-   - NEVER mix the Vietnamese translation (the "Translate" line) or author notes into the "Voiceover" field.
+2. VOICEOVER HANDLING (LANGUAGE-AGNOSTIC — DO NOT FILTER BY LANGUAGE):
+   - Extract the exact spoken dialogue verbatim into the "Voiceover" field, regardless of language. If the script's voiceover is in Vietnamese, put Vietnamese. If it is in English, put English. NEVER translate or change the language.
+   - NEVER mix the "Translate" line or author/director notes into the "Voiceover" field. Only extract the actual spoken dialogue line.
    - Calculate the word count of the "Voiceover" text and put it in "Word_count".
-   - FALLBACK: IF a scene has NO spoken dialogue (or violates the Vietnamese text ban), you MUST leave it empty: "Voiceover": "" and "Word_count": 0.
+   - FALLBACK: IF a scene has NO spoken dialogue at all, leave it empty: "Voiceover": "" and "Word_count": 0.
 
 3. IGNORE CHARACTERS: Do not analyze characters. Always keep the "characters" array completely empty [].
 
