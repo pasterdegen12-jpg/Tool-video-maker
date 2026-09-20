@@ -15,9 +15,9 @@ import wasmURL from './ffmpeg-core.wasm?url';
 
 export default function App() {
   const navigate = useNavigate();
-  const location = useLocation(); 
+  const location = useLocation();
   const currentPath = location.pathname;
-  
+
   const ffmpegRef = useRef(new FFmpeg());
   const [isFfmpegLoaded, setIsFfmpegLoaded] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -38,41 +38,159 @@ export default function App() {
 
   // 🚀 NẾU LÀ TAB WORKER MỞ ẨN THÌ TRẢ VỀ LUÔN, KHÔNG CẦN CLERK ĐĂNG NHẬP
   if (currentPath === '/worker') {
-      return <WorkerNode />;
+    return <WorkerNode />;
   }
 
+  // ─── Nav tab helper ───────────────────────────────────────────────────────
+  const navTab = (isActive, colorClass) =>
+    isActive
+      ? darkMode
+        ? `bg-slate-800 ${colorClass} shadow-sm`
+        : `bg-white ${colorClass.replace('400', '600').replace('text-amber', 'text-amber')} shadow-sm`
+      : darkMode
+        ? 'text-slate-400 hover:text-slate-200'
+        : 'text-zinc-500 hover:text-zinc-700';
+
   return (
-    <div className={`h-screen w-screen flex flex-col overflow-hidden font-sans transition-colors duration-300 ${darkMode ? 'bg-[#0E0E10] text-white' : 'bg-zinc-100 text-zinc-900'}`}>
+    <div
+      className={`h-screen w-screen flex flex-col overflow-hidden font-sans transition-colors duration-300 ${
+        darkMode ? 'bg-slate-950 text-white' : 'bg-slate-100 text-zinc-900'
+      }`}
+    >
+      {/* ── Signed-Out Gate ─────────────────────────────────────────── */}
       <SignedOut>
-        <div className="flex-1 flex items-center justify-center"><SignIn routing="hash" /></div>
+        <div
+          className={`flex-1 flex items-center justify-center ${
+            darkMode ? 'bg-slate-950' : 'bg-slate-100'
+          }`}
+        >
+          <SignIn routing="hash" />
+        </div>
       </SignedOut>
 
+      {/* ── Signed-In App Shell ─────────────────────────────────────── */}
       <SignedIn>
-        <div className={`h-16 flex items-center justify-between px-6 shrink-0 transition-colors duration-300 border-b z-50 ${darkMode ? 'bg-[#15151A] border-[#2A2A30]' : 'bg-white border-zinc-200 shadow-sm'}`}>
-          <div className="flex items-center gap-3">
-            <h1 className="font-bold text-xl tracking-wide bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">AI Video Maker</h1>
-            {!isFfmpegLoaded ? <span className="flex items-center gap-1 text-[10px] text-yellow-600 bg-yellow-500/10 px-2 py-1 rounded-full border border-yellow-500/20"><Loader2 size={12} className="animate-spin" /> Nạp lõi...</span> : <span className="text-[10px] text-green-600 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">Sẵn sàng</span>}
-          </div>
-          
-          <div className={`flex gap-2 p-1 rounded-lg border transition-colors ${darkMode ? 'bg-[#0E0E10] border-[#2A2A30]' : 'bg-zinc-100 border-zinc-200'}`}>
-            <button onClick={() => navigate('/')} className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 cursor-pointer ${currentPath === '/' ? (darkMode ? 'bg-[#2A2A30] text-blue-400' : 'bg-white text-blue-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500')}`}><PlaySquare size={16} /> Edit Tool</button>
-            <button onClick={() => navigate('/autoflow')} className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 cursor-pointer ${currentPath.includes('/autoflow') ? (darkMode ? 'bg-[#2A2A30] text-emerald-400' : 'bg-white text-emerald-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500')}`}><Workflow size={16} /> Auto Flow</button>
-            <button onClick={() => navigate('/history')} className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 cursor-pointer ${currentPath === '/history' ? (darkMode ? 'bg-[#2A2A30] text-yellow-400' : 'bg-white text-yellow-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500')}`}><History size={16} /> Lịch sử</button>
-            <button className={`px-4 py-1.5 rounded-md font-semibold text-sm flex items-center gap-2 cursor-pointer ${currentPath.includes('/project') ? (darkMode ? 'bg-[#2A2A30] text-green-400' : 'bg-white text-green-600 shadow-sm') : (darkMode ? 'text-gray-400 hover:text-white' : 'text-zinc-500')}`}><LayoutTemplate size={16} /> StoryBoard</button>
+        {/* ── Header ────────────────────────────────────────────────── */}
+        <header
+          className={`h-[60px] flex items-center justify-between px-4 sm:px-6 shrink-0 transition-colors duration-300 border-b z-50 ${
+            darkMode
+              ? 'bg-slate-900/80 backdrop-blur-xl border-white/[0.06]'
+              : 'bg-white/90 backdrop-blur-xl border-zinc-200 shadow-sm'
+          }`}
+        >
+          {/* Logo + FFmpeg badge */}
+          <div className="flex items-center gap-3 min-w-0">
+            <h1 className="font-black text-lg sm:text-xl tracking-tight bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent whitespace-nowrap">
+              AI Video Maker
+            </h1>
+            {!isFfmpegLoaded ? (
+              <span className="hidden sm:flex items-center gap-1 text-[10px] text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20 whitespace-nowrap">
+                <Loader2 size={11} className="animate-spin" />
+                Nạp lõi...
+              </span>
+            ) : (
+              <span className="hidden sm:flex text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20 whitespace-nowrap">
+                Sẵn sàng
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-4">
-            <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-lg border cursor-pointer shadow-sm ${darkMode ? 'bg-[#1A1A1F] border-white/10 text-yellow-400' : 'bg-zinc-50 border-zinc-200 text-purple-600'}`}>{darkMode ? <Sun size={18} /> : <Moon size={18} />}</button>
+          {/* Nav tabs */}
+          <nav
+            className={`flex gap-0.5 p-1 rounded-xl border transition-colors ${
+              darkMode
+                ? 'bg-slate-950/80 border-white/[0.06]'
+                : 'bg-slate-100 border-zinc-200'
+            }`}
+          >
+            <button
+              onClick={() => navigate('/')}
+              className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${navTab(
+                currentPath === '/',
+                'text-amber-400'
+              )}`}
+            >
+              <PlaySquare size={15} />
+              <span className="hidden sm:inline">Edit Tool</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/autoflow')}
+              className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${navTab(
+                currentPath.includes('/autoflow'),
+                'text-emerald-400'
+              )}`}
+            >
+              <Workflow size={15} />
+              <span className="hidden sm:inline">Auto Flow</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/history')}
+              className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${navTab(
+                currentPath === '/history',
+                'text-amber-400'
+              )}`}
+            >
+              <History size={15} />
+              <span className="hidden sm:inline">Lịch sử</span>
+            </button>
+
+            <button
+              className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${navTab(
+                currentPath.includes('/project'),
+                'text-emerald-400'
+              )}`}
+            >
+              <LayoutTemplate size={15} />
+              <span className="hidden sm:inline">StoryBoard</span>
+            </button>
+          </nav>
+
+          {/* Right: theme toggle + user */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`p-2 rounded-lg border cursor-pointer transition-all duration-200 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${
+                darkMode
+                  ? 'bg-slate-800 border-white/10 text-amber-400 hover:bg-slate-700'
+                  : 'bg-zinc-50 border-zinc-200 text-purple-600 hover:bg-zinc-100'
+              }`}
+              aria-label="Toggle theme"
+            >
+              {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
             <UserButton afterSignOutUrl="/" />
           </div>
-        </div>
+        </header>
 
+        {/* ── Page Content ──────────────────────────────────────────── */}
         <div className="flex-1 overflow-hidden relative z-0">
           <Routes>
-            <Route path="/" element={<MainEditor ffmpeg={ffmpegRef.current} isFfmpegLoaded={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route
+              path="/"
+              element={
+                <MainEditor
+                  ffmpeg={ffmpegRef.current}
+                  isFfmpegLoaded={isFfmpegLoaded}
+                  darkMode={darkMode}
+                  setDarkMode={setDarkMode}
+                />
+              }
+            />
             <Route path="/autoflow/:id?" element={<WorkflowEditor />} />
             <Route path="/history" element={<HistoryModel darkMode={darkMode} />} />
-            <Route path="/project/:projectId" element={<Workspace ffmpeg={ffmpegRef.current} isFfmpegReady={isFfmpegLoaded} darkMode={darkMode} setDarkMode={setDarkMode} />} />
+            <Route
+              path="/project/:projectId"
+              element={
+                <Workspace
+                  ffmpeg={ffmpegRef.current}
+                  isFfmpegReady={isFfmpegLoaded}
+                  darkMode={darkMode}
+                  setDarkMode={setDarkMode}
+                />
+              }
+            />
           </Routes>
         </div>
       </SignedIn>

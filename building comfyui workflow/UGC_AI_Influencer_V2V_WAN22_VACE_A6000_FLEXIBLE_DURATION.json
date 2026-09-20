@@ -1,0 +1,1261 @@
+{
+  "id": "b7f3a91c-2d4e-4f8a-9c1b-e5d2f0a83b4c",
+  "revision": 0,
+  "last_node_id": 42,
+  "last_link_id": 40,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [20, 20],
+      "size": [4200, 140],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🎬 UGC AI Influencer V2V — WAN 2.2 VACE | FLEXIBLE DURATION 5s→20s | RTX 6000 Ada 48GB",
+      "properties": {},
+      "widgets_values": [
+        "🎬  UGC AI INFLUENCER V2V — WAN 2.2 VACE  |  FLEXIBLE DURATION: 5s → 20s  |  RTX 6000 Ada / A6000 (48GB VRAM)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⏱️  ĐỔI THỜI LƯỢNG: Chỉ thay số ở node [⏱️ DURATION CONTROL] → toàn bộ pipeline tự điều chỉnh!   |   81=5s | 129=8s | 161=10s | 241=15s | 320=20s @ 16fps\nFLOW: Portrait Image + Driving Video  →  WanVaceToVideo (VACE)  →  HIGH NOISE KSampler  →  LOW NOISE KSampler  →  VAEDecode  →  RIFE 2×  →  MP4 9:16\nINSTALL:  ComfyUI-VideoHelperSuite  |  ComfyUI-Frame-Interpolation (fannovel16)  |  ComfyUI ≥ 0.3.5"
+      ],
+      "widgets_values_named": {
+        "text": "🎬  UGC AI INFLUENCER V2V — WAN 2.2 VACE  |  FLEXIBLE DURATION: 5s → 20s  |  RTX 6000 Ada / A6000 (48GB VRAM)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⏱️  ĐỔI THỜI LƯỢNG: Chỉ thay số ở node [⏱️ DURATION CONTROL] → toàn bộ pipeline tự điều chỉnh!   |   81=5s | 129=8s | 161=10s | 241=15s | 320=20s @ 16fps\nFLOW: Portrait Image + Driving Video  →  WanVaceToVideo (VACE)  →  HIGH NOISE KSampler  →  LOW NOISE KSampler  →  VAEDecode  →  RIFE 2×  →  MP4 9:16\nINSTALL:  ComfyUI-VideoHelperSuite  |  ComfyUI-Frame-Interpolation (fannovel16)  |  ComfyUI ≥ 0.3.5"
+      },
+      "color": "#1a1a2e",
+      "bgcolor": "#0d1117"
+    },
+    {
+      "id": 2,
+      "type": "Note",
+      "pos": [20, 190],
+      "size": [490, 210],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "📦 Model Loaders — Cài đặt",
+      "properties": {},
+      "widgets_values": [
+        "📦 MODEL LOADERS — WAN 2.2 FUN VACE 14B\n\nĐặt đúng thư mục trong ComfyUI/models/:\n  diffusion_models/ → wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors\n  diffusion_models/ → wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors\n  vae/             → wan_2.1_vae.safetensors\n  text_encoders/   → umt5_xxl_fp8_e4m3fn_scaled.safetensors\n  (RIFE ckpt)      → rife49.pth  (Frame-Interpolation)\n\n⚙️ WAN 2.2 VACE dùng 2 model: HIGH NOISE + LOW NOISE\n💡 FP8 scaled phù hợp GPU 48GB, tiết kiệm VRAM hơn BF16."
+      ],
+      "widgets_values_named": {
+        "text": "📦 MODEL LOADERS — WAN 2.2 FUN VACE 14B\n\nĐặt đúng thư mục trong ComfyUI/models/:\n  diffusion_models/ → wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors\n  diffusion_models/ → wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors\n  vae/             → wan_2.1_vae.safetensors\n  text_encoders/   → umt5_xxl_fp8_e4m3fn_scaled.safetensors\n  (RIFE ckpt)      → rife49.pth  (Frame-Interpolation)\n\n⚙️ WAN 2.2 VACE dùng 2 model: HIGH NOISE + LOW NOISE\n💡 FP8 scaled phù hợp GPU 48GB, tiết kiệm VRAM hơn BF16."
+      },
+      "color": "#1e3a5f",
+      "bgcolor": "#0d1f33"
+    },
+    {
+      "id": 3,
+      "type": "UNETLoader",
+      "pos": [20, 425],
+      "size": [490, 100],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [1]
+        }
+      ],
+      "title": "🧠 WAN 2.2 VACE — HIGH NOISE UNETLoader",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+        "fp8_e4m3fn"
+      ],
+      "widgets_values_named": {
+        "unet_name": "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors",
+        "weight_dtype": "fp8_e4m3fn"
+      }
+    },
+    {
+      "id": 4,
+      "type": "UNETLoader",
+      "pos": [20, 545],
+      "size": [490, 100],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [2]
+        }
+      ],
+      "title": "🧠 WAN 2.2 VACE — LOW NOISE UNETLoader",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors",
+        "fp8_e4m3fn"
+      ],
+      "widgets_values_named": {
+        "unet_name": "wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors",
+        "weight_dtype": "fp8_e4m3fn"
+      }
+    },
+    {
+      "id": 5,
+      "type": "VAELoader",
+      "pos": [20, 665],
+      "size": [490, 80],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "slot_index": 0,
+          "links": [3, 4]
+        }
+      ],
+      "title": "🔷 WAN VAE Loader",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": ["wan_2.1_vae.safetensors"],
+      "widgets_values_named": {
+        "vae_name": "wan_2.1_vae.safetensors"
+      }
+    },
+    {
+      "id": 6,
+      "type": "CLIPLoader",
+      "pos": [20, 765],
+      "size": [490, 106],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "slot_index": 0,
+          "links": [5, 6]
+        }
+      ],
+      "title": "📝 UMT5-XXL Text Encoder",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+        "wan",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+        "type": "wan",
+        "device": "default"
+      }
+    },
+    {
+      "id": 31,
+      "type": "Note",
+      "pos": [20, 900],
+      "size": [490, 300],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "⏱️ DURATION PRESETS — Bảng tham khảo",
+      "properties": {},
+      "widgets_values": [
+        "⏱️ DURATION PRESETS — Thời lượng video output\n\n  Đổi 1 số duy nhất ở node [⏱️ DURATION CONTROL]:\n\n  81  frames  →  5 giây   @ 16fps  (~4–5  phút render)\n  129 frames  →  8 giây   @ 16fps  (~7–8  phút render)\n  161 frames  →  10 giây  @ 16fps  (~9–11 phút render)\n  241 frames  →  15 giây  @ 16fps  (~13–16 phút render) ✅ TỐT NHẤT\n  320 frames  →  20 giây  @ 16fps  (~17–20 phút render) ⚠️ Edge\n\n⚡ Sau RIFE ×2:  16fps → 32fps (smooth)\n🎞️ 320 frames là giới hạn thực tế cho 48GB VRAM @ 576×1024\n💡 Nếu OOM ở 320: giảm xuống 241 (15s) hoặc 576→544 px\n\n⚠️ frame_load_cap trong VHS_LoadVideo TỰ ĐỘNG sync\n   vì cùng kết nối từ PrimitiveNode (DURATION CONTROL)"
+      ],
+      "widgets_values_named": {
+        "text": "⏱️ DURATION PRESETS — Thời lượng video output\n\n  Đổi 1 số duy nhất ở node [⏱️ DURATION CONTROL]:\n\n  81  frames  →  5 giây   @ 16fps  (~4–5  phút render)\n  129 frames  →  8 giây   @ 16fps  (~7–8  phút render)\n  161 frames  →  10 giây  @ 16fps  (~9–11 phút render)\n  241 frames  →  15 giây  @ 16fps  (~13–16 phút render) ✅ TỐT NHẤT\n  320 frames  →  20 giây  @ 16fps  (~17–20 phút render) ⚠️ Edge\n\n⚡ Sau RIFE ×2:  16fps → 32fps (smooth)\n🎞️ 320 frames là giới hạn thực tế cho 48GB VRAM @ 576×1024\n💡 Nếu OOM ở 320: giảm xuống 241 (15s) hoặc 576→544 px\n\n⚠️ frame_load_cap trong VHS_LoadVideo TỰ ĐỘNG sync\n   vì cùng kết nối từ PrimitiveNode (DURATION CONTROL)"
+      },
+      "color": "#2a3a10",
+      "bgcolor": "#151f08"
+    },
+    {
+      "id": 32,
+      "type": "PrimitiveNode",
+      "pos": [20, 1225],
+      "size": [490, 100],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "INT",
+          "type": "INT",
+          "slot_index": 0,
+          "links": [30, 31],
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "title": "⏱️ DURATION CONTROL — Đổi tại đây (frames)",
+      "properties": {},
+      "widgets_values": [161],
+      "widgets_values_named": {
+        "value": 161
+      },
+      "color": "#3a2a00",
+      "bgcolor": "#201800"
+    },
+    {
+      "id": 7,
+      "type": "VHS_LoadVideo",
+      "pos": [-720, 900],
+      "size": [520, 1220],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meta_batch",
+          "shape": 7,
+          "type": "VHS_BatchManager",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [7]
+        },
+        {
+          "name": "frame_count",
+          "type": "INT",
+          "slot_index": 1,
+          "links": []
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "slot_index": 2,
+          "links": [8]
+        },
+        {
+          "name": "video_info",
+          "type": "VHS_VIDEOINFO",
+          "slot_index": 3,
+          "links": []
+        }
+      ],
+      "title": "🎥 Driving Video — AUTO frame_load_cap từ DURATION CONTROL",
+      "properties": {
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "4d907bee61e92c2e65af3bd6383a4e4d356126d1",
+        "Node name for S&R": "VHS_LoadVideo"
+      },
+      "widgets_values": {
+        "video": "driving_video.mp4",
+        "force_rate": 16,
+        "custom_width": 0,
+        "custom_height": 0,
+        "frame_load_cap": 161,
+        "skip_first_frames": 0,
+        "select_every_nth": 1,
+        "format": "AnimateDiff",
+        "choose video to upload": "",
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "driving_video.mp4",
+            "type": "input",
+            "format": "video/mp4",
+            "force_rate": 16,
+            "custom_width": 0,
+            "custom_height": 0,
+            "frame_load_cap": 161,
+            "skip_first_frames": 0,
+            "select_every_nth": 1
+          }
+        }
+      },
+      "widgets_values_named": {
+        "video": "driving_video.mp4",
+        "force_rate": 16,
+        "custom_width": 0,
+        "custom_height": 0,
+        "frame_load_cap": 161,
+        "skip_first_frames": 0,
+        "select_every_nth": 1,
+        "format": "AnimateDiff",
+        "choose video to upload": "",
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "driving_video.mp4",
+            "type": "input",
+            "format": "video/mp4",
+            "force_rate": 16,
+            "custom_width": 0,
+            "custom_height": 0,
+            "frame_load_cap": 161,
+            "skip_first_frames": 0,
+            "select_every_nth": 1
+          }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": "LoadImage",
+      "pos": [-720, 400],
+      "size": [400, 314],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [9]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "slot_index": 1,
+          "links": []
+        }
+      ],
+      "title": "🖼️ Base Portrait Image — AI Influencer",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": ["portrait_reference.png", "image"],
+      "widgets_values_named": {
+        "image": "portrait_reference.png",
+        "upload": "image"
+      }
+    },
+    {
+      "id": 33,
+      "type": "Note",
+      "pos": [600, 190],
+      "size": [500, 210],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "✍️ Prompt Engineering — Tips",
+      "properties": {},
+      "widgets_values": [
+        "✍️ PROMPT ENGINEERING — Anti-Plastic & Realism Tips\n\n📈 POSITIVE — Nhấn mạnh kết cấu da tự nhiên:\n   Từ khóa quan trọng: 'natural skin pores', 'micro-texture skin',\n   'realistic hair strands', 'subtle skin imperfections',\n   'natural catchlight in eyes', 'soft subsurface scattering',\n   'slight skin redness', 'natural skin color variation'\n\n📉 NEGATIVE — Loại bỏ CGI artifacts:\n   LUÔN bao gồm: 'plastic skin', 'waxy look', 'airbrushed',\n   'CGI render', 'temporal flickering', 'frame inconsistency'\n   Càng chi tiết negative → output càng tự nhiên"
+      ],
+      "widgets_values_named": {
+        "text": "✍️ PROMPT ENGINEERING — Anti-Plastic & Realism Tips\n\n📈 POSITIVE — Nhấn mạnh kết cấu da tự nhiên:\n   Từ khóa quan trọng: 'natural skin pores', 'micro-texture skin',\n   'realistic hair strands', 'subtle skin imperfections',\n   'natural catchlight in eyes', 'soft subsurface scattering',\n   'slight skin redness', 'natural skin color variation'\n\n📉 NEGATIVE — Loại bỏ CGI artifacts:\n   LUÔN bao gồm: 'plastic skin', 'waxy look', 'airbrushed',\n   'CGI render', 'temporal flickering', 'frame inconsistency'\n   Càng chi tiết negative → output càng tự nhiên"
+      },
+      "color": "#3a2a0f",
+      "bgcolor": "#1f1708"
+    },
+    {
+      "id": 10,
+      "type": "CLIPTextEncode",
+      "pos": [600, 425],
+      "size": [500, 340],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [10]
+        }
+      ],
+      "title": "✅ Positive Prompt — Thay đổi tại đây",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "cinematic portrait video of a stunningly beautiful young woman AI influencer, natural realistic skin with subtle pores and micro-texture, slight natural skin imperfections and color variation, genuine warm smile, authentic natural facial expressions, realistic individual hair strands with natural movement, warm golden hour lighting with soft directional shadows, soft subsurface scattering on skin, 4K hyperrealistic photography quality, speaking directly to camera with natural eye contact, vertical 9:16 portrait format, casual modern trendy outfit, natural skin tones with slight variation, lifelike eyes with natural catchlight, temporally consistent video, smooth natural movement, highly detailed face, photorealistic, authentic human presence"
+      ],
+      "widgets_values_named": {
+        "text": "cinematic portrait video of a stunningly beautiful young woman AI influencer, natural realistic skin with subtle pores and micro-texture, slight natural skin imperfections and color variation, genuine warm smile, authentic natural facial expressions, realistic individual hair strands with natural movement, warm golden hour lighting with soft directional shadows, soft subsurface scattering on skin, 4K hyperrealistic photography quality, speaking directly to camera with natural eye contact, vertical 9:16 portrait format, casual modern trendy outfit, natural skin tones with slight variation, lifelike eyes with natural catchlight, temporally consistent video, smooth natural movement, highly detailed face, photorealistic, authentic human presence"
+      }
+    },
+    {
+      "id": 11,
+      "type": "CLIPTextEncode",
+      "pos": [600, 800],
+      "size": [500, 230],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [11]
+        }
+      ],
+      "title": "❌ Negative Prompt — Loại bỏ CGI",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "plastic skin, waxy appearance, CGI look, 3D render, artificial overly smooth skin, airbrushed face, oversaturated colors, cartoon, anime style, unnatural stiff movement, temporal flickering, frame inconsistency, jitter artifacts, blurry, low quality, harsh artificial lighting, flat lighting, painted look, doll-like face, overly perfect symmetry, digital compression artifact, frozen expression, stiff neck movement, distorted face, bad anatomy, extra fingers, deformed hands, watermark, text overlay, logo"
+      ],
+      "widgets_values_named": {
+        "text": "plastic skin, waxy appearance, CGI look, 3D render, artificial overly smooth skin, airbrushed face, oversaturated colors, cartoon, anime style, unnatural stiff movement, temporal flickering, frame inconsistency, jitter artifacts, blurry, low quality, harsh artificial lighting, flat lighting, painted look, doll-like face, overly perfect symmetry, digital compression artifact, frozen expression, stiff neck movement, distorted face, bad anatomy, extra fingers, deformed hands, watermark, text overlay, logo"
+      }
+    },
+    {
+      "id": 34,
+      "type": "Note",
+      "pos": [1175, 190],
+      "size": [600, 310],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🎬 VACE V2V Core — Thông số quan trọng nhất",
+      "properties": {},
+      "widgets_values": [
+        "🎬 VACE V2V CORE — WanVaceToVideo (Native ComfyUI ≥ 0.3.5)\n\n⚡ STRENGTH (0.0 → 1.0) — Cường độ chuyển động & biến đổi:\n   0.60 – 0.72  →  Nhẹ: giữ nhiều detail ảnh gốc\n   0.78 – 0.87  →  CÂN BẰNG TỐI ƯU ✅ (đề xuất cho UGC)\n   0.90 – 1.0   →  Mạnh: biến đổi lớn, theo sát driving video\n\n💡 WIDTH x HEIGHT: 576 × 1024 (9:16 Portrait — 576p balanced)\n   Tiết kiệm VRAM hơn 720p, render nhanh hơn ~30%\n   Output vẫn sắc nét sau RIFE × 2\n\n🎞️ LENGTH: Tự động từ DURATION CONTROL PrimitiveNode ✅\n   81=5s | 129=8s | 161=10s | 241=15s | 320=20s\n\n🖼️ REFERENCE IMAGE → portrait của AI Influencer\n📹 CONTROL VIDEO  → Video người thật diễn (từ VHS_LoadVideo)\n\n⚠️ frame_load_cap của VHS_LoadVideo cũng nhận cùng PrimitiveNode\n   → Không cần đổi 2 nơi, chỉ đổi 1 nơi duy nhất!"
+      ],
+      "widgets_values_named": {
+        "text": "🎬 VACE V2V CORE — WanVaceToVideo (Native ComfyUI ≥ 0.3.5)\n\n⚡ STRENGTH (0.0 → 1.0) — Cường độ chuyển động & biến đổi:\n   0.60 – 0.72  →  Nhẹ: giữ nhiều detail ảnh gốc\n   0.78 – 0.87  →  CÂN BẰNG TỐI ƯU ✅ (đề xuất cho UGC)\n   0.90 – 1.0   →  Mạnh: biến đổi lớn, theo sát driving video\n\n💡 WIDTH x HEIGHT: 576 × 1024 (9:16 Portrait — 576p balanced)\n   Tiết kiệm VRAM hơn 720p, render nhanh hơn ~30%\n   Output vẫn sắc nét sau RIFE × 2\n\n🎞️ LENGTH: Tự động từ DURATION CONTROL PrimitiveNode ✅\n   81=5s | 129=8s | 161=10s | 241=15s | 320=20s\n\n🖼️ REFERENCE IMAGE → portrait của AI Influencer\n📹 CONTROL VIDEO  → Video người thật diễn (từ VHS_LoadVideo)\n\n⚠️ frame_load_cap của VHS_LoadVideo cũng nhận cùng PrimitiveNode\n   → Không cần đổi 2 nơi, chỉ đổi 1 nơi duy nhất!"
+      },
+      "color": "#2a0f3a",
+      "bgcolor": "#160822"
+    },
+    {
+      "id": 13,
+      "type": "WanVaceToVideo",
+      "pos": [1175, 530],
+      "size": [600, 500],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 10
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 11
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 3
+        },
+        {
+          "name": "control_video",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 7
+        },
+        {
+          "name": "control_masks",
+          "shape": 7,
+          "type": "MASK",
+          "link": null
+        },
+        {
+          "name": "reference_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [12, 13]
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "slot_index": 1,
+          "links": [14, 15]
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "slot_index": 2,
+          "links": [16]
+        },
+        {
+          "name": "trim_latent",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "title": "🎬 WAN VACE — V2V Motion Transfer",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "WanVaceToVideo"
+      },
+      "widgets_values": [576, 1024, 161, 1, 0.82],
+      "widgets_values_named": {
+        "width": 576,
+        "height": 1024,
+        "length": 161,
+        "batch_size": 1,
+        "strength": 0.82
+      }
+    },
+    {
+      "id": 35,
+      "type": "Note",
+      "pos": [1850, 190],
+      "size": [480, 390],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🎯 Sampler Guide — Anti-Plastic Settings",
+      "properties": {},
+      "widgets_values": [
+        "🎯 WAN 2.2 VACE — 2-STAGE SAMPLING (Tối ưu speed/quality)\n\n⚙️ Tổng steps = 26\n  HIGH NOISE KSampler:  step  0 → 8\n  LOW NOISE  KSampler:  step  8 → 26\n\n🎚️ CFG = 2.8   (tự nhiên, anti-plastic)\n🔀 SAMPLER = euler\n📅 SCHEDULER = simple\n🎲 SEED = fixed (1234567890) để tái lập kết quả\n         Đổi sang 'randomize' nếu muốn variation\n\n⚠️ HIGH NOISE model → steps 0-8 ('return_with_leftover_noise' = enable)\n⚠️ LOW NOISE model  → steps 8-26 ('add_noise' = disable)\n   Đây là cấu hình VACE 2-stage chính xác!\n\n📊 ModelSamplingSD3 shift=8 cho cả HIGH lẫn LOW\n   → Đây là shift value chuẩn cho WAN 2.2 VACE FP8\n\n💡 KHÔNG thay đổi start/end_at_step nếu không biết rõ\n   Sai cấu hình 2-stage sẽ làm giảm chất lượng rõ rệt"
+      ],
+      "widgets_values_named": {
+        "text": "🎯 WAN 2.2 VACE — 2-STAGE SAMPLING (Tối ưu speed/quality)\n\n⚙️ Tổng steps = 26\n  HIGH NOISE KSampler:  step  0 → 8\n  LOW NOISE  KSampler:  step  8 → 26\n\n🎚️ CFG = 2.8   (tự nhiên, anti-plastic)\n🔀 SAMPLER = euler\n📅 SCHEDULER = simple\n🎲 SEED = fixed (1234567890) để tái lập kết quả\n         Đổi sang 'randomize' nếu muốn variation\n\n⚠️ HIGH NOISE model → steps 0-8 ('return_with_leftover_noise' = enable)\n⚠️ LOW NOISE model  → steps 8-26 ('add_noise' = disable)\n   Đây là cấu hình VACE 2-stage chính xác!\n\n📊 ModelSamplingSD3 shift=8 cho cả HIGH lẫn LOW\n   → Đây là shift value chuẩn cho WAN 2.2 VACE FP8\n\n💡 KHÔNG thay đổi start/end_at_step nếu không biết rõ\n   Sai cấu hình 2-stage sẽ làm giảm chất lượng rõ rệt"
+      },
+      "color": "#3a1010",
+      "bgcolor": "#200808"
+    },
+    {
+      "id": 27,
+      "type": "ModelSamplingSD3",
+      "pos": [1190, 300],
+      "size": [320, 70],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [17]
+        }
+      ],
+      "title": "⚙️ HIGH NOISE — ModelSamplingSD3",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "ModelSamplingSD3"
+      },
+      "widgets_values": [8],
+      "widgets_values_named": {
+        "shift": 8
+      }
+    },
+    {
+      "id": 28,
+      "type": "ModelSamplingSD3",
+      "pos": [1190, 400],
+      "size": [320, 70],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [18]
+        }
+      ],
+      "title": "⚙️ LOW NOISE — ModelSamplingSD3",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "ModelSamplingSD3"
+      },
+      "widgets_values": [8],
+      "widgets_values_named": {
+        "shift": 8
+      }
+    },
+    {
+      "id": 29,
+      "type": "KSamplerAdvanced",
+      "pos": [1850, 610],
+      "size": [480, 440],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 17
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 13
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 15
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [19]
+        }
+      ],
+      "title": "🔥 HIGH NOISE — KSampler Advanced (steps 0→8)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "KSamplerAdvanced"
+      },
+      "widgets_values": [
+        "enable",
+        1234567890,
+        "fixed",
+        26,
+        2.8,
+        "euler",
+        "simple",
+        0,
+        8,
+        "enable"
+      ],
+      "widgets_values_named": {
+        "add_noise": "enable",
+        "noise_seed": 1234567890,
+        "control_after_generate": "fixed",
+        "steps": 26,
+        "cfg": 2.8,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "start_at_step": 0,
+        "end_at_step": 8,
+        "return_with_leftover_noise": "enable"
+      }
+    },
+    {
+      "id": 15,
+      "type": "KSamplerAdvanced",
+      "pos": [1850, 1080],
+      "size": [480, 440],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 18
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 12
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 14
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [20]
+        }
+      ],
+      "title": "❄️ LOW NOISE — KSampler Advanced (steps 8→26)",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "KSamplerAdvanced"
+      },
+      "widgets_values": [
+        "disable",
+        1234567890,
+        "fixed",
+        26,
+        2.8,
+        "euler",
+        "simple",
+        8,
+        26,
+        "disable"
+      ],
+      "widgets_values_named": {
+        "add_noise": "disable",
+        "noise_seed": 1234567890,
+        "control_after_generate": "fixed",
+        "steps": 26,
+        "cfg": 2.8,
+        "sampler_name": "euler",
+        "scheduler": "simple",
+        "start_at_step": 8,
+        "end_at_step": 26,
+        "return_with_leftover_noise": "disable"
+      }
+    },
+    {
+      "id": 16,
+      "type": "VAEDecode",
+      "pos": [2410, 850],
+      "size": [380, 130],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 20
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [21]
+        }
+      ],
+      "title": "🔍 VAE Decode — Latent → Frames",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.36.0",
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 36,
+      "type": "Note",
+      "pos": [2870, 190],
+      "size": [480, 290],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "✨ Post-Processing — RIFE + Output",
+      "properties": {},
+      "widgets_values": [
+        "✨ POST-PROCESSING — Frame Interpolation + MP4 Output\n\n🔄 RIFE VFI (Frame Interpolation):\n   multiplier = 2  →  16fps → 32fps (mượt mà, KHUYẾN NGHỊ ✅)\n   multiplier = 4  →  16fps → 64fps (ultra smooth, chậm hơn ~40%)\n   → Right-click → Mute node nếu không cần nội suy\n   → Nhớ đổi frame_rate VHS_VideoCombine tương ứng!\n\n📤 OUTPUT MP4:\n   frame_rate = 32 (khi RIFE ×2)\n   frame_rate = 16 (khi Mute RIFE)\n   frame_rate = 64 (khi RIFE ×4)\n   crf = 18  → chất lượng cao nhất (tăng lên 23 nếu muốn file nhỏ hơn)\n   format = video/h264-mp4\n   filename_prefix = UGC_Influencer_Video\n\n🎵 AUDIO: Kết nối từ VHS_LoadVideo → giữ nguyên âm thanh gốc"
+      ],
+      "widgets_values_named": {
+        "text": "✨ POST-PROCESSING — Frame Interpolation + MP4 Output\n\n🔄 RIFE VFI (Frame Interpolation):\n   multiplier = 2  →  16fps → 32fps (mượt mà, KHUYẾN NGHỊ ✅)\n   multiplier = 4  →  16fps → 64fps (ultra smooth, chậm hơn ~40%)\n   → Right-click → Mute node nếu không cần nội suy\n   → Nhớ đổi frame_rate VHS_VideoCombine tương ứng!\n\n📤 OUTPUT MP4:\n   frame_rate = 32 (khi RIFE ×2)\n   frame_rate = 16 (khi Mute RIFE)\n   frame_rate = 64 (khi RIFE ×4)\n   crf = 18  → chất lượng cao nhất (tăng lên 23 nếu muốn file nhỏ hơn)\n   format = video/h264-mp4\n   filename_prefix = UGC_Influencer_Video\n\n🎵 AUDIO: Kết nối từ VHS_LoadVideo → giữ nguyên âm thanh gốc"
+      },
+      "color": "#0f3a1a",
+      "bgcolor": "#081f0f"
+    },
+    {
+      "id": 18,
+      "type": "RIFE VFI",
+      "pos": [2870, 510],
+      "size": [480, 310],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "frames",
+          "type": "IMAGE",
+          "link": 21
+        },
+        {
+          "name": "optional_interpolation_states",
+          "shape": 7,
+          "type": "INTERPOLATION_STATES",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [22]
+        }
+      ],
+      "title": "🔄 RIFE — Frame Interpolation ×2 (16→32fps)",
+      "properties": {
+        "cnr_id": "comfyui-frame-interpolation",
+        "ver": "26545cc2dd95bc3d27f056016300673bdeee78f5",
+        "Node name for S&R": "RIFE VFI"
+      },
+      "widgets_values": [
+        "rife49.pth",
+        10,
+        2,
+        true,
+        true,
+        1,
+        "float32",
+        false,
+        1
+      ],
+      "widgets_values_named": {
+        "ckpt_name": "rife49.pth",
+        "clear_cache_after_n_frames": 10,
+        "multiplier": 2,
+        "fast_mode": true,
+        "ensemble": true,
+        "scale_factor": 1,
+        "dtype": "float32",
+        "torch_compile": false,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 37,
+      "type": "Note",
+      "pos": [3430, 190],
+      "size": [460, 260],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "📤 Output — MP4 Settings",
+      "properties": {},
+      "widgets_values": [
+        "📤 OUTPUT — MP4 9:16 Portrait (Flexible Duration)\n\nCurrent path:\nWAN 576×1024 → RIFE ×2 → MP4 @ 32fps\n\nThời lượng output:\n• 5s  (81f)  → ~2.5s MP4 sau RIFE trim to audio\n• 10s (161f) → ~10s MP4 @ 32fps\n• 15s (241f) → ~15s MP4 @ 32fps  ✅ NGỌT NHẤT\n• 20s (320f) → ~20s MP4 @ 32fps\n\nCài đặt quan trọng:\n• trim_to_audio = false (giữ nguyên thời lượng)\n• save_output = true\n• crf = 18 (chất lượng cao)\n\nSau khi render → áp LUT + Film Grain nhẹ\nở DaVinci/CapCut để tăng cảm giác 'người thật'"
+      ],
+      "widgets_values_named": {
+        "text": "📤 OUTPUT — MP4 9:16 Portrait (Flexible Duration)\n\nCurrent path:\nWAN 576×1024 → RIFE ×2 → MP4 @ 32fps\n\nThời lượng output:\n• 5s  (81f)  → ~2.5s MP4 sau RIFE trim to audio\n• 10s (161f) → ~10s MP4 @ 32fps\n• 15s (241f) → ~15s MP4 @ 32fps  ✅ NGỌT NHẤT\n• 20s (320f) → ~20s MP4 @ 32fps\n\nCài đặt quan trọng:\n• trim_to_audio = false (giữ nguyên thời lượng)\n• save_output = true\n• crf = 18 (chất lượng cao)\n\nSau khi render → áp LUT + Film Grain nhẹ\nở DaVinci/CapCut để tăng cảm giác 'người thật'"
+      },
+      "color": "#0f1a3a",
+      "bgcolor": "#080d20"
+    },
+    {
+      "id": 22,
+      "type": "VHS_VideoCombine",
+      "pos": [3430, 480],
+      "size": [460, 1060],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 22
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 8
+        },
+        {
+          "name": "meta_batch",
+          "shape": 7,
+          "type": "VHS_BatchManager",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Filenames",
+          "type": "VHS_FILENAMES",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "title": "📤 Output — MP4 9:16 Portrait (Flexible Duration)",
+      "properties": {
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "4d907bee61e92c2e65af3bd6383a4e4d356126d1",
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": {
+        "frame_rate": 32,
+        "loop_count": 0,
+        "filename_prefix": "UGC_Influencer_Video",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 18,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "UGC_Influencer_Video_00001-audio.mp4",
+            "subfolder": "",
+            "type": "output",
+            "format": "video/h264-mp4",
+            "frame_rate": 32,
+            "workflow": "UGC_Influencer_Video_00001.png",
+            "fullpath": "/workspace/ComfyUI/output/UGC_Influencer_Video_00001-audio.mp4"
+          }
+        }
+      },
+      "widgets_values_named": {
+        "frame_rate": 32,
+        "loop_count": 0,
+        "filename_prefix": "UGC_Influencer_Video",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 18,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "UGC_Influencer_Video_00001-audio.mp4",
+            "subfolder": "",
+            "type": "output",
+            "format": "video/h264-mp4",
+            "frame_rate": 32,
+            "workflow": "UGC_Influencer_Video_00001.png",
+            "fullpath": "/workspace/ComfyUI/output/UGC_Influencer_Video_00001-audio.mp4"
+          }
+        }
+      }
+    },
+    {
+      "id": 38,
+      "type": "Note",
+      "pos": [600, 1080],
+      "size": [520, 340],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "⚠️ Troubleshooting & Quick Tips",
+      "properties": {},
+      "widgets_values": [
+        "⚠️ TROUBLESHOOTING — Lỗi thường gặp\n\n🔴 Node 'WanVaceToVideo' not found:\n   → Cập nhật ComfyUI lên phiên bản ≥ 0.3.5\n   → Hoặc install ComfyUI-WanVideoWrapper (Kijai)\n\n🔴 OOM Error ở 320 frames (20s):\n   → Giảm xuống 241 frames (15s)\n   → Hoặc giảm width từ 576 → 544\n   → Tắt RIFE trong lần render cuối cùng\n\n🔴 PrimitiveNode không kết nối được:\n   → Chuột phải vào 'length' của WanVaceToVideo\n     → 'Convert to input' → kéo link từ PrimitiveNode\n   → Tương tự cho 'frame_load_cap' của VHS_LoadVideo\n\n🔴 Output có 'plastic look':\n   → Giảm CFG xuống 2.5\n   → Giảm STRENGTH xuống 0.75\n   → Thêm nhiều từ khóa anti-plastic vào negative\n\n💡 TIP: Render thử 81 frames (5s) trước để preview nhanh!"
+      ],
+      "widgets_values_named": {
+        "text": "⚠️ TROUBLESHOOTING — Lỗi thường gặp\n\n🔴 Node 'WanVaceToVideo' not found:\n   → Cập nhật ComfyUI lên phiên bản ≥ 0.3.5\n   → Hoặc install ComfyUI-WanVideoWrapper (Kijai)\n\n🔴 OOM Error ở 320 frames (20s):\n   → Giảm xuống 241 frames (15s)\n   → Hoặc giảm width từ 576 → 544\n   → Tắt RIFE trong lần render cuối cùng\n\n🔴 PrimitiveNode không kết nối được:\n   → Chuột phải vào 'length' của WanVaceToVideo\n     → 'Convert to input' → kéo link từ PrimitiveNode\n   → Tương tự cho 'frame_load_cap' của VHS_LoadVideo\n\n🔴 Output có 'plastic look':\n   → Giảm CFG xuống 2.5\n   → Giảm STRENGTH xuống 0.75\n   → Thêm nhiều từ khóa anti-plastic vào negative\n\n💡 TIP: Render thử 81 frames (5s) trước để preview nhanh!"
+      },
+      "color": "#3a2510",
+      "bgcolor": "#201508"
+    },
+    {
+      "id": 39,
+      "type": "Note",
+      "pos": [1175, 1080],
+      "size": [600, 220],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🔄 Duration Control — Cách sử dụng PrimitiveNode",
+      "properties": {},
+      "widgets_values": [
+        "🔄 CÁCH SỬ DỤNG DURATION CONTROL (PrimitiveNode)\n\n✅ Cách đổi thời lượng nhanh:\n   1. Tìm node màu vàng '[⏱️ DURATION CONTROL]'\n   2. Nhập số frames vào ô value:\n      81  → 5 giây   | 129 → 8 giây\n      161 → 10 giây  | 241 → 15 giây  | 320 → 20 giây\n   3. Nhấn Queue Prompt → pipeline tự điều chỉnh!\n\n⚡ PrimitiveNode kết nối với:\n   → 'length' của WanVaceToVideo  (số frames render)\n   → 'frame_load_cap' của VHS_LoadVideo  (số frames đọc vào)\n   Cả 2 đồng bộ tự động — không cần đổi thủ công 2 nơi!\n\n📋 Driving video phải đủ dài ≥ số frames / 16fps giây"
+      ],
+      "widgets_values_named": {
+        "text": "🔄 CÁCH SỬ DỤNG DURATION CONTROL (PrimitiveNode)\n\n✅ Cách đổi thời lượng nhanh:\n   1. Tìm node màu vàng '[⏱️ DURATION CONTROL]'\n   2. Nhập số frames vào ô value:\n      81  → 5 giây   | 129 → 8 giây\n      161 → 10 giây  | 241 → 15 giây  | 320 → 20 giây\n   3. Nhấn Queue Prompt → pipeline tự điều chỉnh!\n\n⚡ PrimitiveNode kết nối với:\n   → 'length' của WanVaceToVideo  (số frames render)\n   → 'frame_load_cap' của VHS_LoadVideo  (số frames đọc vào)\n   Cả 2 đồng bộ tự động — không cần đổi thủ công 2 nơi!\n\n📋 Driving video phải đủ dài ≥ số frames / 16fps giây"
+      },
+      "color": "#1a2a3a",
+      "bgcolor": "#0d1520"
+    },
+    {
+      "id": 40,
+      "type": "Note",
+      "pos": [1850, 1550],
+      "size": [480, 230],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🎨 Color Grading — Post-production",
+      "properties": {},
+      "widgets_values": [
+        "🎨 COLOR GRADING — Tăng cảm giác 'người thật'\n\nSau khi xuất MP4, áp dụng trong DaVinci Resolve:\n  → Log LUT hoặc Filmic LUT nhẹ\n  → Giảm Saturation nhẹ -5% → -10%\n  → Film Grain overlay (3–5% opacity)\n  → Slight vignette viền tối\n\nCapCut / Premiere:\n  → Filmic / Cinematic preset nhẹ\n  → Thêm noise texture overlay nhẹ\n\nUpload TikTok / Instagram Reels:\n  → H.264, bitrate ≥ 15 Mbps, 1080×1920 @ 30fps\n  → Dùng HandBrake để nén đúng cấu hình platform"
+      ],
+      "widgets_values_named": {
+        "text": "🎨 COLOR GRADING — Tăng cảm giác 'người thật'\n\nSau khi xuất MP4, áp dụng trong DaVinci Resolve:\n  → Log LUT hoặc Filmic LUT nhẹ\n  → Giảm Saturation nhẹ -5% → -10%\n  → Film Grain overlay (3–5% opacity)\n  → Slight vignette viền tối\n\nCapCut / Premiere:\n  → Filmic / Cinematic preset nhẹ\n  → Thêm noise texture overlay nhẹ\n\nUpload TikTok / Instagram Reels:\n  → H.264, bitrate ≥ 15 Mbps, 1080×1920 @ 30fps\n  → Dùng HandBrake để nén đúng cấu hình platform"
+      },
+      "color": "#2a1a3a",
+      "bgcolor": "#160f20"
+    },
+    {
+      "id": 41,
+      "type": "Note",
+      "pos": [2410, 190],
+      "size": [380, 200],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🔍 VAE Decode — Thông tin",
+      "properties": {},
+      "widgets_values": [
+        "🔍 VAE DECODE — Latent Space → Pixel Frames\n\n⚡ Đây là bước decode toàn bộ latent sequence\n   → Với 320 frames: cần ~4–6 GB VRAM thêm\n   → Với 161 frames: ~2–3 GB VRAM\n\n💡 VAE Decode là nút cổ chai thứ 2 sau sampling\n   Không có cách tăng tốc bước này ngoài:\n   → Tăng VRAM (48GB đủ cho mọi preset ✅)\n   → Dùng VAE tile nếu gặp OOM\n\n🔗 Input: Latent từ LOW NOISE KSampler\n🔗 Output: IMAGE (frames) → RIFE"
+      ],
+      "widgets_values_named": {
+        "text": "🔍 VAE DECODE — Latent Space → Pixel Frames\n\n⚡ Đây là bước decode toàn bộ latent sequence\n   → Với 320 frames: cần ~4–6 GB VRAM thêm\n   → Với 161 frames: ~2–3 GB VRAM\n\n💡 VAE Decode là nút cổ chai thứ 2 sau sampling\n   Không có cách tăng tốc bước này ngoài:\n   → Tăng VRAM (48GB đủ cho mọi preset ✅)\n   → Dùng VAE tile nếu gặp OOM\n\n🔗 Input: Latent từ LOW NOISE KSampler\n🔗 Output: IMAGE (frames) → RIFE"
+      },
+      "color": "#1a2a3a",
+      "bgcolor": "#0d1520"
+    },
+    {
+      "id": 42,
+      "type": "Note",
+      "pos": [2870, 870],
+      "size": [480, 200],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "🔄 RIFE — Nếu muốn Mute node",
+      "properties": {},
+      "widgets_values": [
+        "🔄 RIFE VFI — Hướng dẫn Mute/Unmute\n\n✅ Đang bật: 16fps → 32fps (smooth, default)\n\n🔇 Để TẮT RIFE (không nội suy):\n   1. Chuột phải vào node RIFE\n   2. Chọn 'Mute'\n   3. Kéo link trực tiếp VAEDecode → VHS_VideoCombine\n   4. Đổi frame_rate ở VHS_VideoCombine = 16\n\n🔊 Để BẬT lại:\n   1. Chuột phải → 'Unmute'\n   2. Kết nối lại RIFE → VHS_VideoCombine\n   3. Đổi frame_rate = 32\n\n💡 Không dùng RIFE khi cần render test nhanh!"
+      ],
+      "widgets_values_named": {
+        "text": "🔄 RIFE VFI — Hướng dẫn Mute/Unmute\n\n✅ Đang bật: 16fps → 32fps (smooth, default)\n\n🔇 Để TẮT RIFE (không nội suy):\n   1. Chuột phải vào node RIFE\n   2. Chọn 'Mute'\n   3. Kéo link trực tiếp VAEDecode → VHS_VideoCombine\n   4. Đổi frame_rate ở VHS_VideoCombine = 16\n\n🔊 Để BẬT lại:\n   1. Chuột phải → 'Unmute'\n   2. Kết nối lại RIFE → VHS_VideoCombine\n   3. Đổi frame_rate = 32\n\n💡 Không dùng RIFE khi cần render test nhanh!"
+      },
+      "color": "#0f3a1a",
+      "bgcolor": "#081f0f"
+    }
+  ],
+  "links": [
+    [1,  3,  0, 27, 0, "MODEL"],
+    [2,  4,  0, 28, 0, "MODEL"],
+    [3,  5,  0, 13, 2, "VAE"],
+    [4,  5,  0, 16, 1, "VAE"],
+    [5,  6,  0, 10, 0, "CLIP"],
+    [6,  6,  0, 11, 0, "CLIP"],
+    [7,  7,  0, 13, 3, "IMAGE"],
+    [8,  7,  2, 22, 1, "AUDIO"],
+    [9,  8,  0, 13, 5, "IMAGE"],
+    [10, 10, 0, 13, 0, "CONDITIONING"],
+    [11, 11, 0, 13, 1, "CONDITIONING"],
+    [12, 13, 0, 15, 1, "CONDITIONING"],
+    [13, 13, 0, 29, 1, "CONDITIONING"],
+    [14, 13, 1, 15, 2, "CONDITIONING"],
+    [15, 13, 1, 29, 2, "CONDITIONING"],
+    [16, 13, 2, 29, 3, "LATENT"],
+    [17, 27, 0, 29, 0, "MODEL"],
+    [18, 28, 0, 15, 0, "MODEL"],
+    [19, 29, 0, 15, 3, "LATENT"],
+    [20, 15, 0, 16, 0, "LATENT"],
+    [21, 16, 0, 18, 0, "IMAGE"],
+    [22, 18, 0, 22, 0, "IMAGE"],
+    [30, 32, 0, 13, -1, "INT"],
+    [31, 32, 0,  7, -1, "INT"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "🧠 MODEL LOADERS — WAN 2.2 14B VACE (Native ComfyUI ≥ 0.3.5)",
+      "bounding": [10, 170, 520, 730],
+      "color": "#1e3a5f",
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "⏱️ DURATION CONTROL — Đổi 1 số để thay thời lượng",
+      "bounding": [10, 880, 520, 480],
+      "color": "#3a2a00",
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "📥 INPUT ZONE — Driving Video + Base Portrait",
+      "bounding": [-740, 370, 550, 1800],
+      "color": "#1a3a2a",
+      "flags": {}
+    },
+    {
+      "id": 4,
+      "title": "✍️ PROMPTS — Positive & Negative",
+      "bounding": [590, 170, 520, 1260],
+      "color": "#3a2a0f",
+      "flags": {}
+    },
+    {
+      "id": 5,
+      "title": "🎬 VACE V2V CORE — Motion Transfer + Identity Lock",
+      "bounding": [1165, 170, 630, 1340],
+      "color": "#2a0f3a",
+      "flags": {}
+    },
+    {
+      "id": 6,
+      "title": "🎯 SAMPLING — 2-Stage Anti-Plastic (CFG, Steps, Seed)",
+      "bounding": [1840, 170, 510, 1800],
+      "color": "#3a1010",
+      "flags": {}
+    },
+    {
+      "id": 7,
+      "title": "🔍 DECODE — Latent → Frames",
+      "bounding": [2400, 170, 400, 1020],
+      "color": "#1a2a3a",
+      "flags": {}
+    },
+    {
+      "id": 8,
+      "title": "✨ POST-PROCESSING — RIFE 2× Frame Interp",
+      "bounding": [2860, 170, 510, 950],
+      "color": "#0f3a1a",
+      "flags": {}
+    },
+    {
+      "id": 9,
+      "title": "📤 OUTPUT — MP4 9:16 Portrait | Audio Sync",
+      "bounding": [3420, 170, 490, 1410],
+      "color": "#0f1a3a",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.65,
+      "offset": [-300, -350]
+    },
+    "info": {
+      "name": "UGC AI Influencer V2V — WAN 2.2 VACE | Flexible Duration 5s→20s",
+      "author": "Antigravity AI",
+      "description": "Flexible duration workflow (5s-20s) for UGC AI Influencer production. Single PrimitiveNode controls both WanVaceToVideo length AND VHS_LoadVideo frame_load_cap simultaneously. 576x1024 resolution, 26 steps 2-stage sampling, RIFE x2 interpolation. Optimized for RTX 6000 Ada / A6000 48GB VRAM.",
+      "version": "2.0.0-flexible-duration",
+      "target_vram": "48GB (RTX 6000 Ada / A6000)",
+      "output_format": "MP4 H.264 @ 32fps (after RIFE x2)",
+      "duration_presets": {
+        "5s":  "81  frames @ 16fps  — ~4-5 min render",
+        "8s":  "129 frames @ 16fps  — ~7-8 min render",
+        "10s": "161 frames @ 16fps  — ~9-11 min render (DEFAULT)",
+        "15s": "241 frames @ 16fps  — ~13-16 min render (RECOMMENDED)",
+        "20s": "320 frames @ 16fps  — ~17-20 min render (max)"
+      },
+      "models_required": [
+        "wan2.2_fun_vace_high_noise_14B_fp8_scaled.safetensors (diffusion_models/)",
+        "wan2.2_fun_vace_low_noise_14B_fp8_scaled.safetensors (diffusion_models/)",
+        "wan_2.1_vae.safetensors (vae/)",
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensors (text_encoders/)",
+        "rife49.pth (ComfyUI-Frame-Interpolation/ckpts/)"
+      ],
+      "custom_nodes_required": [
+        "ComfyUI-VideoHelperSuite",
+        "ComfyUI-Frame-Interpolation (fannovel16)"
+      ],
+      "comfyui_version_min": "0.3.5"
+    },
+    "frontendVersion": "1.52.7",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
