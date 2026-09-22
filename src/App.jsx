@@ -3,10 +3,8 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import MainEditor from './MainEditor';
 import Workspace from './Workspace/Workspace';
 import HistoryModel from './HistoryModel';
-import WorkflowEditor from './WorkflowEditor';
-import WorkerNode from './WorkerNode'; // 🚀 IMPORT TRẠM TRỰC CHIẾN
 
-import { LayoutTemplate, PlaySquare, History, Loader2, Sun, Moon, Workflow } from 'lucide-react';
+import { LayoutTemplate, PlaySquare, History, Loader2, Sun, Moon } from 'lucide-react';
 import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/clerk-react";
 
 import { FFmpeg } from '@ffmpeg/ffmpeg';
@@ -35,11 +33,6 @@ export default function App() {
     };
     loadFFmpeg();
   }, []);
-
-  // 🚀 NẾU LÀ TAB WORKER MỞ ẨN THÌ TRẢ VỀ LUÔN, KHÔNG CẦN CLERK ĐĂNG NHẬP
-  if (currentPath === '/worker') {
-    return <WorkerNode />;
-  }
 
   // ─── Nav tab helper ───────────────────────────────────────────────────────
   const navTab = (isActive, colorClass) =>
@@ -115,17 +108,6 @@ export default function App() {
             </button>
 
             <button
-              onClick={() => navigate('/autoflow')}
-              className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 ${navTab(
-                currentPath.includes('/autoflow'),
-                'text-emerald-400'
-              )}`}
-            >
-              <Workflow size={15} />
-              <span className="hidden sm:inline">Auto Flow</span>
-            </button>
-
-            <button
               onClick={() => navigate('/history')}
               className={`px-3 sm:px-4 py-1.5 rounded-lg font-semibold text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50 ${navTab(
                 currentPath === '/history',
@@ -178,7 +160,6 @@ export default function App() {
                 />
               }
             />
-            <Route path="/autoflow/:id?" element={<WorkflowEditor />} />
             <Route path="/history" element={<HistoryModel darkMode={darkMode} />} />
             <Route
               path="/project/:projectId"
