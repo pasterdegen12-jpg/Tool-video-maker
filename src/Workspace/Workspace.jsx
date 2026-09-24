@@ -100,6 +100,9 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   const [generatedAudios, setGeneratedAudios] = useState({});
+  // 🔧 Ref mirrors generatedAudios state — dùng để đọc/ghi synchronously trong async handlers,
+  // tránh stale closure và side-effect-in-updater bugs.
+  const generatedAudiosRef = useRef({});
   const [isGenerating, setIsGenerating] = useState({});
   const [isVideoGenerating, setIsVideoGenerating] = useState({});
 
@@ -157,6 +160,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             Object.keys(projectInfo.generatedAudios).forEach(key => {
               proxiedAudios[key] = proxifyUrl(projectInfo.generatedAudios[key]);
             });
+            generatedAudiosRef.current = proxiedAudios; // sync ref
             setGeneratedAudios(proxiedAudios);
           }
 
@@ -385,6 +389,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const handleResetProject = async () => {
     if (!window.confirm("⚠️ CẢNH BÁO: Hành động này sẽ XÓA TOÀN BỘ Audio, Video, Ảnh Nền đã tạo và đưa kịch bản về trạng thái GỐC. Bạn có chắc chắn?")) return;
 
+    generatedAudiosRef.current = {}; // sync ref
     setGeneratedAudios({});
     setMergedVideos({});
     setIsVideoGenerating({});
@@ -693,15 +698,13 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
       if (audioUrl) {
         const proxiedUrl = proxifyUrl(audioUrl);
-        // 🔧 Fix key type: dùng String(sceneNo) để đảm bảo key luôn là string,
-        // khớp với cách Firebase Firestore serialize object key (luôn là string).
         const keyStr = String(sceneNo);
-        let latestAudios;
-        setGeneratedAudios(prev => {
-          latestAudios = { ...prev, [keyStr]: proxiedUrl };
-          return latestAudios;
-        });
-        await updateProjectProgress(projectId, { generatedAudios: latestAudios });
+        // 🔧 Dùng ref (luôn sync) thay vì closure hay side-effect trong updater.
+        // Ref được update ngay → đảm bảo Firebase save nhận đúng giá trị.
+        const newAudios = { ...generatedAudiosRef.current, [keyStr]: proxiedUrl };
+        generatedAudiosRef.current = newAudios; // cập nhật ref ngay
+        setGeneratedAudios(newAudios);          // cập nhật UI
+        await updateProjectProgress(projectId, { generatedAudios: newAudios }); // lưu Firebase đúng
       } else {
         throw new Error("API xử lý xong nhưng không trích xuất được Link Audio.");
       }
