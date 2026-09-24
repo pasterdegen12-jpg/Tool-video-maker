@@ -28,9 +28,10 @@ export default function StoryboardTab({
       {parsedData.map((scene, index) => {
         const isLoadingAudio = isGenerating[scene.scene_n];
         const isLoadingVideo = isVideoGenerating ? isVideoGenerating[scene.scene_n] : false;
-        const isMergingThisScene = mergingScenes[scene.scene_n];
-        const hasAudio = generatedAudios[scene.scene_n];
-        const hasOutput = mergedVideos[scene.scene_n];
+        const sceneKey = String(scene.scene_n);
+        const isMergingThisScene = mergingScenes[sceneKey];
+        const hasAudio = generatedAudios[sceneKey];
+        const hasOutput = mergedVideos[sceneKey];
 
         const voWordCount = scene.Word_count || (scene.Voiceover ? scene.Voiceover.trim().split(/\s+/).length : 0);
         

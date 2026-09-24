@@ -693,9 +693,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
       if (audioUrl) {
         const proxiedUrl = proxifyUrl(audioUrl);
+        // 🔧 Fix key type: dùng String(sceneNo) để đảm bảo key luôn là string,
+        // khớp với cách Firebase Firestore serialize object key (luôn là string).
+        const keyStr = String(sceneNo);
         let latestAudios;
         setGeneratedAudios(prev => {
-          latestAudios = { ...prev, [sceneNo]: proxiedUrl };
+          latestAudios = { ...prev, [keyStr]: proxiedUrl };
           return latestAudios;
         });
         await updateProjectProgress(projectId, { generatedAudios: latestAudios });
@@ -1846,6 +1849,42 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Single Scene Merge Modal */}
+      {activeMergeModal && (
+        <div className={OVERLAY}>
+          <div className={cn(modalCard(darkMode), "w-full max-w-sm flex flex-col")}>
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60 rounded-t-2xl" />
+            <button onClick={() => setActiveMergeModal(null)} className={cn("absolute top-5 right-5 cursor-pointer transition-colors focus-visible:outline-none", darkMode ? "text-slate-500 hover:text-white" : "text-zinc-500 hover:text-black")}><X size={20} /></button>
+
+            <div className={cn("p-6 border-b shrink-0", darkMode ? "border-white/[0.07]" : "border-zinc-200")}>
+              <h2 className={cn("text-lg font-bold flex items-center gap-2", darkMode ? "text-white" : "text-black")}>
+                <Merge className="text-blue-400" size={20} /> Merge Scene {activeMergeModal.scene_n}
+              </h2>
+              <p className={cn("text-xs mt-1", darkMode ? "text-slate-500" : "text-zinc-500")}>
+                {generatedAudios[String(activeMergeModal.scene_n)] ? "Sẽ ghép: Video gốc + AI Audio + Nhạc nền" : "Sẽ ghép: Video gốc (không có AI Audio)"}
+              </p>
+            </div>
+
+            <div className={cn("px-6 py-5", darkMode ? "bg-slate-950/60" : "bg-zinc-50")}>
+              <div className="flex justify-between items-center mb-3">
+                <span className={cn("font-semibold text-sm", darkMode ? "text-slate-200" : "text-zinc-900")}>Âm lượng video gốc (Mix)</span>
+                <span className="text-blue-400 font-mono font-bold bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20">{(singleMixVol / 100).toFixed(2)}</span>
+              </div>
+              <input type="range" min="0" max="100" value={singleMixVol} onChange={(e) => setSingleMixVol(e.target.value)} className={cn("w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-500", darkMode ? "bg-slate-800" : "bg-zinc-300")} />
+            </div>
+
+            <div className={cn("p-6 border-t flex gap-3 shrink-0", darkMode ? "border-white/[0.07]" : "border-zinc-200")}>
+              <button onClick={() => setActiveMergeModal(null)} className={cn("flex-1 py-3 rounded-xl font-bold text-sm cursor-pointer transition-colors border focus-visible:outline-none", darkMode ? "bg-slate-800 hover:bg-slate-700 text-slate-300 border-white/[0.07]" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-700 border-zinc-200")}>
+                Huỷ
+              </button>
+              <button onClick={handleSingleSceneMergeConfirm} className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl font-bold text-sm cursor-pointer flex items-center justify-center gap-2 shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50">
+                <Merge size={16} /> Bắt đầu Merge
+              </button>
+            </div>
           </div>
         </div>
       )}
