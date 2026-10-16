@@ -8,7 +8,7 @@ import {createHash} from 'node:crypto';
 import {once} from 'node:events';
 import {spawn} from 'node:child_process';
 import process from 'node:process';
-import {createAttemptJournal} from '../api/lib/seedance/journal.js';
+import {createAttemptJournal} from '../api/_lib/seedance/journal.js';
 import {payload,serveVideo,confirm,mockProvider,prediction,response,session,baseConfig} from './support/seedance-fixtures.mjs';
 const hash=x=>createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const temp=()=>fs.mkdtemp(path.join(os.tmpdir(),'seedance-recovery-'));

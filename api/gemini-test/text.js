@@ -1,6 +1,6 @@
 import process from 'node:process';
-import { GeminiWebAdapter } from '../lib/gemini-web/adapter.js';
-import { GeminiTestError, publicError } from '../lib/gemini-web/errors.js';
+import { GeminiWebAdapter } from '../_lib/gemini-web/adapter.js';
+import { GeminiTestError, publicError } from '../_lib/gemini-web/errors.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { serve, session, admission, upstreamId, json, config } from './support/local-ai-fixtures.mjs';
-import { readConfig } from '../api/lib/local-ai/config.js';
+import { readConfig } from '../api/_lib/local-ai/config.js';
 import handler from '../api/local-ai/visual-profile.js';
 const fixture = JSON.parse(await fs.readFile(new URL('./support/visual-fixture.json', import.meta.url)));
 const payload = { mime_type: fixture.mime_type, image_base64: fixture.image_base64 };

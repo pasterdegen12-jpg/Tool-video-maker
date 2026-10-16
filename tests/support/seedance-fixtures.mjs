@@ -1,9 +1,9 @@
 import { once } from 'node:events';
 import { config as clerk,session } from './local-ai-fixtures.mjs';
-import { readVideoConfig } from '../../api/lib/seedance/config.js';
+import { readVideoConfig } from '../../api/_lib/seedance/config.js';
 import { createVideoServer } from '../../scripts/local-video-server.mjs';
 import { MODEL,DEFAULT_SETTINGS } from '../../src/lib/seedanceContract.js';
-import { publicAddress } from '../../api/lib/seedance/transport.js';
+import { publicAddress } from '../../api/_lib/seedance/transport.js';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';

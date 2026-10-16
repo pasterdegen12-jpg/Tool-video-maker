@@ -1,9 +1,9 @@
 import http from 'node:http';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { readVideoConfig } from '../api/lib/seedance/config.js';
-import { createVideoHandler } from '../api/lib/seedance/service.js';
-import { VideoError,sendVideoError } from '../api/lib/seedance/errors.js';
+import { readVideoConfig } from '../api/_lib/seedance/config.js';
+import { createVideoHandler } from '../api/_lib/seedance/service.js';
+import { VideoError,sendVideoError } from '../api/_lib/seedance/errors.js';
 export function createVideoServer(config=readVideoConfig(),options){
   const handler=createVideoHandler(config,options);
   const server=http.createServer((req,res)=>{

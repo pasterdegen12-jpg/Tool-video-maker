@@ -1,13 +1,13 @@
 import http from 'node:http';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { readConfig } from '../api/lib/local-ai/config.js';
-import { createBridge } from '../api/lib/local-ai/bridge.js';
-import { BridgeError, sendError } from '../api/lib/local-ai/errors.js';
+import { readConfig } from '../api/_lib/local-ai/config.js';
+import { createBridge } from '../api/_lib/local-ai/bridge.js';
+import { BridgeError, sendError } from '../api/_lib/local-ai/errors.js';
 import fs from 'node:fs';
 import path from 'node:path';
-import {createCharacterPersistence} from '../api/lib/local-ai/character-persistence.js';
-import {createCharacterRepository} from '../api/lib/local-ai/character-repository.js';
+import {createCharacterPersistence} from '../api/_lib/local-ai/character-persistence.js';
+import {createCharacterRepository} from '../api/_lib/local-ai/character-repository.js';
 
 export function createLocalServer(config = readConfig(), options) {
   const bridge = createBridge(config, options);

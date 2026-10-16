@@ -1,1 +1,1 @@
-export { default } from '../lib/local-ai/bridge.js';
+export { default } from '../_lib/local-ai/bridge.js';

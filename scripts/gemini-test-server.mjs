@@ -2,7 +2,7 @@ import http from 'node:http';
 import process from 'node:process';
 import { Buffer } from 'node:buffer';
 import handler from '../api/gemini-test/text.js';
-import { GeminiTestError, publicError } from '../api/lib/gemini-web/errors.js';
+import { GeminiTestError, publicError } from '../api/_lib/gemini-web/errors.js';
 
 if (process.env.NODE_ENV !== 'development' || process.env.GEMINI_TEST_LOCAL !== 'true' || process.env.VERCEL) {
   throw new Error('Set NODE_ENV=development and GEMINI_TEST_LOCAL=true for this local-only server.');

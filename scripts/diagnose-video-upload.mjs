@@ -6,10 +6,10 @@ import process from 'node:process';
 import {fileURLToPath} from 'node:url';
 import {parseEnv} from 'node:util';
 import {createHash} from 'node:crypto';
-import {createImageUploader,API} from '../api/lib/seedance/provider.js';
-import {requestHttps} from '../api/lib/seedance/transport.js';
-import {validateImage,MAX_IMAGE_BYTES} from '../api/lib/seedance/images.js';
-import {failureInfo} from '../api/lib/seedance/diagnostics.js';
+import {createImageUploader,API} from '../api/_lib/seedance/provider.js';
+import {requestHttps} from '../api/_lib/seedance/transport.js';
+import {validateImage,MAX_IMAGE_BYTES} from '../api/_lib/seedance/images.js';
+import {failureInfo} from '../api/_lib/seedance/diagnostics.js';
 
 export async function diagnoseUpload(input,{env,request=requestHttps,checkUrl}={}){
   if(env?.LOCAL_VIDEO_PAID_ENABLED!=='false'||env.VITE_WAVESPEED_API_KEY||!env.WAVESPEED_API_KEY)throw Error('Require paid=false, empty frontend key and backend credential');

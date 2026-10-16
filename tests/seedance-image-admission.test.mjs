@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash,randomFillSync} from 'node:crypto';
 import {PNG} from 'pngjs';
 import jpeg from 'jpeg-js';
-import {validateImage} from '../api/lib/seedance/images.js';
+import {validateImage} from '../api/_lib/seedance/images.js';
 import {readVideoImage} from '../src/lib/seedanceImageClient.js';
 import {readReferenceFile} from '../src/lib/visualProfileClient.js';
 import {MAX_SELECTED_IMAGE_BYTES as MAX,MAX_VIDEO_BODY_BYTES,checkImageSize} from '../src/lib/seedanceImage.js';

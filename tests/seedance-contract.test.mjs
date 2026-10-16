@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import { composeScene,planDuration,estimateCost,DEFAULT_SETTINGS,MAX_PROMPT_CHARS } from '../src/lib/seedanceContract.js';
-import { validateImage } from '../api/lib/seedance/images.js';
+import { validateImage } from '../api/_lib/seedance/images.js';
 import { payload } from './support/seedance-fixtures.mjs';
 const time=Date.parse('2026-10-12T12:00:00Z');
 test('faithful prompt includes original strings once; no translation or scene mutation',()=>{

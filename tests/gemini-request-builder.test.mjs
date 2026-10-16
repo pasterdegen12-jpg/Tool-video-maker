@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildExperimentalRequest } from '../api/lib/gemini-web/experimental-request.js';
+import { buildExperimentalRequest } from '../api/_lib/gemini-web/experimental-request.js';
 
 test('fresh requests omit attestation and isolate all dynamic state', () => {
   const a = buildExperimentalRequest('A & B = C + tiếng Việt', { at: 'test-token-a', sid: 'test-sid-a', build: 'test-build-a' });

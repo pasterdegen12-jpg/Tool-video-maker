@@ -1,7 +1,7 @@
 // Synthetic Clerk-shaped sessions signed with an ephemeral test key, NOT live Clerk sessions.
 import { generateKeyPairSync, sign, createHash } from 'node:crypto';
 import { once } from 'node:events';
-import { readConfig } from '../../api/lib/local-ai/config.js';
+import { readConfig } from '../../api/_lib/local-ai/config.js';
 import { createLocalServer } from '../../scripts/local-ai-server.mjs';
 
 const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });

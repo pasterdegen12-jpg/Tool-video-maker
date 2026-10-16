@@ -13,10 +13,10 @@
  */
 import process from 'node:process';
 import path from 'node:path';
-import { integrationEnabled, readConfig } from '../lib/local-ai/config.js';
-import { createCharacterPersistence } from '../lib/local-ai/character-persistence.js';
-import { createCharacterRepository } from '../lib/local-ai/character-repository.js';
-import { BridgeError, sendError } from '../lib/local-ai/errors.js';
+import { integrationEnabled, readConfig } from '../../_lib/local-ai/config.js';
+import { createCharacterPersistence } from '../../_lib/local-ai/character-persistence.js';
+import { createCharacterRepository } from '../../_lib/local-ai/character-repository.js';
+import { BridgeError, sendError } from '../../_lib/local-ai/errors.js';
 
 // Lazily initialised alongside the visual-profile bridge.
 // Import the bridge module so we share the same singleton localHandler
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
 
       // Import the bridge lazily so the same process module cache is used.
       // bridge.js exports the singleton default handler which carries .visualEvidence().
-      const { default: bridgeHandler } = await import('../lib/local-ai/bridge.js');
+      const { default: bridgeHandler } = await import('../../_lib/local-ai/bridge.js');
       const evidence = (jobId, session) => bridgeHandler.visualEvidence(jobId, session);
 
       persistence = createCharacterPersistence({ config, grants, repository, evidence, backup });

@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { payload,serveVideo,confirm,mockProvider,prediction,response,session,baseConfig } from './support/seedance-fixtures.mjs';
 import { MODEL } from '../src/lib/seedanceContract.js';
-import { readVideoConfig } from '../api/lib/seedance/config.js';
-import { publicAddress,publicIPv4 } from '../api/lib/seedance/transport.js';
-import { createProvider } from '../api/lib/seedance/provider.js';
+import { readVideoConfig } from '../api/_lib/seedance/config.js';
+import { publicAddress,publicIPv4 } from '../api/_lib/seedance/transport.js';
+import { createProvider } from '../api/_lib/seedance/provider.js';
 import fs from 'node:fs/promises';
 test('real loopback HTTP, Clerk verifier with test-signed session, exact upload/submit/poll; no real provider',async t=>{
   let clock=Date.now();const s=await serveVideo(t,{now:()=>clock});
@@ -199,8 +199,8 @@ test('documented deleted tombstone without outputs is terminal; other missing/ma
 });
 
 // ── Phase 5A.1D: backend 25 MiB image limit regression ───────────────────────
-import { validateImage, MAX_IMAGE_BYTES } from '../api/lib/seedance/images.js';
-import { VideoError } from '../api/lib/seedance/errors.js';
+import { validateImage, MAX_IMAGE_BYTES } from '../api/_lib/seedance/images.js';
+import { VideoError } from '../api/_lib/seedance/errors.js';
 
 test('MAX_IMAGE_BYTES is exactly 25 MiB',()=>{
   assert.equal(MAX_IMAGE_BYTES,26214400,'Raw byte limit must be exactly 25 MiB');

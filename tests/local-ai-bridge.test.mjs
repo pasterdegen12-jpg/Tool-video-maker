@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import process from 'node:process';
 import http from 'node:http';
 import { generateKeyPairSync } from 'node:crypto';
-import { readConfig, integrationEnabled } from '../api/lib/local-ai/config.js';
-import defaultHandler from '../api/lib/local-ai/bridge.js';
-import { createGatewayClient } from '../api/lib/local-ai/client.js';
+import { readConfig, integrationEnabled } from '../api/_lib/local-ai/config.js';
+import defaultHandler from '../api/_lib/local-ai/bridge.js';
+import { createGatewayClient } from '../api/_lib/local-ai/client.js';
 import { config, session, serve, json, payload, admission, completed, upstreamId, sourceHash } from './support/local-ai-fixtures.mjs';
 
 test('local opt-in and production hard disable, including deployed handler', async () => {

@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import process from 'node:process';
 import handler from '../api/gemini-test/text.js';
-import { GeminiWebAdapter } from '../api/lib/gemini-web/adapter.js';
-import { publicError } from '../api/lib/gemini-web/errors.js';
-import { parseGeminiResponse } from '../api/lib/gemini-web/parse-response.js';
+import { GeminiWebAdapter } from '../api/_lib/gemini-web/adapter.js';
+import { publicError } from '../api/_lib/gemini-web/errors.js';
+import { parseGeminiResponse } from '../api/_lib/gemini-web/parse-response.js';
 
 // These tests exercise only the blocked scaffold; no Gemini response is mocked.
 function response() {

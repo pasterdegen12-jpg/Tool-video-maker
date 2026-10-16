@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import https from 'node:https';
 import {EventEmitter} from 'node:events';
-import {requestHttps} from '../api/lib/seedance/transport.js';
+import {requestHttps} from '../api/_lib/seedance/transport.js';
 const url='https://storage.wavespeed.ai/file?temporary=REDACTED';
 const resolver=async()=>[{address:'93.184.216.34',family:4}];
 function fake(t,{mode='ok',body='ok'}={}){

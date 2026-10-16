@@ -54,9 +54,9 @@ const EXPECTED_SCENES = [1, 3, 8, 11, 15, 17, 20, 21];
 const { migrateCharacterIdentity, canonicalIdentity, validCharacterId } =
   await import('../../src/lib/characterIdentity.js');
 const { createCharacterRepository } =
-  await import('../../api/lib/local-ai/character-repository.js');
+  await import('../../api/_lib/local-ai/character-repository.js');
 const { projectFingerprint } =
-  await import('../../api/lib/local-ai/character-persistence.js');
+  await import('../../api/_lib/local-ai/character-persistence.js');
 const { composeScene } =
   await import('../../src/lib/seedanceContract.js');
 
