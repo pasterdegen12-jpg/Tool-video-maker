@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-10-15T15:15:20.458Z",
+  "balance": {
+    "http_status": 200,
+    "code": 200,
+    "balance": 26.678154,
+    "transport": "Existing DNS-pinned requestHttps"
+  },
+  "billing": {
+    "http_status": 200,
+    "code": 200,
+    "items_is_array": true,
+    "items_count": 0,
+    "items_is_null": false,
+    "page": 1,
+    "has_more": false,
+    "range_start": "2026-10-15T15:09:00Z",
+    "range_end": "2026-10-15T15:16:11.207Z"
+  },
+  "predictions": {
+    "http_status": 200,
+    "code": 200,
+    "items_is_array": false,
+    "items_count": null,
+    "items_is_null": true,
+    "page": 1,
+    "has_more": null,
+    "range_start": "2026-10-15T15:09:00Z",
+    "range_end": "2026-10-15T15:16:11.207Z"
+  }
+}

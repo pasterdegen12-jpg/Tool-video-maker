@@ -1,0 +1,62 @@
+[
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/MainEditor.jsx",
+    "before_sha256": "84467a8513f117bb04367d81d5788c040a2941665344c47f8e5cc28465988580",
+    "after_sha256": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/LocalParserPanel.jsx",
+    "before_sha256": null,
+    "after_sha256": "eb6ef2d19719cdbce312be30630b709a47dd2570231b85dfdc2e307dfb74fdce"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/lib/localParserClient.js",
+    "before_sha256": null,
+    "after_sha256": "fed3bdee543765994c9968cdc0bad5c033d7f5c90b4c681e0e187fa69748bb18"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/auth.js",
+    "before_sha256": "f23bb69e49dee4426ff3f2c48c2c4c889feaf450d95b4b4c8ffbfc5152749fc3",
+    "after_sha256": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/package.json",
+    "before_sha256": "1ab99968516fe70fb3330b483716823e67e9fe5776beeb600b4651d97152027e",
+    "after_sha256": "e370384d6ef7b2b148c58d6277b484e4d0998594d8d3d53e0ddc853fa38dbdcd"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/package-lock.json",
+    "before_sha256": "a300d6c754078f307cd86754ba0620e5e0b670ac7b1ac1ab34f3d8bc88f208ee",
+    "after_sha256": "1db8c4b8f12e6445ddb620bef088bee0bd4f8298b023ae71721e310761a5d85a"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/tests/local-parser-client.test.mjs",
+    "before_sha256": null,
+    "after_sha256": "527d702bb4448805a4509a92bed1cafbf15225110d16f79bb94585f6f16fcf8c"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/tests/local-parser-ui.test.mjs",
+    "before_sha256": null,
+    "after_sha256": "cac1164eb5f48b4cd464864f21dc015dd5bacc041222b585e6538e79f3befb07"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/tests/local-parser-browser-headers.test.mjs",
+    "before_sha256": null,
+    "after_sha256": "b73a8bc94e054709861fe4affc0a51cdb0b8b1eec04968379854206613bddd96"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/docs/local-ai-bridge.md",
+    "before_sha256": "82c5c5ac575637648501d65d6e38a5e962f507d866e4fa455e7d74721dcf8424",
+    "after_sha256": "6698065e3dfda87ad5f6c9a161fbb37aa1365064713d91abf1e22e081ae13fc8"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/docs/local-parser-acceptance.md",
+    "before_sha256": null,
+    "after_sha256": "aee10d48635200bf28e0c53bbf28e8f9e74040996ac437cf0d740c55c8ea6d61"
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/PHASE_3B_UI_PREVIEW_REPORT.md",
+    "before_sha256": null,
+    "after_sha256": "7f34d579db877b524dc3e6f7578bf1831072685ec348050e06f84d86e6b0abc0"
+  }
+]

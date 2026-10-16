@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "stopped": {
+    "stopped": true,
+    "blocked_import_attempts": [],
+    "model_modules_loaded": [],
+    "gpu_worker_started": false
+  },
+  "stoppedRestart": {
+    "stopped": true,
+    "blocked_import_attempts": [],
+    "model_modules_loaded": [],
+    "gpu_worker_started": false
+  },
+  "gateway_restart": {
+    "status": 404,
+    "body": {
+      "error": {
+        "code": "JOB_NOT_FOUND",
+        "message": "Job is unavailable, expired, or was lost after a restart.",
+        "retryable": false
+      }
+    }
+  },
+  "health": {
+    "status": "unavailable",
+    "model": {
+      "name": "Qwen/Qwen3-VL-8B-Instruct",
+      "precision": "nf4",
+      "compute_dtype": "bfloat16",
+      "attention": "sdpa_chunked",
+      "gpu_mode": "shared"
+    },
+    "model_ready": false,
+    "busy": false,
+    "worker_state": "disabled",
+    "queue_depth": 0,
+    "queue_capacity": 4,
+    "model_load_count": 0,
+    "model_load_seconds": null,
+    "error": null,
+    "cpu_workflows": {
+      "ready": true,
+      "state": "ready",
+      "busy": false,
+      "queue_depth": 0,
+      "queue_capacity": 4,
+      "max_workers": 1
+    },
+    "retained_jobs": 0,
+    "job_limit": 64
+  },
+  "inference": "NOT RUN",
+  "live_clerk_session": "NOT RUN",
+  "time_vs_time_origin_different_real_sample": "NOT RUN"
+}

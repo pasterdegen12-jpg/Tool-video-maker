@@ -1,0 +1,290 @@
+[
+  {
+    "path": "src/App.css",
+    "sha256": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c"
+  },
+  {
+    "path": "src/App.jsx",
+    "sha256": "06e534fc9b973ec93016f6a44d2c951ac32b2d3f6530095b6abce8cfb654985e"
+  },
+  {
+    "path": "src/assets/hero.png",
+    "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c"
+  },
+  {
+    "path": "src/assets/react.svg",
+    "sha256": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5"
+  },
+  {
+    "path": "src/assets/vite.svg",
+    "sha256": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f"
+  },
+  {
+    "path": "src/ffmpeg-core.js",
+    "sha256": "67a48f11645f85439f3fde4f2119042c16b374b910206b7a7a24f342e28dcae3"
+  },
+  {
+    "path": "src/ffmpeg-core.wasm",
+    "sha256": "9f57947a5bd530d8f00c5b3f2cb2a3492faa7e5d823315342d6a8656d0a6b7b7"
+  },
+  {
+    "path": "src/firebase.js",
+    "sha256": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289"
+  },
+  {
+    "path": "src/GeminiRequestTest.jsx",
+    "sha256": "46995d72475913fd412e88643cc7f7b0ff5a29968536d51ca4408d33c0dca541"
+  },
+  {
+    "path": "src/HistoryModel.jsx",
+    "sha256": "f6fa5c914cb0a10dad49b025a36736edfabcd7908baa9a5e3ecccdea5466c485"
+  },
+  {
+    "path": "src/index.css",
+    "sha256": "944e6e12c0067a6767836a78ad6c4095b829f966b44f33bc95cfef1401ab3c10"
+  },
+  {
+    "path": "src/lib/localParserClient.js",
+    "sha256": "fed3bdee543765994c9968cdc0bad5c033d7f5c90b4c681e0e187fa69748bb18"
+  },
+  {
+    "path": "src/lib/seedanceContract.js",
+    "sha256": "8d8c0be858dffe714201e20c90f9434f8c518d62c2177a190596123f50280cdf"
+  },
+  {
+    "path": "src/lib/seedanceImage.js",
+    "sha256": "0ff6d1f4b300bf9483370d17007a28e1443f01d0c9b4c204fe6d31eb9ce7b013"
+  },
+  {
+    "path": "src/lib/seedanceImageClient.js",
+    "sha256": "7c121ed2087e69cefa8f228bd916e3bb175565ab19759d459c702a808e30bde9"
+  },
+  {
+    "path": "src/lib/spokenText.js",
+    "sha256": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575"
+  },
+  {
+    "path": "src/lib/visualProfile.js",
+    "sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8"
+  },
+  {
+    "path": "src/lib/visualProfileClient.js",
+    "sha256": "6f298581039d6c4741626753b3f5c7779f6313b0c33c4c5f2ce1ec4ed48d35d9"
+  },
+  {
+    "path": "src/LocalParserPanel.jsx",
+    "sha256": "eb6ef2d19719cdbce312be30630b709a47dd2570231b85dfdc2e307dfb74fdce"
+  },
+  {
+    "path": "src/main.jsx",
+    "sha256": "6c7baa17a3fcc9a6555a795d223831a2e8aceb95e5bbd8867eabd2622923ef5d"
+  },
+  {
+    "path": "src/MainEditor.jsx",
+    "sha256": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793"
+  },
+  {
+    "path": "src/Workspace/FullDialogueField.jsx",
+    "sha256": "3476667ce14d1ac3c9f0f0d6d75792d9e11b661ba993601dc09171ebce9e6179"
+  },
+  {
+    "path": "src/Workspace/SetupTab.jsx",
+    "sha256": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935"
+  },
+  {
+    "path": "src/Workspace/StoryboardTab.jsx",
+    "sha256": "85b644b7a21bd9c60b7c1c3fb2199c4de4b8afa8eb3f650e537b0ffee4c0f586"
+  },
+  {
+    "path": "src/Workspace/VisualProfiles.jsx",
+    "sha256": "c9934c960c319356733887c61b8d652be12f6fc94410091757cb766f9dad1457"
+  },
+  {
+    "path": "src/Workspace/Workspace.jsx",
+    "sha256": "a047bcb4be0e6f89155184c804127487aa349658e84899a18593251a9a92690d"
+  },
+  {
+    "path": "api/gemini-test/text.js",
+    "sha256": "6c9e9db80778bd41fd80faaedecb3586b2f196aea46450cb4cad8381c64f9e6f"
+  },
+  {
+    "path": "api/get-upload-url.js",
+    "sha256": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479"
+  },
+  {
+    "path": "api/lib/gemini-web/adapter.js",
+    "sha256": "2bfccc5d887aced754f8feb19fe984481074c73272275e7e5b0927da806ea395"
+  },
+  {
+    "path": "api/lib/gemini-web/bootstrap.js",
+    "sha256": "1e81fbdf2c3ba15f7c5c39d845a13067531cde7f7055b71c43cc336f5948e6be"
+  },
+  {
+    "path": "api/lib/gemini-web/errors.js",
+    "sha256": "b57647458b893d262292185dedbdf372a8a27f1b2977791ff51a72855734ffd8"
+  },
+  {
+    "path": "api/lib/gemini-web/experimental-request.js",
+    "sha256": "f8caf03dd3129d180f354dc018df1bcd64de5ff352f38f5f9b36892186257c05"
+  },
+  {
+    "path": "api/lib/gemini-web/parse-response.js",
+    "sha256": "55a54bb9916426c4f08317363e1d697f92bba7f73decd69ab8afcb6666674d7a"
+  },
+  {
+    "path": "api/lib/local-ai/auth.js",
+    "sha256": "6177aaf09b00fa7d700c1eb53fbff7d0f539669aadb9e7759870c73675eb0c78"
+  },
+  {
+    "path": "api/lib/local-ai/bridge.js",
+    "sha256": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee"
+  },
+  {
+    "path": "api/lib/local-ai/client.js",
+    "sha256": "b4d1690c60e35d241c962f9f12e87891591ee1aa783dcd4355f5f7990dfe03a4"
+  },
+  {
+    "path": "api/lib/local-ai/config.js",
+    "sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70"
+  },
+  {
+    "path": "api/lib/local-ai/errors.js",
+    "sha256": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c"
+  },
+  {
+    "path": "api/lib/local-ai/visual.js",
+    "sha256": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa"
+  },
+  {
+    "path": "api/lib/seedance/images.js",
+    "sha256": "450e7f8eb7ab6f80db67dfde6bb69f188164bb04e83d9495fcdbcadcfdc2fb45"
+  },
+  {
+    "path": "api/lib/seedance/transport.js",
+    "sha256": "da7c979306589e4c93bdf60904587359e1a784c30a634425601ff834e7093b9e"
+  },
+  {
+    "path": "api/local-ai/analyze.js",
+    "sha256": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182"
+  },
+  {
+    "path": "api/local-ai/jobs/[jobId].js",
+    "sha256": "5be0ad253b954242cc20291fbd1b6b61b8e44e2d982f836575b17ec39690432f"
+  },
+  {
+    "path": "api/local-ai/visual-profile.js",
+    "sha256": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182"
+  },
+  {
+    "path": "api/proxy-audio.js",
+    "sha256": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb"
+  },
+  {
+    "path": "api/proxy-media.js",
+    "sha256": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd"
+  },
+  {
+    "path": "scripts/gemini-test-server.mjs",
+    "sha256": "e5efb6ca558e6ba58c194fae6d95b508fcbaf97acc7a14e25f1e3c892ccda80c"
+  },
+  {
+    "path": "scripts/local-ai-loopback.mjs",
+    "sha256": "7be88cd4ffa43e76f89fa5da83dfd5fa157c389a052c73a29ec07d534caf27e2"
+  },
+  {
+    "path": "scripts/local-ai-server.mjs",
+    "sha256": "ba75f9f100ae259046457e9c2ddee7932c5c0f34860ed0cfca3523e82f417d7c"
+  },
+  {
+    "path": "scripts/start-gemini-test.mjs",
+    "sha256": "b3608c3a3d9e0e2cb7cba08e5b968a4c63f6cd3fc2dac01fd873cb69638137a1"
+  },
+  {
+    "path": "tests/gemini-request-builder.test.mjs",
+    "sha256": "a698d70b1f9eb9b69dfb741edf7291b6a848f8981d7a09b1766707cffcc3ef12"
+  },
+  {
+    "path": "tests/gemini-test.test.mjs",
+    "sha256": "03910dc6677d94572822fc92863c888d37a337cc449ebf8305693cce916ede97"
+  },
+  {
+    "path": "tests/local-ai-bridge.test.mjs",
+    "sha256": "b5ce54b9308085762effae3bd8bb918a8bc886a20a5f55f39b4c01eab4357f5c"
+  },
+  {
+    "path": "tests/local-ai-real-http.test.mjs",
+    "sha256": "4bde25da207e09b464985b8a4d776885e7c084c1a749d81695251577f9d2a71a"
+  },
+  {
+    "path": "tests/local-parser-browser-headers.test.mjs",
+    "sha256": "b73a8bc94e054709861fe4affc0a51cdb0b8b1eec04968379854206613bddd96"
+  },
+  {
+    "path": "tests/local-parser-client.test.mjs",
+    "sha256": "527d702bb4448805a4509a92bed1cafbf15225110d16f79bb94585f6f16fcf8c"
+  },
+  {
+    "path": "tests/local-parser-ui.test.mjs",
+    "sha256": "cac1164eb5f48b4cd464864f21dc015dd5bacc041222b585e6538e79f3befb07"
+  },
+  {
+    "path": "tests/seedance-contract.test.mjs",
+    "sha256": "0060302e72395bc309a41cbff8025fb17e9aa9d79ce02e9c02ee3694e8a7d027"
+  },
+  {
+    "path": "tests/seedance-http.test.mjs",
+    "sha256": "8b8a0c313b7975c374324358d71e631c5dae88e40a8fafaa49659e5df3c6f8f9"
+  },
+  {
+    "path": "tests/seedance-image-admission.test.mjs",
+    "sha256": "1adeb9eac5bc68dd46a3a4ca179bb2c21a82c35f505c9f8ddc50eccbb5de0a55"
+  },
+  {
+    "path": "tests/seedance-transport.test.mjs",
+    "sha256": "a40d4de4117334b017fdbeddf0b71a5b36a8f5a25dac9984a47b1fce3a196207"
+  },
+  {
+    "path": "tests/spoken-text-contract.test.mjs",
+    "sha256": "d2837c86f66a443da3b5534c3bbad4129f58f2ba61839f00bb402651b231c37c"
+  },
+  {
+    "path": "tests/support/gateway_cpu.py",
+    "sha256": "393b2a55d969b8501a94216b1bdda5049156b31fe440ee4ed3ec0b1c0f5c6703"
+  },
+  {
+    "path": "tests/support/gateway_visual_mock.py",
+    "sha256": "d72d4cffb6d6cef394073587d7d24c60ef56c68a51835061f3ff9ac23a10d844"
+  },
+  {
+    "path": "tests/support/local-ai-fixtures.mjs",
+    "sha256": "23ff530de2719886bfe40000c26230ebcd17e1526f3a05edc622c606c697e7a8"
+  },
+  {
+    "path": "tests/support/visual-fixture.json",
+    "sha256": "8a624f63be518f06fb7d778b7f77b5c8d1504778b75720576b9649c88e7c1b34"
+  },
+  {
+    "path": "tests/visual-bridge.test.mjs",
+    "sha256": "de0f2cf5d4cdb78a664b28f33c76f148af4905f4df830332a228f64278313037"
+  },
+  {
+    "path": "tests/visual-client.test.mjs",
+    "sha256": "ace418ed03d7f3a1eaf7972296e8be58ab48accbd3e20467711b78225ca340a4"
+  },
+  {
+    "path": "tests/visual-loopback.test.mjs",
+    "sha256": "b3e7756d8f29e1600e67a39ba2fb40a6851e1fc172e24741b8c6933d4484ba84"
+  },
+  {
+    "path": "tests/visual-profile.test.mjs",
+    "sha256": "dc38ae7a58f5b3773aa88cd938d7491433699be3f3c2e44a9d2ea01838c64543"
+  },
+  {
+    "path": "tests/visual-real-http.test.mjs",
+    "sha256": "7ea9449d6d2293045b7e9ba1b8cd9f3a0e9e4c841b5e55ef142d908730bc8292"
+  },
+  {
+    "path": "tests/visual-ui.test.mjs",
+    "sha256": "108dd1b1c8af2ac59ccd80ab4477f07936c73e87d6e88e8606436a8cf7c4d0bb"
+  }
+]

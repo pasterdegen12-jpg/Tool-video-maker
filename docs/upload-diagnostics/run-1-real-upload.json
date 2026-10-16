@@ -1,0 +1,26 @@
+{
+  "label": "REAL UPLOAD ONLY — NO VIDEO PREDICTION",
+  "started_at": "2026-10-15T16:03:59.897Z",
+  "paid_enabled": false,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "image_bytes": 590888,
+  "mime_type": "image/jpeg",
+  "state": "FAIL",
+  "requests": [
+    {
+      "step": "TICKET_REQUEST",
+      "started_at": "2026-10-15T16:03:59.900Z",
+      "http_status": 200,
+      "finished_at": "2026-10-15T16:04:00.200Z"
+    }
+  ],
+  "prediction_requests": 0,
+  "failure": {
+    "step": "TICKET_VALIDATE",
+    "code": "INVALID_PROVIDER_RESPONSE",
+    "http_status": 200,
+    "reason": "TICKET_FILENAME",
+    "at": 1792080240201
+  },
+  "finished_at": "2026-10-15T16:04:00.201Z"
+}

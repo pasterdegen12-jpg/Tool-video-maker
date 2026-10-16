@@ -1,9 +1,12 @@
+import process from 'node:process';
 import { defineConfig } from 'vite'
+import localAiLoopback from './scripts/local-ai-loopback.mjs'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [
+    localAiLoopback(),
     react(),
     tailwindcss(),
   ],
@@ -26,6 +29,20 @@ export default defineConfig({
 
     // 🚀 BỔ SUNG CỤC PROXY NÀY VÀO ĐÂY
 proxy: {
+      // Keep test credentials on the local test backend, never the public API.
+      // Reserve the bridge namespace locally; never fall through to the cloud API.
+      '/api/local-video': {
+        target: 'http://127.0.0.1:8790',
+        changeOrigin: true,
+      },
+      '/api/local-ai': {
+        target: 'http://127.0.0.1:8789',
+        changeOrigin: true,
+      },
+      '/api/gemini-test': {
+        target: 'http://127.0.0.1:8788',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'https://www.aivideomaker.live', // Thêm www. để không bị Vercel đá redirect
         changeOrigin: true,

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gemini Bridge</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="../icons/icon48.png" alt="Gemini Bridge" class="logo" />
+      <h1>Gemini Bridge</h1>
+      <span class="version">v1.2</span>
+    </header>
+
+    <!-- Status bar -->
+    <div id="statusBar" class="status-bar status-idle">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Idle</span>
+    </div>
+
+    <!-- Form -->
+    <div class="form-group">
+      <label for="promptInput">Prompt</label>
+      <textarea id="promptInput" rows="5" placeholder="Enter your prompt…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="useProCheckbox" checked />
+        Use Gemini Pro model <span class="badge-strict">strict</span>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="fileInput">
+        Files <span class="optional">(optional, multiple supported)</span>
+      </label>
+      <input type="file" id="fileInput" multiple />
+      <!-- File status shown while FileReader runs -->
+      <div id="fileStatus" class="file-status hidden"></div>
+      <div id="fileList" class="file-list hidden"></div>
+    </div>
+
+    <div class="actions">
+      <button id="sendBtn" class="btn-primary">▶ Send to Gemini</button>
+      <button id="cancelBtn" class="btn-warning hidden">⏹ Cancel</button>
+      <button id="clearBtn" class="btn-secondary">Clear</button>
+    </div>
+
+    <!-- Response area -->
+    <div id="responseSection" class="hidden">
+      <div class="response-header">
+        <span>Response</span>
+        <div class="response-actions">
+          <button id="copyBtn"  class="btn-icon" title="Copy response">📋</button>
+          <button id="clearResponseBtn" class="btn-icon" title="Clear response">✕</button>
+        </div>
+      </div>
+      <div id="responseOutput" class="response-output"></div>
+    </div>
+
+    <!-- Log -->
+    <details id="logDetails" open>
+      <summary>Log <span id="logCount" class="log-count"></span></summary>
+      <div id="logOutput" class="log-output"></div>
+    </details>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

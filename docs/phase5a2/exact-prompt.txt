@@ -1,0 +1,19 @@
+Use the original authored values below. Do not add or paraphrase spoken dialogue, actions or camera instructions. Only ORIGINAL SPOKEN DIALOGUE is spoken text.
+
+ORIGINAL CONTEXT:
+opening
+
+ORIGINAL CHARACTER:
+Thẩm phán
+
+ORIGINAL ACTION:
+Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa
+
+ORIGINAL CAMERA:
+Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền
+
+ORIGINAL SPOKEN DIALOGUE:
+You relocated it directly under your tires. Ms. Harper, please explain the incident.
+
+ORIGINAL TONE:
+Nghiêm nghị (Lạnh lùng)

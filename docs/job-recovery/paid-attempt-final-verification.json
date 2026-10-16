@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-15T15:20:20.875Z",
+  "paid_flag_false": true,
+  "frontend_key_empty": true,
+  "backend_key_present": true,
+  "backend_pid": 17808,
+  "frontend_pid": 17280,
+  "writer_pid": 17808,
+  "protected_files_checked": 72,
+  "protected_changes": [],
+  "image_bytes": 590888,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b"
+}

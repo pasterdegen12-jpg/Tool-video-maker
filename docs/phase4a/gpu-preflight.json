@@ -1,0 +1,42 @@
+{
+  "real_inference": "NOT RUN",
+  "mode": "shared",
+  "dedicated_confirmed": false,
+  "gpu": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "total_mb": 12884.901888,
+    "used_mb": 606.076928,
+    "free_mb": 12111.0528,
+    "other_compute_pids": [
+      1240,
+      5780,
+      9224,
+      10724,
+      2888,
+      9704,
+      11616,
+      12596,
+      10732,
+      12436,
+      6336,
+      2928,
+      2496
+    ]
+  },
+  "lock_exists": false,
+  "reservation": "GPU_LOCK_MISSING",
+  "blocker": "Cooking shared lock is absent; no files were created. Use a provisioned shared lock or an explicitly dedicated GPU.",
+  "configured_min_free_vram_mb": 10500,
+  "gpu_env": {
+    "GATEWAY_GPU_MODE": null,
+    "GATEWAY_START_GPU_WORKER": null,
+    "GATEWAY_MIN_FREE_VRAM_MB": null,
+    "GATEWAY_GPU_TASK": null
+  },
+  "pillow_installed": false,
+  "models": {
+    "qwen3-vl-4b": true,
+    "qwen3-vl-8b": true
+  },
+  "cuda_imported": false
+}

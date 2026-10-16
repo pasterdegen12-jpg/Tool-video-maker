@@ -1,0 +1,82 @@
+{
+  "checked_at_utc": "2026-10-12T07:00:06.972Z",
+  "working_directories": {
+    "web": "F:/tool-ai-dh/web-ai",
+    "gateway": "F:/tool-ai-dh/local-ai-gateway",
+    "cooking": "F:/Cooking-AI-review"
+  },
+  "commands": [
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "nvidia-smi --query-gpu=index,name,memory.total,memory.used,memory.free,driver_version --format=csv,noheader,nounits",
+      "result": "PASS; initial live snapshot, later authoritative snapshot saved in gpu-preflight.json"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "nvidia-smi --query-compute-apps=pid,process_name,used_gpu_memory --format=csv,noheader,nounits",
+      "result": "PASS; 14 entries, all per-process memory N/A"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -NonInteractive -File C:\\Users\\Admin\\AppData\\Local\\Temp\\web-phase4b-YGicLQ\\process_inventory.ps1",
+      "result": "Process owner queries unavailable via CIM; preserved in process-inventory.json; subsequent direct Windows read-only token queries succeeded for 13 PIDs"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/local-ai-gateway",
+      "command": ".venv\\Scripts\\python.exe -I -B C:\\Users\\Admin\\AppData\\Local\\Temp\\web-phase4b-YGicLQ\\gpu_probe.py",
+      "result": "Exit 0; no reservation acquire or model startup; GPU readiness FAIL; includes gpu_snapshot()"
+    },
+    {
+      "cwd": "F:/Cooking-AI-review",
+      "command": ".venv\\Scripts\\python.exe -I -B C:\\Users\\Admin\\AppData\\Local\\Temp\\web-phase4b-YGicLQ\\runtime_probe.py",
+      "result": "Exit 0; metadata, checkpoint config/index and file sizes only; no torch import"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "node C:\\Users\\Admin\\AppData\\Local\\Temp\\web-phase4b-YGicLQ\\config_probe.mjs",
+      "result": "Exit 0; readConfig executed and returned INTEGRATION_DISABLED; no secrets printed"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "git diff --stat",
+      "result": "Read-only; pre-existing dirty worktree preserved"
+    },
+    {
+      "cwd": "F:/tool-ai-dh/web-ai",
+      "command": "git check-ignore .env.local-ai.local .env.local",
+      "result": "Both paths ignored"
+    }
+  ],
+  "node_repl_checks": [
+    "Targeted fs.readFile reads of routes/worker/adapter/UI/reservation/documentation and installed filelock source",
+    "SHA-256 comparison of 34 Phase 4A manifest files, 19 files read at start of this phase, and both exact original screenplay files"
+  ],
+  "failed_inspections": [
+    {
+      "command": "type C:\\Users\\Admin\\.codex\\attachments\\e7f98ee7-3336-4cf0-a8f6-e801b3acfcb5\\\"Pasted text.txt\"",
+      "result": "Exit 1 from command-line quoting; attachment read successfully using Node fs.readFile instead"
+    },
+    {
+      "command": "rg -n \"preserve_lock_file|def __init__\" .venv\\Lib\\site-packages\\filelock\\_api.py",
+      "result": "Exit 2 from command-line quoting; exact defaults read successfully using Node fs.readFile instead"
+    }
+  ],
+  "probe_sources": [
+    {
+      "path": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-phase4b-YGicLQ/process_inventory.ps1",
+      "sha256": "45facfea786599620b38daf8d025414e840603fa96eb974ed794bf20b66d25d7"
+    },
+    {
+      "path": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-phase4b-YGicLQ/gpu_probe.py",
+      "sha256": "819b53ef92a9a10c626f492a0120699893811ced6561028844e29e824f6b3d57"
+    },
+    {
+      "path": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-phase4b-YGicLQ/runtime_probe.py",
+      "sha256": "d908d031a0c8acc2643500f22c8190357f04cde9d648ed1df430f6d67af0220e"
+    },
+    {
+      "path": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-phase4b-YGicLQ/config_probe.mjs",
+      "sha256": "2d11274e7461949cb0e405debd1557008cad18f8cdf9b1c61f392046736304da"
+    }
+  ]
+}

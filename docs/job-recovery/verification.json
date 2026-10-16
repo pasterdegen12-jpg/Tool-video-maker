@@ -1,0 +1,21 @@
+{
+  "tests": 262,
+  "testFailures": 0,
+  "lint": "PASS",
+  "build": "PASS",
+  "buildDirectory": "C:\\Users\\Admin\\AppData\\Local\\Temp\\web-ai-recovery-build-lHmhIT/output",
+  "buildFilesScanned": 10,
+  "knownSecretsFound": false,
+  "protectedFiles": 72,
+  "protectedChanges": [],
+  "paidFlagFalse": true,
+  "frontendKeyEmpty": true,
+  "backendKeyChangedSincePriorRecovery": false,
+  "runtimeRecords": [
+    {
+      "id": "30e7e215b964ed83346ee8d72c35f626d14aea3bbde037b7",
+      "stage": "QUOTED",
+      "providerIdPresent": false
+    }
+  ]
+}

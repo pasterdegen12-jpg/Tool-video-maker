@@ -1,0 +1,147 @@
+{
+  "executed_at": "2026-10-12T17:43:24.800Z",
+  "commands": [
+    {
+      "command": "npm.cmd test",
+      "log": "web-tests.log",
+      "exitCode": 0
+    },
+    {
+      "command": "npm.cmd run build",
+      "log": "build.log",
+      "exitCode": 0,
+      "reusedBecause": "No production changes since this successful build."
+    }
+  ],
+  "lintFiles": [
+    "src/lib/seedanceContract.js",
+    "src/lib/seedanceClient.js",
+    "src/Workspace/SeedanceScenePanel.jsx",
+    "api/lib/seedance/errors.js",
+    "api/lib/seedance/images.js",
+    "api/lib/seedance/config.js",
+    "api/lib/seedance/provider.js",
+    "api/lib/seedance/service.js",
+    "api/lib/seedance/transport.js",
+    "scripts/local-video-server.mjs",
+    "scripts/local-ai-loopback.mjs",
+    "api/lib/local-ai/auth.js",
+    "src/Workspace/StoryboardTab.jsx",
+    "src/Workspace/VisualProfiles.jsx",
+    "src/Workspace/Workspace.jsx",
+    "vite.config.js",
+    "tests/seedance-contract.test.mjs",
+    "tests/seedance-http.test.mjs",
+    "tests/seedance-ui.test.mjs",
+    "tests/seedance-client.test.mjs",
+    "tests/seedance-transport.test.mjs",
+    "tests/support/seedance-fixtures.mjs",
+    "tests/local-ai-real-http.test.mjs",
+    "tests/visual-real-http.test.mjs",
+    "tests/spoken-text-contract.test.mjs"
+  ],
+  "lintIntroduced": 0,
+  "targetedLint": "FAIL_EXISTING_BASELINE",
+  "protectedUnchanged": true,
+  "sourceChecks": [
+    {
+      "file": "src/Workspace/StoryboardTab.jsx",
+      "before": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+      "after": "85b644b7a21bd9c60b7c1c3fb2199c4de4b8afa8eb3f650e537b0ffee4c0f586",
+      "unchanged": false
+    },
+    {
+      "file": "src/Workspace/Workspace.jsx",
+      "before": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+      "after": "a047bcb4be0e6f89155184c804127487aa349658e84899a18593251a9a92690d",
+      "unchanged": false
+    },
+    {
+      "file": "src/Workspace/VisualProfiles.jsx",
+      "before": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "after": "c9934c960c319356733887c61b8d652be12f6fc94410091757cb766f9dad1457",
+      "unchanged": false
+    },
+    {
+      "file": "src/Workspace/SetupTab.jsx",
+      "before": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+      "after": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+      "unchanged": true
+    },
+    {
+      "file": "src/MainEditor.jsx",
+      "before": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+      "after": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+      "unchanged": true
+    },
+    {
+      "file": "src/firebase.js",
+      "before": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+      "after": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+      "unchanged": true
+    },
+    {
+      "file": "src/lib/spokenText.js",
+      "before": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575",
+      "after": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575",
+      "unchanged": true
+    },
+    {
+      "file": "api/lib/local-ai/auth.js",
+      "before": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+      "after": "6177aaf09b00fa7d700c1eb53fbff7d0f539669aadb9e7759870c73675eb0c78",
+      "unchanged": false
+    },
+    {
+      "file": "api/get-upload-url.js",
+      "before": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+      "after": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+      "unchanged": true
+    },
+    {
+      "file": "api/proxy-audio.js",
+      "before": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+      "after": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+      "unchanged": true
+    },
+    {
+      "file": "api/proxy-media.js",
+      "before": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+      "after": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+      "unchanged": true
+    },
+    {
+      "file": "scripts/local-ai-loopback.mjs",
+      "before": "3af80424f9e158eb20885d32c2ecb5637e7b47a9e84b537b37dda42faadaf953",
+      "after": "7be88cd4ffa43e76f89fa5da83dfd5fa157c389a052c73a29ec07d534caf27e2",
+      "unchanged": false
+    },
+    {
+      "file": "vite.config.js",
+      "before": "2d709a45571232797d178bfdc60098d7c636144adaebc9f39c5befd64f357025",
+      "after": "566d09f916cbe7bff50735ee45afeacc1625059d8a212436716592952bfe0d96",
+      "unchanged": false
+    },
+    {
+      "file": "package.json",
+      "before": "e370384d6ef7b2b148c58d6277b484e4d0998594d8d3d53e0ddc853fa38dbdcd",
+      "after": "801802b5b0384e20c3ce9fa26f994e5d6a82e656684c0c2df78352daf6bd9add",
+      "unchanged": false
+    },
+    {
+      "file": "package-lock.json",
+      "before": "1db8c4b8f12e6445ddb620bef088bee0bd4f8298b023ae71721e310761a5d85a",
+      "after": "d8cdab60c8525f76fccb0e624019eedcbe025164140b235e42731536d01e5dd2",
+      "unchanged": false
+    },
+    {
+      "file": "vercel.json",
+      "before": "737644aa3554687582718e8ffce7bb9be379956700ed0cb28607c19f6ec7e386",
+      "after": "737644aa3554687582718e8ffce7bb9be379956700ed0cb28607c19f6ec7e386",
+      "unchanged": true
+    }
+  ],
+  "liveClerk": "NOT RUN",
+  "realWaveSpeed": "NOT RUN",
+  "realQwen": "NOT RUN"
+}

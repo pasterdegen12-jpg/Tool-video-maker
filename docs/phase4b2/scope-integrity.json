@@ -1,0 +1,446 @@
+[
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/App.css",
+    "before": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c",
+    "after": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/App.jsx",
+    "before": "06e534fc9b973ec93016f6a44d2c951ac32b2d3f6530095b6abce8cfb654985e",
+    "after": "06e534fc9b973ec93016f6a44d2c951ac32b2d3f6530095b6abce8cfb654985e",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/assets/hero.png",
+    "before": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c",
+    "after": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/assets/react.svg",
+    "before": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5",
+    "after": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/assets/vite.svg",
+    "before": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f",
+    "after": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/ffmpeg-core.js",
+    "before": "67a48f11645f85439f3fde4f2119042c16b374b910206b7a7a24f342e28dcae3",
+    "after": "67a48f11645f85439f3fde4f2119042c16b374b910206b7a7a24f342e28dcae3",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/ffmpeg-core.wasm",
+    "before": "9f57947a5bd530d8f00c5b3f2cb2a3492faa7e5d823315342d6a8656d0a6b7b7",
+    "after": "9f57947a5bd530d8f00c5b3f2cb2a3492faa7e5d823315342d6a8656d0a6b7b7",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/firebase.js",
+    "before": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+    "after": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/GeminiRequestTest.jsx",
+    "before": "46995d72475913fd412e88643cc7f7b0ff5a29968536d51ca4408d33c0dca541",
+    "after": "46995d72475913fd412e88643cc7f7b0ff5a29968536d51ca4408d33c0dca541",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/HistoryModel.jsx",
+    "before": "f6fa5c914cb0a10dad49b025a36736edfabcd7908baa9a5e3ecccdea5466c485",
+    "after": "f6fa5c914cb0a10dad49b025a36736edfabcd7908baa9a5e3ecccdea5466c485",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/index.css",
+    "before": "944e6e12c0067a6767836a78ad6c4095b829f966b44f33bc95cfef1401ab3c10",
+    "after": "944e6e12c0067a6767836a78ad6c4095b829f966b44f33bc95cfef1401ab3c10",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/lib/localParserClient.js",
+    "before": "fed3bdee543765994c9968cdc0bad5c033d7f5c90b4c681e0e187fa69748bb18",
+    "after": "fed3bdee543765994c9968cdc0bad5c033d7f5c90b4c681e0e187fa69748bb18",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/lib/spokenText.js",
+    "before": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575",
+    "after": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/lib/visualProfile.js",
+    "before": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+    "after": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/lib/visualProfileClient.js",
+    "before": "b4799867e8ceaaa77a879abf95bdef564036953149a7e4b72febabbcb24ab543",
+    "after": "b4799867e8ceaaa77a879abf95bdef564036953149a7e4b72febabbcb24ab543",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/LocalParserPanel.jsx",
+    "before": "eb6ef2d19719cdbce312be30630b709a47dd2570231b85dfdc2e307dfb74fdce",
+    "after": "eb6ef2d19719cdbce312be30630b709a47dd2570231b85dfdc2e307dfb74fdce",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/main.jsx",
+    "before": "6c7baa17a3fcc9a6555a795d223831a2e8aceb95e5bbd8867eabd2622923ef5d",
+    "after": "6c7baa17a3fcc9a6555a795d223831a2e8aceb95e5bbd8867eabd2622923ef5d",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/MainEditor.jsx",
+    "before": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+    "after": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/Workspace/FullDialogueField.jsx",
+    "before": "3476667ce14d1ac3c9f0f0d6d75792d9e11b661ba993601dc09171ebce9e6179",
+    "after": "3476667ce14d1ac3c9f0f0d6d75792d9e11b661ba993601dc09171ebce9e6179",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/Workspace/SetupTab.jsx",
+    "before": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+    "after": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/Workspace/StoryboardTab.jsx",
+    "before": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+    "after": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/Workspace/VisualProfiles.jsx",
+    "before": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+    "after": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/src/Workspace/Workspace.jsx",
+    "before": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+    "after": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/gemini-test/text.js",
+    "before": "6c9e9db80778bd41fd80faaedecb3586b2f196aea46450cb4cad8381c64f9e6f",
+    "after": "6c9e9db80778bd41fd80faaedecb3586b2f196aea46450cb4cad8381c64f9e6f",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/get-upload-url.js",
+    "before": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+    "after": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/gemini-web/adapter.js",
+    "before": "2bfccc5d887aced754f8feb19fe984481074c73272275e7e5b0927da806ea395",
+    "after": "2bfccc5d887aced754f8feb19fe984481074c73272275e7e5b0927da806ea395",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/gemini-web/bootstrap.js",
+    "before": "1e81fbdf2c3ba15f7c5c39d845a13067531cde7f7055b71c43cc336f5948e6be",
+    "after": "1e81fbdf2c3ba15f7c5c39d845a13067531cde7f7055b71c43cc336f5948e6be",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/gemini-web/errors.js",
+    "before": "b57647458b893d262292185dedbdf372a8a27f1b2977791ff51a72855734ffd8",
+    "after": "b57647458b893d262292185dedbdf372a8a27f1b2977791ff51a72855734ffd8",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/gemini-web/experimental-request.js",
+    "before": "f8caf03dd3129d180f354dc018df1bcd64de5ff352f38f5f9b36892186257c05",
+    "after": "f8caf03dd3129d180f354dc018df1bcd64de5ff352f38f5f9b36892186257c05",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/gemini-web/parse-response.js",
+    "before": "55a54bb9916426c4f08317363e1d697f92bba7f73decd69ab8afcb6666674d7a",
+    "after": "55a54bb9916426c4f08317363e1d697f92bba7f73decd69ab8afcb6666674d7a",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/auth.js",
+    "before": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+    "after": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/bridge.js",
+    "before": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee",
+    "after": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/client.js",
+    "before": "b4d1690c60e35d241c962f9f12e87891591ee1aa783dcd4355f5f7990dfe03a4",
+    "after": "b4d1690c60e35d241c962f9f12e87891591ee1aa783dcd4355f5f7990dfe03a4",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/config.js",
+    "before": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+    "after": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/errors.js",
+    "before": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c",
+    "after": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/visual.js",
+    "before": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+    "after": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/local-ai/analyze.js",
+    "before": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+    "after": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/local-ai/jobs/[jobId].js",
+    "before": "5be0ad253b954242cc20291fbd1b6b61b8e44e2d982f836575b17ec39690432f",
+    "after": "5be0ad253b954242cc20291fbd1b6b61b8e44e2d982f836575b17ec39690432f",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/local-ai/visual-profile.js",
+    "before": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+    "after": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/proxy-audio.js",
+    "before": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+    "after": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/web-ai/api/proxy-media.js",
+    "before": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+    "after": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/analysis.py",
+    "before": "61a02e9e061a1818a9ec6a5bc6bd7cef4ba0c88fa992f5069cff89a70d9d2c6c",
+    "after": "61a02e9e061a1818a9ec6a5bc6bd7cef4ba0c88fa992f5069cff89a70d9d2c6c",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/api.py",
+    "before": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+    "after": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+    "before": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+    "after": "b5c1f7b7faceb72edd002355a37469ea8de011ca7b81301f658e2238e75e907a",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/errors.py",
+    "before": "c284429528c4a4a7c8ff681e85edc6a00925ad212d67a88ce921e3f873f4dcfd",
+    "after": "c284429528c4a4a7c8ff681e85edc6a00925ad212d67a88ce921e3f873f4dcfd",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/gpu.py",
+    "before": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+    "after": "c289c6d73fa12e15755dd0864829e6d86bde9b455f4227db0af00232d1035f31",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py",
+    "before": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+    "after": "c45e83741402a6f390fb2e7169e553edf6a8eccd34ac2f17a51805766cec430b",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/jobs.py",
+    "before": "fbef47508cdf69b10df0f0889c9f6d5d0fab6f13e5a5e972603bb0dc7625e66c",
+    "after": "a8dacd2c29274adeda2ffe56a3d049ead05012764e3810f4a32d87e0f37213c3",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/process.py",
+    "before": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+    "after": "9b83f2412d817976430c4642dadd88904fbfd4e3dbb86646b6aa185591fa6b43",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/schemas.py",
+    "before": "49317acbcebaa44cd4935ea70f05c1f68e0c02e4ca4e441efb05c09dd92bc1a9",
+    "after": "49317acbcebaa44cd4935ea70f05c1f68e0c02e4ca4e441efb05c09dd92bc1a9",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/visual.py",
+    "before": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+    "after": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/web_adapters.py",
+    "before": "b639e8934cba3041280c348f621bbecc0a931844fb9e42b9caf089e0d6adb01a",
+    "after": "b639e8934cba3041280c348f621bbecc0a931844fb9e42b9caf089e0d6adb01a",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/worker.py",
+    "before": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+    "after": "803f6b0dc302e0d37c007f156e879328a11946c249e8428b1805d9231035d292",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/workflow_execution.py",
+    "before": "de15f33faa96470b6c50bd1c4bf51e12b2614eee52f00b8c27e837b7e16115d1",
+    "after": "de15f33faa96470b6c50bd1c4bf51e12b2614eee52f00b8c27e837b7e16115d1",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/workflow_parser.py",
+    "before": "9ec1dbdc7337e5217a4a2d32caefc99121a50747ee02beda51ebba834f37be7e",
+    "after": "9ec1dbdc7337e5217a4a2d32caefc99121a50747ee02beda51ebba834f37be7e",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/workflow_schemas.py",
+    "before": "e53f8ed9b7f132f51faeba00eb031d42d3c406e1b260e2919a84505527cbae2e",
+    "after": "e53f8ed9b7f132f51faeba00eb031d42d3c406e1b260e2919a84505527cbae2e",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/__init__.py",
+    "before": "327dfa9a8dff76651e6a93b30f6a1cfeb53b69a4d62411cfd418504c57e96169",
+    "after": "327dfa9a8dff76651e6a93b30f6a1cfeb53b69a4d62411cfd418504c57e96169",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/__main__.py",
+    "before": "4b683eb554708fdf0c5e1e8f20c6607ceffe5ef882cd4e608cf8211e6beb2505",
+    "after": "4b683eb554708fdf0c5e1e8f20c6607ceffe5ef882cd4e608cf8211e6beb2505",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/conftest.py",
+    "before": "58fd19cc9fcf113981e4911b2f69b09bdf67d7b76be679506259b9b44c2a2753",
+    "after": "f70eb6bf4e45a76b18fb2f89e8d9e581da966a337ce82358286dc2010ebe606e",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_analysis.py",
+    "before": "ab6bfdb30fbbf00554a11221adfc4328a1abee9944f9cd57fb21046e3f226df4",
+    "after": "3b20665cc37b4f9db75089d211c210f522f1e5a04f126519c116a532af3154f6",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_api.py",
+    "before": "189b3cf37a5eafc0abd52c9823baf365fb084c35e099bd27934e6975d99548d6",
+    "after": "189b3cf37a5eafc0abd52c9823baf365fb084c35e099bd27934e6975d99548d6",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_gpu_safety.py",
+    "before": "98b8283e167191a6842f6278faa20f5d806d07c9149f5ee0f363bdbaa2d1eb69",
+    "after": "8a181e68e999206f55ef656ed408994ad7ab68c8432545844272ea932271616c",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_http_workflows.py",
+    "before": "5e44a119273a072bfedf9e34ae2db49c77ae19a17f1ff181125e3af2a65f14cf",
+    "after": "b1d844dea1f0371196f029d18e64b3060867abdbb4e3f391a766d4164dc5196e",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_jobs.py",
+    "before": "fa2e0401de938a1ed693cea30956f309ea856da4321c96e10a609be8d316144f",
+    "after": "fa2e0401de938a1ed693cea30956f309ea856da4321c96e10a609be8d316144f",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_process.py",
+    "before": "7b94023ac623d52a03d84f685acca29bd65bf2ebd44ca07fe8bea32f3d95780e",
+    "after": "9aa5285de23589ddb6a462f6bd2d230cc77e1395986dbd3fd50622f44d0b7d1c",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_real_workflows.py",
+    "before": "dccbbaa3f8bda0e5122559f6977ede2f32e6f49cea07cf428aa2859587fc27bd",
+    "after": "dccbbaa3f8bda0e5122559f6977ede2f32e6f49cea07cf428aa2859587fc27bd",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_spoken_contract.py",
+    "before": "6353e7671c8a3b51f1f9fe7cbfb5d748508796c4b6b966bcc8489f3d09e0ea5e",
+    "after": "6353e7671c8a3b51f1f9fe7cbfb5d748508796c4b6b966bcc8489f3d09e0ea5e",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_visual.py",
+    "before": "978a59f875457175f54a0ad220ea25ed372316eeaf3a7096e0c8ac1969432c76",
+    "after": "1be1be20cef2361438f6294d208a8dd9d00883d7f1de64a3163e1c6ef4721632",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_workflows.py",
+    "before": "61f6f2936ba1fb88a1ddec115374dd08c81ac3844580927c6594943b1a7985be",
+    "after": "61f6f2936ba1fb88a1ddec115374dd08c81ac3844580927c6594943b1a7985be",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/scripts/export_schema.py",
+    "before": "b1008aed1bf5849b6533511a5d080950d9db62d6c5d5cf7ead6ee64ab3c006ed",
+    "after": "b1008aed1bf5849b6533511a5d080950d9db62d6c5d5cf7ead6ee64ab3c006ed",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/scripts/finalize_artifacts.py",
+    "before": "679b17283ce389b1028ea0fa52697928430eeb81eb46e906fe64f28b9e0e8d38",
+    "after": "679b17283ce389b1028ea0fa52697928430eeb81eb46e906fe64f28b9e0e8d38",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/scripts/inspect_runtime.py",
+    "before": "e7a75a261bd7b8076d1eb4aa765b365022927710a2719870c4ccacbab078e09c",
+    "after": "95852c934fa54e97f43ba35be2e9a8421ecadd31c6c243daa8f5a219b2146d2a",
+    "unchanged": false
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/scripts/smoke_real.py",
+    "before": "b81dac59910819c4f4fe73ad4a4eb0e18a8de011867b36582fbb948debc5b7d5",
+    "after": "b81dac59910819c4f4fe73ad4a4eb0e18a8de011867b36582fbb948debc5b7d5",
+    "unchanged": true
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/scripts/verify_http.py",
+    "before": "47f854cccc86e3333f374fe7516155375495768cdc31a4e3ee5e8f1e179ab233",
+    "after": "47f854cccc86e3333f374fe7516155375495768cdc31a4e3ee5e8f1e179ab233",
+    "unchanged": true
+  }
+]

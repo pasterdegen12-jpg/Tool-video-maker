@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-16T14:00:32.678Z",
+  "http_status": 200,
+  "provider_code": 200,
+  "balance": 26.678154,
+  "operator_confirmed_replacement": true,
+  "paid_enabled": false,
+  "frontend_key_empty": true
+}

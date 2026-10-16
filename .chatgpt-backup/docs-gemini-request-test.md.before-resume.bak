@@ -1,0 +1,78 @@
+# Gemini Direct Request Test — Phase 1A scaffold
+
+## Trạng thái
+
+**Need Gemini Network Capture.** Chưa có request hoặc response Gemini thật. Endpoint hiện trả HTTP 501 / GEMINI_PROTOCOL_CHANGED sau khi kiểm tra cú pháp input. Đây không phải kiểm tra đăng nhập Gemini thành công. Không cần dùng cookie thật để kiểm tra phần khung.
+
+Stack đã đọc: React 19, Vite 8, React Router 7, Clerk, Firebase Firestore; Vercel-style API; Cloudflare R2 qua S3 presigned PUT. Không có Git ở project hoặc thư mục cha theo git status. Bản gốc của hai file sửa nằm trong .chatgpt-backup/.
+
+## Chạy local (PowerShell)
+
+Cài dependencies bằng npm ci nếu chưa có. Không cần thêm package.
+
+Terminal 1, ở F:\Tool-video-maker-main:
+
+~~~powershell
+$env:NODE_ENV='development'
+$env:GEMINI_TEST_LOCAL='true'
+node scripts/gemini-test-server.mjs
+~~~
+
+Terminal 2, cùng thư mục:
+
+~~~powershell
+$env:VITE_ENABLE_GEMINI_TEST='true'
+npm run dev -- --host localhost --port 5173 --strictPort
+~~~
+
+Dùng cấu hình Clerk/Firebase hiện có của chính bạn; không đưa credential vào source. Đăng nhập Clerk, rồi mở http://localhost:5173/gemini-request-test trực tiếp. Route không có link trên header.
+
+Frontend gọi POST /api/gemini-test/text; Vite chuyển riêng prefix /api/gemini-test sang 127.0.0.1:8788. Các API cũ giữ nguyên proxy. Backend bind loopback, chỉ chấp nhận Origin http://localhost:5173, Host 127.0.0.1:8788, JSON tối đa 64 KiB. Nếu cần đổi origin local, đặt GEMINI_TEST_ORIGIN phía backend tương ứng. Không dùng server test này trên host public. HTTP chỉ dùng trên loopback ở phase này; triển khai từ xa sau này cần HTTPS và xác thực backend trước khi nhận credential.
+
+Frontend yêu cầu DEV và VITE_ENABLE_GEMINI_TEST=true. API tự từ chối nếu NODE_ENV khác development, thiếu GEMINI_TEST_LOCAL=true hoặc có VERCEL. Không thể bật tính năng production chỉ bằng cờ VITE.
+
+Input session có hide/show và bị xóa ngay khi submit. Session không vào state React, storage, URL, Firestore hay log. Adapter chỉ giữ session cho một request, xóa tham chiếu trong finally. JavaScript không bảo đảm xóa vật lý mọi bản sao chuỗi trong bộ nhớ; trình duyệt và runtime giải phóng qua GC. Không có vault, account manager hoặc session dùng chung.
+
+## Thiết kế
+
+- src/GeminiRequestTest.jsx: page độc lập, prompt test mặc định, status/code/message; video bị vô hiệu hóa.
+- api/gemini-test/text.js: kiểm tra cờ, origin, method, content type, input; lỗi public chỉ dùng message cố định; không trả exception/raw payload.
+- api/lib/gemini-web/adapter.js: initialize, validateSession (chỉ cú pháp), refreshPageTokens, createConversation, sendTextPrompt, uploadFile, sendPromptWithFiles, parseResponse, detectSessionExpired và dispose.
+- api/lib/gemini-web/parse-response.js: parser độc lập, chủ động từ chối khi chưa có format đã xác minh.
+- api/lib/gemini-web/errors.js: mã lỗi có cấu trúc, gồm các mã yêu cầu cho text/video.
+- scripts/gemini-test-server.mjs: server local có giới hạn body và timeout.
+- tests/gemini-test.test.mjs: kiểm tra scaffold, isolation và lỗi; không mock response Gemini.
+
+Chưa tạo /api/gemini-test/video. Chỉ triển khai upload sau khi nhận text response thật. Không sử dụng official API, browser automation, extension hoặc local browser agent.
+
+## Capture cần cung cấp: đúng một prompt
+
+1. Tự mở Gemini bằng tài khoản của bạn; nhấn F12, chọn Network.
+2. Bật ghi Network, xóa danh sách bằng Clear. Chọn Fetch/XHR.
+3. Gửi đúng một prompt mới: Chỉ trả lời chính xác: DIRECT_REQUEST_TEST_92831.
+4. Tìm request mới có nội dung prompt trong Payload. Có thể dùng bộ lọc data hoặc batchexecute để thu hẹp nếu các tên đó xuất hiện. Đây chỉ là gợi ý tìm, không giả định endpoint. Nếu không thấy, bỏ filter và kiểm tra request mới ngay lúc gửi prompt.
+5. Chọn request thực sự chứa prompt và Response chứa kết quả (có thể là chuỗi JSON lồng hoặc stream). Chuột phải → Copy → Copy as cURL. **Không chạy lệnh cURL này.** Dán vào trình soạn thảo local để redact trước.
+6. Copy Response của chính request đó, giữ các chunk/envelope đủ để thấy response text và ID. Không cần toàn bộ HAR/Network log.
+7. Trước khi gửi vào chat, xóa giá trị Cookie, Authorization, SAPISID, SID, HSID, SSID, mọi __Secure-*, OAuth/access/refresh token và mọi Google session secret. Thay bằng REDACTED. Redact cả trong header, URL, Referer và payload.
+8. Redact giá trị token động như at, f.sid, định danh tài khoản/email, conversation/response ID và nội dung riêng tư khác; giữ tên trường và kiểu dữ liệu. Với ID lặp lại, dùng placeholder nhất quán. Kiểm tra f.req và các chuỗi JSON lồng, không chỉ header bên ngoài.
+9. Giữ domain/path URL, HTTP method, tên tham số, RPC ID, tên header và Content-Type, cấu trúc mảng/object và escaping, framing/chunk prefix của response, vị trí text DIRECT_REQUEST_TEST_92831. Giữ build label nếu không chứa định danh/secret. Với _reqid, giữ tên và kiểu dữ liệu; một capture chưa đủ để suy ra quy tắc tăng ID.
+
+Để triển khai bootstrap động, còn cần xác định vị trí token trên response trang của cùng phiên bản Gemini: chỉ gửi đoạn bootstrap tối thiểu đã redact cho thấy tên trường/token và cấu trúc bao quanh, cùng URL/method của document. Không gửi HTML toàn trang chứa tài khoản/cookie. Nếu request dùng token nhưng capture chưa chỉ ra nguồn token, sẽ cần xác minh nguồn đó trước khi code; không tự đoán.
+
+**Không gửi password, cookie/session thật hoặc cURL/HAR chưa redact vào chat.**
+
+## Điều kiện tiếp tục
+
+Sau capture: xác minh bootstrap và request envelope; implement dynamic tokens theo từng request/session; implement parser theo response thật; nối nhánh success ở backend/frontend. Chỉ hiển thị DIRECT_GEMINI_SUCCESS khi Gemini thực sự trả text. Khi test prompt nhận DIRECT_REQUEST_TEST_92831 thật, mới triển khai file upload và video bằng pipeline R2 phù hợp.
+
+## Kiểm tra và hoàn tác
+
+~~~text
+node --test tests/gemini-test.test.mjs
+npm run build
+npm run lint
+~~~
+
+File đã đọc: package.json; src/App.jsx; src/main.jsx; src/firebase.js; api/get-upload-url.js; vite.config.js; vercel.json; eslint.config.js; README.md. Chỉ liệt kê thư mục gốc, src và api; không đọc MainEditor, Workspace, workflow, media hoặc binary.
+
+File hiện có đã sửa: src/App.jsx (import + route gated), vite.config.js (proxy riêng). Backup: .chatgpt-backup/src-App.jsx.bak và .chatgpt-backup/vite.config.js.bak. Khôi phục nội dung hai file từ backup để bỏ các tích hợp này; các file mới độc lập có thể được giữ lại. Không thực hiện thao tác xóa hay reset.

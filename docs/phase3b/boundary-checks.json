@@ -1,0 +1,17 @@
+{
+  "unchanged": {
+    "src/main.jsx": true,
+    "src/App.jsx": true,
+    "src/firebase.js": true,
+    "src/Workspace/Workspace.jsx": true,
+    "src/Workspace/StoryboardTab.jsx": true,
+    "api/lib/local-ai/bridge.js": true,
+    "api/lib/local-ai/client.js": true,
+    "api/lib/local-ai/config.js": true,
+    "vite.config.js": true
+  },
+  "original_gemini_and_media_handlers_identical": true,
+  "production_bundle_markers": [],
+  "gateway_changed_in_phase3b": [],
+  "production_build_visibility_flag": "true (DEV false still hides feature)"
+}

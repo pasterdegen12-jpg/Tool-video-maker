@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-10-15T14:52:23.712Z",
+  "endpoint": "GET https://api.wavespeed.ai/api/v3/balance",
+  "http_status": 200,
+  "code": 200,
+  "balance": 26.678154,
+  "verified": true,
+  "frontend_key_empty": true,
+  "paid": false
+}

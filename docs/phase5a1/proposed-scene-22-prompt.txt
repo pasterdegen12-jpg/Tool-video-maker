@@ -1,0 +1,19 @@
+Use the original authored values below. Do not add or paraphrase spoken dialogue, actions or camera instructions. Only ORIGINAL SPOKEN DIALOGUE is spoken text.
+
+ORIGINAL CONTEXT:
+resolution
+
+ORIGINAL CHARACTER:
+Plaintiff
+
+ORIGINAL ACTION:
+Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.
+
+ORIGINAL CAMERA:
+Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền
+
+ORIGINAL SPOKEN DIALOGUE:
+"Oh, thank God. What about my house?"
+
+ORIGINAL TONE:
+(relieved, breathless)

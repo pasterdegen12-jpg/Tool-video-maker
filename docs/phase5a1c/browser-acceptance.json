@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-13T14:38:38.994Z",
+  "signedInWebUi": "PASS",
+  "normalClerkUiObserved": true,
+  "dashboardSignedInPreviouslyVerified": true,
+  "visitedProjects": [
+    {
+      "title": "Dự án Full AI - 12:33:38 AM",
+      "projectPath": "/project/proj_1789061618441",
+      "scenes": 23,
+      "scriptMatchesRequestedSample": false,
+      "observedTopic": "delivery e-bike destroyed by luxury car"
+    },
+    {
+      "title": "Dự án Full AI - 4:12:39 AM",
+      "projectPath": "/project/proj_1786176759217",
+      "scenes": 23,
+      "scriptMatchesRequestedSample": false,
+      "observedTopic": "poisoned birds / prize-winning pets"
+    }
+  ],
+  "expectedScene22Dialogue": "\"Oh, thank God. What about my house?\"",
+  "targetProjectIdentification": "AWAITING OPERATOR",
+  "realSessionQuote": "NOT RUN",
+  "operatorSelectedImage": "NOT RUN - no image selected",
+  "paidSubmission": "NOT RUN - forbidden and disabled",
+  "firestoreWritePerformed": false,
+  "sourceEditPerformed": false,
+  "knownProviderOperationsInitiated": 0,
+  "networkCapturePerformed": false,
+  "screenshot": "docs/phase5a1c/project-selection.png"
+}

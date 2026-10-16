@@ -1,0 +1,181 @@
+{
+  "timestamp": "2026-10-12T07:24:07.891Z",
+  "files": {
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/gpu.py": {
+      "sha256": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+      "bytes": 5013
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py": {
+      "sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "bytes": 8971
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/process.py": {
+      "sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "bytes": 4308
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/worker.py": {
+      "sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "bytes": 3114
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py": {
+      "sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "bytes": 3476
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/visual.py": {
+      "sha256": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+      "bytes": 4677
+    },
+    "F:/tool-ai-dh/web-ai/src/MainEditor.jsx": {
+      "sha256": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+      "bytes": 30052
+    },
+    "F:/tool-ai-dh/web-ai/src/Workspace/Workspace.jsx": {
+      "sha256": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+      "bytes": 108064
+    },
+    "F:/tool-ai-dh/web-ai/src/Workspace/SetupTab.jsx": {
+      "sha256": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+      "bytes": 11454
+    },
+    "F:/tool-ai-dh/web-ai/src/Workspace/StoryboardTab.jsx": {
+      "sha256": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+      "bytes": 22486
+    },
+    "F:/tool-ai-dh/web-ai/src/Workspace/VisualProfiles.jsx": {
+      "sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "bytes": 7391
+    },
+    "F:/tool-ai-dh/web-ai/src/lib/visualProfile.js": {
+      "sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+      "bytes": 3072
+    },
+    "F:/tool-ai-dh/web-ai/src/lib/visualProfileClient.js": {
+      "sha256": "b4799867e8ceaaa77a879abf95bdef564036953149a7e4b72febabbcb24ab543",
+      "bytes": 11059
+    },
+    "F:/tool-ai-dh/web-ai/src/firebase.js": {
+      "sha256": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+      "bytes": 6038
+    },
+    "F:/tool-ai-dh/web-ai/api/get-upload-url.js": {
+      "sha256": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+      "bytes": 1522
+    },
+    "F:/tool-ai-dh/web-ai/api/proxy-audio.js": {
+      "sha256": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+      "bytes": 994
+    },
+    "F:/tool-ai-dh/web-ai/api/proxy-media.js": {
+      "sha256": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+      "bytes": 1371
+    },
+    "F:/Cooking-AI-review/app/services/speech_service.py": {
+      "sha256": "3a68cf752fbbeee4b4010cd23f7c76ebd34813f7061baf0974dc181fc243c92a",
+      "bytes": 12268
+    },
+    "F:/Cooking-AI-review/app/services/dedicated_worker.py": {
+      "sha256": "c97a223f1ed5a454a23cba756d3698681be54a76093f124cd1f254435c85aaf9",
+      "bytes": 9373
+    },
+    "F:/Cooking-AI-review/scripts/dedicated_worker.py": {
+      "sha256": "98aa1496485a06b189853f6d9e540e9ceb289709eceb51451919a0c1e76e121e",
+      "bytes": 19377
+    },
+    "F:/Cooking-AI-review/scripts/run_phase3a2.py": {
+      "sha256": "bd4f2dc554ab82131f907a798a10bc43be4386084498e6c7322638291525140d",
+      "bytes": 6585
+    },
+    "F:/Cooking-AI-review/.venv/Lib/site-packages/filelock/_windows.py": {
+      "sha256": "b0b024fbe72738ad5ffbd453b800003928e1e1705cc5ad11de3cb6c375e0519b",
+      "bytes": 15988
+    },
+    "F:/Cooking-AI-review/.venv/Lib/site-packages/filelock/_api.py": {
+      "sha256": "5568ae5b6a161eb33d172df2465b31adef9d6978e99b309b24ee37885b989091",
+      "bytes": 82436
+    },
+    "F:/Cooking-AI-review/app/services/qwen4b_nf4_backend.py": {
+      "sha256": "4f7eeeadf5025765e176748248075df7ba417ab4d1106da8b87f6f436942b77c",
+      "bytes": 13247
+    },
+    "C:/Users/Admin/Downloads/kịch bản gen video AI.txt": {
+      "sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "bytes": 17406
+    },
+    "C:/Users/Admin/Downloads/kịch bản semi-content.txt": {
+      "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "bytes": 13164
+    },
+    "F:/Cooking-AI-review/app/services/vision_model_service.py": {
+      "sha256": "e142f5614506d0272e28c2a375216ea69996459a9dea806ef997fb41a0f6ff86",
+      "bytes": 8021
+    },
+    "F:/Cooking-AI-review/scripts/speech_worker.py": {
+      "sha256": "6db92b26784e1f8243d383a621c21cd56115af9293aff5b844895015c973e598",
+      "bytes": 4555
+    },
+    "F:/Cooking-AI-review/scripts/vision_worker.py": {
+      "sha256": "d6b8c6792d3e0d32550f5d664ed2543675859bf2350295ec36e38bb108defea5",
+      "bytes": 7717
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/workflow_parser.py": {
+      "sha256": "9ec1dbdc7337e5217a4a2d32caefc99121a50747ee02beda51ebba834f37be7e",
+      "bytes": 15051
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/web_adapters.py": {
+      "sha256": "b639e8934cba3041280c348f621bbecc0a931844fb9e42b9caf089e0d6adb01a",
+      "bytes": 2283
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/analysis.py": {
+      "sha256": "61a02e9e061a1818a9ec6a5bc6bd7cef4ba0c88fa992f5069cff89a70d9d2c6c",
+      "bytes": 3707
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/jobs.py": {
+      "sha256": "fbef47508cdf69b10df0f0889c9f6d5d0fab6f13e5a5e972603bb0dc7625e66c",
+      "bytes": 14473
+    },
+    "F:/tool-ai-dh/local-ai-gateway/scripts/inspect_runtime.py": {
+      "sha256": "e7a75a261bd7b8076d1eb4aa765b365022927710a2719870c4ccacbab078e09c",
+      "bytes": 3518
+    },
+    "F:/tool-ai-dh/local-ai-gateway/ai_gateway/errors.py": {
+      "sha256": "c284429528c4a4a7c8ff681e85edc6a00925ad212d67a88ce921e3f873f4dcfd",
+      "bytes": 156
+    },
+    "F:/tool-ai-dh/local-ai-gateway/requirements.txt": {
+      "sha256": "3e049161ece919d5b6b82eb2a164dac2c8fc77acb080c1df6affb9f6e1b7cb94",
+      "bytes": 67
+    },
+    "F:/tool-ai-dh/local-ai-gateway/requirements.lock.txt": {
+      "sha256": "95cb6f1b8879a96b3cc111ea5ed7cb67b9bdc0de14c7746fa77a39dc7af0820c",
+      "bytes": 459
+    },
+    "F:/tool-ai-dh/local-ai-gateway/README.md": {
+      "sha256": "a82fd6c09c8a0053ade5beed77b83a41c09e999dde65403d5c361b89817d1a96",
+      "bytes": 11257
+    },
+    "F:/tool-ai-dh/local-ai-gateway/tests/test_visual.py": {
+      "sha256": "978a59f875457175f54a0ad220ea25ed372316eeaf3a7096e0c8ac1969432c76",
+      "bytes": 11852
+    },
+    "F:/tool-ai-dh/local-ai-gateway/tests/test_gpu_safety.py": {
+      "sha256": "98b8283e167191a6842f6278faa20f5d806d07c9149f5ee0f363bdbaa2d1eb69",
+      "bytes": 1319
+    },
+    "F:/tool-ai-dh/local-ai-gateway/tests/test_process.py": {
+      "sha256": "7b94023ac623d52a03d84f685acca29bd65bf2ebd44ca07fe8bea32f3d95780e",
+      "bytes": 2313
+    },
+    "F:/tool-ai-dh/web-ai/api/lib/local-ai/errors.js": {
+      "sha256": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c",
+      "bytes": 2898
+    },
+    "F:/tool-ai-dh/web-ai/api/lib/local-ai/config.js": {
+      "sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+      "bytes": 1812
+    },
+    "F:/tool-ai-dh/web-ai/docs/local-visual-id.md": {
+      "sha256": "871b4d0f46a3402b75c1242f3586ae4042ce1087bf80193816293deaff1abd52",
+      "bytes": 5838
+    }
+  }
+}

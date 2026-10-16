@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import {parseEnv} from 'node:util';
+import {initializeApp} from 'firebase/app';
+import {getFirestore,doc,getDoc,terminate} from 'firebase/firestore';
+import {createHash} from 'node:crypto';
+let env={};for(const f of ['.env','.env.local','.env.video.local'])if(fs.existsSync(f))Object.assign(env,parseEnv(fs.readFileSync(f,'utf8')));
+const db=getFirestore(initializeApp({apiKey:env.VITE_FIREBASE_API_KEY,projectId:env.VITE_FIREBASE_PROJECT_ID,appId:env.VITE_FIREBASE_APP_ID}));
+const s=await getDoc(doc(db,'projects','proj_1789061618441'));if(!s.exists())throw Error('Missing project');const p=s.data();const raw=JSON.stringify(p,null,2);
+fs.writeFileSync('docs/qwen-character-id/project-before.json',raw,{flag:'wx'});
+console.log(JSON.stringify({exists:true,fields:Object.keys(p),scene_count:p.data?.length,characters:p.characters?.map(c=>({id:c.id,name:c.name,has_profile:!!c.visualProfile})),owner_fields:Object.keys(p).filter(k=>/owner|user/i.test(k)),sha256:createHash('sha256').update(raw).digest('hex')}));await terminate(db);

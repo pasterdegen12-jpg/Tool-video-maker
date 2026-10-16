@@ -1,14 +1,19 @@
-import React from 'react';
+import { SceneVisualProfile } from './VisualProfiles.jsx';
+import {displayCharacterReference} from '../lib/characterIdentity.js';
+import { useState } from 'react';
+import SeedanceScenePanel from './SeedanceScenePanel.jsx';
+import { videoVisible } from '../lib/seedanceContract.js';
+import { countSpokenWords, readSpokenText } from '../lib/spokenText.js';
 import { Video, CheckSquare, Download, Clock, Hash, Play, Mic, Film, Merge, Trash2, Pencil, Image as ImageIcon, Loader2, Maximize, AlignLeft, Globe, User } from 'lucide-react';
 
 export default function StoryboardTab({
-  parsedData, projectCharacters, generatedAudios, isGenerating, isVideoGenerating, handleGenVideo, mergingScenes, mergedVideos,
+  parsedData, projectCharacters, generatedAudios, isGenerating, isVideoGenerating, mergingScenes, mergedVideos,
   setActiveEditSceneModal, 
   setActiveStartFrameModal, 
   setActiveVideoGenModal,
-  frameInputRef, activeUploadIdRef, setActiveGenModal,
+  setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
-  projectType, darkMode 
+  projectType, projectId, darkMode 
 }) {
   
   const toggleFullscreen = (e) => {
@@ -22,9 +27,13 @@ export default function StoryboardTab({
   };
 
   const isSemi = projectType === 'semi';
+  const [videoScene, setVideoScene] = useState(null);
+  const localVideo = videoVisible(import.meta.env, globalThis.location, projectType);
+  const chosenScene = parsedData.find(scene => String(scene.scene_n) === videoScene);
 
   return (
     <div className="flex flex-col gap-5 animate-fadeIn">
+      {localVideo && chosenScene && <SeedanceScenePanel scene={chosenScene} projectId={projectId} characters={projectCharacters} onClose={() => setVideoScene(null)} />}
       {parsedData.map((scene, index) => {
         const isLoadingAudio = isGenerating[scene.scene_n];
         const isLoadingVideo = isVideoGenerating ? isVideoGenerating[scene.scene_n] : false;
@@ -33,9 +42,11 @@ export default function StoryboardTab({
         const hasAudio = generatedAudios[sceneKey];
         const hasOutput = mergedVideos[sceneKey];
 
-        const voWordCount = scene.Word_count || (scene.Voiceover ? scene.Voiceover.trim().split(/\s+/).length : 0);
+        const spoken = readSpokenText(scene, projectType);
+        const voWordCount = countSpokenWords(spoken.text);
+        const audioDisabled = isLoadingAudio || !!spoken.issue || !spoken.text.trim();
         
-        const characterInfo = projectCharacters?.find(c => c.name && scene.Character && c.name.trim() === scene.Character.trim()) || null;
+        const characterInfo = isSemi ? null : displayCharacterReference(scene.Character,projectCharacters,projectId);
 
         // 🚀 Tích hợp logic Output: Nếu đã Merge thì hiện file Merge, nếu chưa Merge mà có Video AI thì hiện Video AI
         const outputVideoUrl = hasOutput || (!isSemi && scene.videoUrl ? scene.videoUrl : null);
@@ -96,7 +107,7 @@ export default function StoryboardTab({
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className={`text-[9px] font-bold uppercase tracking-widest ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>Nhân vật</span>
-                      <span className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-zinc-800'}`}>{characterInfo.name}</span>
+                      <span className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-zinc-800'}`}>{scene.Character}</span>
                     </div>
                   </div>
                 )}
@@ -115,6 +126,7 @@ export default function StoryboardTab({
                 </button>
               </div>
 
+              {!isSemi && <SceneVisualProfile scene={scene} />}
               <div className="space-y-4 flex-1">
                 {isSemi ? (
                   <>
@@ -128,7 +140,7 @@ export default function StoryboardTab({
                     <div className="flex flex-col gap-1.5">
                       <span className={`font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 ${darkMode ? 'text-slate-500' : 'text-zinc-500'}`}><AlignLeft size={12} /> Voiceover</span>
                       <div className={`border p-3 rounded-xl shadow-inner relative ${darkMode ? 'bg-slate-950/80 border-white/[0.06]' : 'bg-zinc-50 border-zinc-200'}`}>
-                        <p className={`leading-relaxed text-[13px] font-medium ${darkMode ? 'text-slate-100' : 'text-zinc-900'}`}>{scene.Voiceover || "N/A"}</p>
+                        <p className={`leading-relaxed text-[13px] font-medium ${darkMode ? 'text-slate-100' : 'text-zinc-900'}`}>{spoken.text || "N/A"}</p>
                         <div className={`mt-2 pt-2 border-t flex items-center gap-1 text-[11px] font-semibold ${darkMode ? 'border-white/[0.07] text-slate-500' : 'border-zinc-200 text-zinc-500'}`}>
                           <Hash size={10} className={darkMode ? 'text-slate-600' : 'text-zinc-400'}/> {voWordCount} từ
                         </div>
@@ -162,7 +174,7 @@ export default function StoryboardTab({
                     <div className="flex flex-col gap-1.5">
                       <span className={`font-bold text-[10px] uppercase tracking-widest flex items-center gap-1.5 ${darkMode ? 'text-slate-500' : 'text-zinc-500'}`}><AlignLeft size={12} /> Dialogue</span>
                       <div className={`border p-3 rounded-xl shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.06]' : 'bg-zinc-50 border-zinc-200'}`}>
-                        <p className={`leading-relaxed text-[13px] font-medium ${darkMode ? 'text-slate-100' : 'text-zinc-900'}`}>{scene.Dialogue || scene.Voiceover || "N/A"}</p>
+                        <p className={`leading-relaxed text-[13px] font-medium ${darkMode ? 'text-slate-100' : 'text-zinc-900'}`}>{spoken.text || (spoken.issue ? "Cần chọn lời thoại" : "N/A")}</p>
                       </div>
                       
                       <div className={`mt-1 flex items-center gap-1.5 text-[11px] font-semibold ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>
@@ -177,6 +189,13 @@ export default function StoryboardTab({
                   </>
                 )}
               </div>
+
+              {spoken.issue && (
+                <div role="alert" className="mt-3 text-sm text-amber-600">
+                  {spoken.message}
+                  <button type="button" onClick={() => setActiveEditSceneModal(scene)} className="ml-2 underline font-bold cursor-pointer">Sửa lời thoại</button>
+                </div>
+              )}
 
               {hasAudio && (
                 <div className={`mt-4 border p-2.5 rounded-xl flex items-center gap-3 shadow-inner ${darkMode ? 'bg-slate-950/60 border-white/[0.06]' : 'bg-zinc-50 border-zinc-200'}`}>
@@ -197,7 +216,7 @@ export default function StoryboardTab({
                     </button>
                     
                     <button 
-                      onClick={() => setActiveVideoGenModal(scene)} 
+                      onClick={() => localVideo ? setVideoScene(String(scene.scene_n)) : setActiveVideoGenModal(scene)} 
                       className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-emerald-500/60 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}
                     >
                         {isLoadingVideo ? <Loader2 size={14} className="animate-spin" /> : <Film size={14} />} 
@@ -211,10 +230,10 @@ export default function StoryboardTab({
                 )}
 
                 <button 
-                  onClick={() => setActiveGenModal({ scene_n: scene.scene_n, textToGen: isSemi ? scene.Voiceover : (scene.Dialogue || scene.Voiceover) })} 
-                  disabled={isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover)} 
+                  onClick={() => setActiveGenModal({ scene_n: scene.scene_n, textToGen: spoken.text })}
+                  disabled={audioDisabled}
                   className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shrink-0 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 ${
-                    isLoadingAudio || (isSemi && !scene.Voiceover) || (!isSemi && !scene.Dialogue && !scene.Voiceover) 
+                    audioDisabled
                       ? (darkMode ? 'bg-slate-900/40 text-zinc-600 border border-white/[0.06] cursor-not-allowed shadow-none focus-visible:ring-zinc-700' : 'bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed shadow-none focus-visible:ring-zinc-300') 
                       : (darkMode ? 'text-white bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 border-transparent hover:shadow-purple-500/25 focus-visible:ring-purple-500/60' : 'text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 border-transparent hover:shadow-purple-500/25 focus-visible:ring-purple-500/60')
                   }`}

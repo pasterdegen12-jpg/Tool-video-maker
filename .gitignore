@@ -25,3 +25,7 @@ dist-ssr
 .env
 .vercel
 .env*
+
+# Local verification build outputs
+/docs/first-real-video/build/
+/docs/upload-diagnostics/build/

@@ -1,0 +1,567 @@
+TAP version 13
+# Subtest: fresh requests omit attestation and isolate all dynamic state
+ok 1 - fresh requests omit attestation and isolate all dynamic state
+  ---
+  duration_ms: 1.7617
+  type: 'test'
+  ...
+# Subtest: request isolation, gates and safe errors
+    # Subtest: unverified protocol
+    ok 1 - unverified protocol
+      ---
+      duration_ms: 0.8744
+      type: 'test'
+      ...
+    # Subtest: body opt-in cannot enable server flag
+    ok 2 - body opt-in cannot enable server flag
+      ---
+      duration_ms: 0.2059
+      type: 'test'
+      ...
+    # Subtest: wrong method
+    ok 3 - wrong method
+      ---
+      duration_ms: 0.1362
+      type: 'test'
+      ...
+    # Subtest: foreign origin
+    ok 4 - foreign origin
+      ---
+      duration_ms: 0.1466
+      type: 'test'
+      ...
+    # Subtest: missing origin
+    ok 5 - missing origin
+      ---
+      duration_ms: 0.2
+      type: 'test'
+      ...
+    # Subtest: wrong type
+    ok 6 - wrong type
+      ---
+      duration_ms: 0.1807
+      type: 'test'
+      ...
+    # Subtest: bad body
+    ok 7 - bad body
+      ---
+      duration_ms: 0.1401
+      type: 'test'
+      ...
+    # Subtest: empty session
+    ok 8 - empty session
+      ---
+      duration_ms: 0.1684
+      type: 'test'
+      ...
+    # Subtest: header injection
+    ok 9 - header injection
+      ---
+      duration_ms: 0.1877
+      type: 'test'
+      ...
+    1..9
+ok 2 - request isolation, gates and safe errors
+  ---
+  duration_ms: 4.6892
+  type: 'test'
+  ...
+# Subtest: adapter disposal and parser fail closed
+ok 3 - adapter disposal and parser fail closed
+  ---
+  duration_ms: 0.7025
+  type: 'test'
+  ...
+# Subtest: local opt-in and production hard disable, including deployed handler
+ok 4 - local opt-in and production hard disable, including deployed handler
+  ---
+  duration_ms: 0.9708
+  type: 'test'
+  ...
+# Subtest: configuration rejects remote, credential-bearing, DNS and path URLs; requires Clerk key
+ok 5 - configuration rejects remote, credential-bearing, DNS and path URLs; requires Clerk key
+  ---
+  duration_ms: 0.8304
+  type: 'test'
+  ...
+# Subtest: SDK verifies signature, expiry, origin, issuer, session and pending status before upstream
+ok 6 - SDK verifies signature, expiry, origin, issuer, session and pending status before upstream
+  ---
+  duration_ms: 141.5126
+  type: 'test'
+  ...
+# Subtest: untrusted user/project/url fields and unsupported workflows cannot reach gateway
+ok 7 - untrusted user/project/url fields and unsupported workflows cannot reach gateway
+  ---
+  duration_ms: 39.045
+  type: 'test'
+  ...
+# Subtest: owner-only opaque polling, canonical envelope preserved, no upstream secrets or URLs
+ok 8 - owner-only opaque polling, canonical envelope preserved, no upstream secrets or URLs
+  ---
+  duration_ms: 10.5899
+  type: 'test'
+  ...
+# Subtest: queued, running and failed responses with sanitized source validation details
+ok 9 - queued, running and failed responses with sanitized source validation details
+  ---
+  duration_ms: 9.8966
+  type: 'test'
+  ...
+# Subtest: poll upstream HTTP 401 is sanitized and actionable
+ok 10 - poll upstream HTTP 401 is sanitized and actionable
+  ---
+  duration_ms: 7.2085
+  type: 'test'
+  ...
+# Subtest: poll upstream HTTP 429 is sanitized and actionable
+ok 11 - poll upstream HTTP 429 is sanitized and actionable
+  ---
+  duration_ms: 7.0186
+  type: 'test'
+  ...
+# Subtest: poll upstream HTTP 503 is sanitized and actionable
+ok 12 - poll upstream HTTP 503 is sanitized and actionable
+  ---
+  duration_ms: 6.7809
+  type: 'test'
+  ...
+# Subtest: poll upstream HTTP 404 is sanitized and actionable
+ok 13 - poll upstream HTTP 404 is sanitized and actionable
+  ---
+  duration_ms: 7.3735
+  type: 'test'
+  ...
+# Subtest: poll upstream HTTP 500 is sanitized and actionable
+ok 14 - poll upstream HTTP 500 is sanitized and actionable
+  ---
+  duration_ms: 6.4844
+  type: 'test'
+  ...
+# Subtest: POST is never retried, including ambiguous timeout/network/malformed admissions
+ok 15 - POST is never retried, including ambiguous timeout/network/malformed admissions
+  ---
+  duration_ms: 26.7665
+  type: 'test'
+  ...
+# Subtest: GET network and body timeouts are bounded and retryable
+ok 16 - GET network and body timeouts are bounded and retryable
+  ---
+  duration_ms: 52.1154
+  type: 'test'
+  ...
+# Subtest: malformed completed responses, cross-workflow results and source mismatches fail closed
+ok 17 - malformed completed responses, cross-workflow results and source mismatches fail closed
+  ---
+  duration_ms: 1.8303
+  type: 'test'
+  ...
+# Subtest: poll pace, concurrent polls, retry backoff, attempt budget and expiry are enforced server-side
+ok 18 - poll pace, concurrent polls, retry backoff, attempt budget and expiry are enforced server-side
+  ---
+  duration_ms: 19.312
+  type: 'test'
+  ...
+# Subtest: ownership is lost safely on bridge restart; local capacity is bounded
+ok 19 - ownership is lost safely on bridge restart; local capacity is bounded
+  ---
+  duration_ms: 11.2817
+  type: 'test'
+  ...
+# Subtest: JSON body size and local Host protection
+ok 20 - JSON body size and local Host protection
+  ---
+  duration_ms: 7.8885
+  type: 'test'
+  ...
+# Subtest: streamed body limits and body deadline apply without Content-Length
+ok 21 - streamed body limits and body deadline apply without Content-Length
+  ---
+  duration_ms: 37.0216
+  type: 'test'
+  ...
+# Subtest: concurrent POSTs reserve capacity before contacting upstream and failed admission releases it
+ok 22 - concurrent POSTs reserve capacity before contacting upstream and failed admission releases it
+  ---
+  duration_ms: 14.2827
+  type: 'test'
+  ...
+# Subtest: upstream redirects are not followed with the gateway bearer
+ok 23 - upstream redirects are not followed with the gateway bearer
+  ---
+  duration_ms: 3.6617
+  type: 'test'
+  ...
+# Subtest: two ORIGINAL scripts through Web HTTP → real gateway → JobManager → CPU parser, then restart
+ok 24 - two ORIGINAL scripts through Web HTTP → real gateway → JobManager → CPU parser, then restart
+  ---
+  duration_ms: 2246.2681
+  type: 'test'
+  ...
+# Subtest: browser-style same-origin GET without Origin works only with exact Referer and Fetch Metadata
+ok 25 - browser-style same-origin GET without Origin works only with exact Referer and Fetch Metadata
+  ---
+  duration_ms: 67.875
+  type: 'test'
+  ...
+# Subtest: browser GET header compatibility keeps Clerk issuer/azp/session and owner checks unchanged
+ok 26 - browser GET header compatibility keeps Clerk issuer/azp/session and owner checks unchanged
+  ---
+  duration_ms: 21.6863
+  type: 'test'
+  ...
+# Subtest: visibility requires dev, explicit opt-in and literal local browser origin
+ok 27 - visibility requires dev, explicit opt-in and literal local browser origin
+  ---
+  duration_ms: 0.898
+  type: 'test'
+  ...
+# Subtest: obvious invalid/unstructured input never calls Clerk or sends POST
+ok 28 - obvious invalid/unstructured input never calls Clerk or sends POST
+  ---
+  duration_ms: 0.9522
+  type: 'test'
+  ...
+# Subtest: exact original full-ai request, canonical response and complete metadata
+ok 29 - exact original full-ai request, canonical response and complete metadata
+  ---
+  duration_ms: 24.0241
+  type: 'test'
+  ...
+# Subtest: exact original semi request, canonical response and complete metadata
+ok 30 - exact original semi request, canonical response and complete metadata
+  ---
+  duration_ms: 2.3601
+  type: 'test'
+  ...
+# Subtest: does not repair canonical aliases or cross-workflow/missing metadata responses
+ok 31 - does not repair canonical aliases or cross-workflow/missing metadata responses
+  ---
+  duration_ms: 1.166
+  type: 'test'
+  ...
+# Subtest: expired/missing Clerk token stops with no POST; SDK errors are never echoed
+ok 32 - expired/missing Clerk token stops with no POST; SDK errors are never echoed
+  ---
+  duration_ms: 0.8165
+  type: 'test'
+  ...
+# Subtest: POST 401 expired session stops without retry
+ok 33 - POST 401 expired session stops without retry
+  ---
+  duration_ms: 0.6937
+  type: 'test'
+  ...
+# Subtest: GET 401 expired session stops without retry
+ok 34 - GET 401 expired session stops without retry
+  ---
+  duration_ms: 0.7864
+  type: 'test'
+  ...
+# Subtest: poll 404 ends as expired
+ok 35 - poll 404 ends as expired
+  ---
+  duration_ms: 0.7033
+  type: 'test'
+  ...
+# Subtest: poll 410 ends as expired
+ok 36 - poll 410 ends as expired
+  ---
+  duration_ms: 0.6428
+  type: 'test'
+  ...
+# Subtest: 429/503 Retry-After is honored before next GET and recovery completes
+ok 37 - 429/503 Retry-After is honored before next GET and recovery completes
+  ---
+  duration_ms: 1.4687
+  type: 'test'
+  ...
+# Subtest: transient network errors stop after three; non-retryable 503 stops immediately
+ok 38 - transient network errors stop after three; non-retryable 503 stops immediately
+  ---
+  duration_ms: 1.2587
+  type: 'test'
+  ...
+# Subtest: server and client poll budgets/deadlines stop even when gateway never completes
+ok 39 - server and client poll budgets/deadlines stop even when gateway never completes
+  ---
+  duration_ms: 6.3512
+  type: 'test'
+  ...
+# Subtest: failed CPU job is terminal; no partial preview, save or Gemini fallback
+ok 40 - failed CPU job is terminal; no partial preview, save or Gemini fallback
+  ---
+  duration_ms: 0.7736
+  type: 'test'
+  ...
+# Subtest: ambiguous POST network/timeout/malformed admission never retries or follows external URLs
+ok 41 - ambiguous POST network/timeout/malformed admission never retries or follows external URLs
+  ---
+  duration_ms: 22.1596
+  type: 'test'
+  ...
+# Subtest: POST capacity/unavailable errors never silently retry
+ok 42 - POST capacity/unavailable errors never silently retry
+  ---
+  duration_ms: 1.1503
+  type: 'test'
+  ...
+# Subtest: duplicate click prevented during token acquisition; cancel blocks a late token from POSTing
+ok 43 - duplicate click prevented during token acquisition; cancel blocks a late token from POSTing
+  ---
+  duration_ms: 0.4401
+  type: 'test'
+  ...
+# Subtest: cancel or unmount aborts pending fetch and rejects late results despite transport ignoring signal
+ok 44 - cancel or unmount aborts pending fetch and rejects late results despite transport ignoring signal
+  ---
+  duration_ms: 2.4612
+  type: 'test'
+  ...
+# Subtest: cancel interrupts the actual polling timer and prevents GET
+ok 45 - cancel interrupts the actual polling timer and prevents GET
+  ---
+  duration_ms: 0.6661
+  type: 'test'
+  ...
+# (node:8276) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual React preview of recorded real full-ai output preserves every scene/field
+ok 46 - actual React preview of recorded real full-ai output preserves every scene/field
+  ---
+  duration_ms: 74.0768
+  type: 'test'
+  ...
+# Subtest: actual React preview of recorded real semi output preserves every scene/field
+ok 47 - actual React preview of recorded real semi output preserves every scene/field
+  ---
+  duration_ms: 31.6757
+  type: 'test'
+  ...
+# Subtest: synthetic HTML-like speech/metadata is safe plain text, not markup or media
+ok 48 - synthetic HTML-like speech/metadata is safe plain text, not markup or media
+  ---
+  duration_ms: 23.5877
+  type: 'test'
+  ...
+# Subtest: MainEditor hides local feature by default and in production even with visibility flag
+ok 49 - MainEditor hides local feature by default and in production even with visibility flag
+  ---
+  duration_ms: 122.4695
+  type: 'test'
+  ...
+# Subtest: enabled MainEditor uses chosen workflow/language and original textarea; no Firebase/media/Gemini action
+ok 50 - enabled MainEditor uses chosen workflow/language and original textarea; no Firebase/media/Gemini action
+  ---
+  duration_ms: 88.4925
+  type: 'test'
+  ...
+# Subtest: double click, cancel and a late successful POST never display stale preview
+ok 51 - double click, cancel and a late successful POST never display stale preview
+  ---
+  duration_ms: 5.1833
+  type: 'test'
+  ...
+# Subtest: changing script aborts active GET and rejects old completed output
+ok 52 - changing script aborts active GET and rejects old completed output
+  ---
+  duration_ms: 5.1711
+  type: 'test'
+  ...
+# Subtest: changing workflow aborts active GET and rejects old completed output
+ok 53 - changing workflow aborts active GET and rejects old completed output
+  ---
+  duration_ms: 4.9397
+  type: 'test'
+  ...
+# Subtest: changing language aborts active GET and rejects old completed output
+ok 54 - changing language aborts active GET and rejects old completed output
+  ---
+  duration_ms: 4.8855
+  type: 'test'
+  ...
+# Subtest: changing session aborts active GET and rejects old completed output
+ok 55 - changing session aborts active GET and rejects old completed output
+  ---
+  duration_ms: 4.6644
+  type: 'test'
+  ...
+# Subtest: component unmount during token acquisition sends no request
+ok 56 - component unmount during token acquisition sends no request
+  ---
+  duration_ms: 2.7852
+  type: 'test'
+  ...
+# Subtest: pagehide stops polling timer and presents cancelled state for browser back navigation
+ok 57 - pagehide stops polling timer and presents cancelled state for browser back navigation
+  ---
+  duration_ms: 3.7124
+  type: 'test'
+  ...
+# Subtest: unauthenticated UI disables submit; 401 from backend clears busy state
+ok 58 - unauthenticated UI disables submit; 401 from backend clears busy state
+  ---
+  duration_ms: 4.0088
+  type: 'test'
+  ...
+# Subtest: read-only contract: canonical Full
+ok 59 - read-only contract: canonical Full
+  ---
+  duration_ms: 1.2753
+  type: 'test'
+  ...
+# Subtest: read-only contract: legacy Full
+ok 60 - read-only contract: legacy Full
+  ---
+  duration_ms: 0.1239
+  type: 'test'
+  ...
+# Subtest: read-only contract: equal aliases
+ok 61 - read-only contract: equal aliases
+  ---
+  duration_ms: 0.996
+  type: 'test'
+  ...
+# Subtest: read-only contract: conflicting aliases
+ok 62 - read-only contract: conflicting aliases
+  ---
+  duration_ms: 0.1116
+  type: 'test'
+  ...
+# Subtest: read-only contract: empty Dialogue conflict
+ok 63 - read-only contract: empty Dialogue conflict
+  ---
+  duration_ms: 0.1042
+  type: 'test'
+  ...
+# Subtest: read-only contract: empty legacy conflict
+ok 64 - read-only contract: empty legacy conflict
+  ---
+  duration_ms: 0.109
+  type: 'test'
+  ...
+# Subtest: read-only contract: whitespace is significant
+ok 65 - read-only contract: whitespace is significant
+  ---
+  duration_ms: 0.1052
+  type: 'test'
+  ...
+# Subtest: read-only contract: empty canonical
+ok 66 - read-only contract: empty canonical
+  ---
+  duration_ms: 0.1034
+  type: 'test'
+  ...
+# Subtest: read-only contract: both empty
+ok 67 - read-only contract: both empty
+  ---
+  duration_ms: 0.1478
+  type: 'test'
+  ...
+# Subtest: read-only contract: missing speech
+ok 68 - read-only contract: missing speech
+  ---
+  duration_ms: 0.2008
+  type: 'test'
+  ...
+# Subtest: read-only contract: null is invalid
+ok 69 - read-only contract: null is invalid
+  ---
+  duration_ms: 0.1191
+  type: 'test'
+  ...
+# Subtest: read-only contract: non-string legacy
+ok 70 - read-only contract: non-string legacy
+  ---
+  duration_ms: 0.1133
+  type: 'test'
+  ...
+# Subtest: read-only contract: Semi keeps Voiceover
+ok 71 - read-only contract: Semi keeps Voiceover
+  ---
+  duration_ms: 0.1068
+  type: 'test'
+  ...
+# Subtest: read-only contract: Semi never falls back
+ok 72 - read-only contract: Semi never falls back
+  ---
+  duration_ms: 0.0812
+  type: 'test'
+  ...
+# Subtest: read-only contract: Semi invalid Voiceover
+ok 73 - read-only contract: Semi invalid Voiceover
+  ---
+  duration_ms: 0.1087
+  type: 'test'
+  ...
+# Subtest: explicit Full edit preserves media/metadata and removes only legacy alias
+ok 74 - explicit Full edit preserves media/metadata and removes only legacy alias
+  ---
+  duration_ms: 0.6817
+  type: 'test'
+  ...
+# Subtest: new Full projects canonicalize legacy/equal aliases without mutating input
+ok 75 - new Full projects canonicalize legacy/equal aliases without mutating input
+  ---
+  duration_ms: 0.3921
+  type: 'test'
+  ...
+# Subtest: Semi preparation preserves independent fields and characters are not inferred
+ok 76 - Semi preparation preserves independent fields and characters are not inferred
+  ---
+  duration_ms: 0.1355
+  type: 'test'
+  ...
+# (node:5796) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: conflict editor shows both exact values; explicit choice keeps one and media
+ok 77 - conflict editor shows both exact values; explicit choice keeps one and media
+  ---
+  duration_ms: 1.3616
+  type: 'test'
+  ...
+# Subtest: legacy editor reads old text; clearing it does not resurrect Voiceover
+ok 78 - legacy editor reads old text; clearing it does not resurrect Voiceover
+  ---
+  duration_ms: 0.2317
+  type: 'test'
+  ...
+# Subtest: Storyboard displays and passes exact text: new Full
+ok 79 - Storyboard displays and passes exact text: new Full
+  ---
+  duration_ms: 12.0123
+  type: 'test'
+  ...
+# Subtest: Storyboard displays and passes exact text: legacy Full
+ok 80 - Storyboard displays and passes exact text: legacy Full
+  ---
+  duration_ms: 4.6
+  type: 'test'
+  ...
+# Subtest: Storyboard displays and passes exact text: Semi
+ok 81 - Storyboard displays and passes exact text: Semi
+  ---
+  duration_ms: 3.6108
+  type: 'test'
+  ...
+# Subtest: Storyboard conflict blocks ambiguous speech but keeps media and edit action
+ok 82 - Storyboard conflict blocks ambiguous speech but keeps media and edit action
+  ---
+  duration_ms: 5.285
+  type: 'test'
+  ...
+# Subtest: actual Firebase helper: creation uses workflow field; conflict fails before external work; updates do not migrate
+ok 83 - actual Firebase helper: creation uses workflow field; conflict fails before external work; updates do not migrate
+  ---
+  duration_ms: 4.8408
+  type: 'test'
+  ...
+1..83
+# tests 92
+# suites 0
+# pass 92
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2665.7691

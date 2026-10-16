@@ -1,3 +1,4 @@
+import { SetIdPanel } from './VisualProfiles.jsx';
 import React, { useState } from 'react';
 import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as ImageIcon, Music } from 'lucide-react';
 
@@ -113,6 +114,8 @@ export default function SetupTab({
                 {char.description || "Chưa có mô tả chi tiết."}
               </div>
             )}
+
+            <SetIdPanel character={char} disabled={!!editing} />
 
             {char.voiceUrl && (
                <div className={`flex items-center gap-2 text-[11px] font-medium px-3 py-2 rounded-lg border ${darkMode ? 'text-green-400 bg-green-500/10 border-green-500/20' : 'text-green-700 bg-green-50 border-green-200'}`}>

@@ -1,0 +1,83 @@
+{
+  "label": "REAL LOCAL HTTP + MOCK WAVESPEED + TEST-SIGNED CLERK; NOT LIVE GENERATION",
+  "quote": {
+    "quote_id": "1c8622524d9de9a0c7cee42a15ed53ab74ab3f72f1d7fd23",
+    "attempt_id": "1c8622524d9de9a0c7cee42a15ed53ab74ab3f72f1d7fd23",
+    "expires_at": "2026-10-16T15:19:34.573Z",
+    "request_hash": "b64c048b11c089ca39e694a80646a0913de4a92c62dcdde84dbe45f3e5e19d70",
+    "image_sha256": "e9da449bcc3b10b9b37834ea7add3566c3df058c3bf56f74ef706f49848d0126",
+    "prompt_sha256": "1fb848d3f7461c0abe4bd18816bf7983dbd60b734a7c754fd3ffbc2c83b64809",
+    "prompt": "Use the original authored values below. Do not add or paraphrase spoken dialogue, actions or camera instructions. Only ORIGINAL SPOKEN DIALOGUE is spoken text.\n\nORIGINAL CONTEXT:\nTest context.\n\nCHARACTER:\nJudge\n\nORIGINAL ACTION:\nNo action invented.\n\nORIGINAL CAMERA:\nStatic.\n\nORIGINAL SPOKEN DIALOGUE:\nExact test words.",
+    "scene_id": 1,
+    "spoken_source": "Dialogue",
+    "settings": {
+      "duration": 5,
+      "resolution": "480p",
+      "aspect_ratio": "16:9",
+      "generate_audio": true,
+      "camera_fixed": false,
+      "seed": -1
+    },
+    "plan": {
+      "words": 3,
+      "seconds": 2,
+      "suggested": 4,
+      "fits": true,
+      "wordsPerMinute": 150,
+      "pauseSeconds": 0.8
+    },
+    "cost": {
+      "microUsd": 120000,
+      "usd": "0.1200",
+      "currency": "USD",
+      "version": "seedance-standard-reference-2026-10-12",
+      "source": "https://wavespeed.ai/docs/docs-api/bytedance/bytedance-seedance-v1.5-pro-image-to-video",
+      "verifiedDate": "2026-10-12",
+      "kind": "reference_estimate"
+    },
+    "model": "bytedance/seedance-v1.5-pro/image-to-video",
+    "paid_enabled": true,
+    "retry_predecessor_id": null
+  },
+  "admitted": {
+    "job_id": "1c8622524d9de9a0c7cee42a15ed53ab74ab3f72f1d7fd23",
+    "state": "queued",
+    "stage": "SUBMITTED",
+    "scene_id": 1,
+    "video_url": null,
+    "expires_at": "2026-10-16T15:32:34.573Z",
+    "polls_remaining": 180,
+    "message": null,
+    "speech_review": "unverified",
+    "status_url": "/api/local-video/jobs/1c8622524d9de9a0c7cee42a15ed53ab74ab3f72f1d7fd23"
+  },
+  "completed": {
+    "job_id": "1c8622524d9de9a0c7cee42a15ed53ab74ab3f72f1d7fd23",
+    "state": "completed",
+    "stage": "COMPLETED",
+    "scene_id": 1,
+    "video_url": "https://video.wavespeed.ai/test-only.mp4",
+    "expires_at": "2026-10-16T15:32:34.573Z",
+    "polls_remaining": 179,
+    "message": null,
+    "speech_review": "unverified"
+  },
+  "provider_calls": [
+    {
+      "url": "https://api.wavespeed.ai/api/v3/media/uploads",
+      "method": "POST"
+    },
+    {
+      "url": "[redacted test signed URL]",
+      "method": "PUT"
+    },
+    {
+      "url": "https://api.wavespeed.ai/api/v3/bytedance/seedance-v1.5-pro/image-to-video",
+      "method": "POST"
+    },
+    {
+      "url": "https://api.wavespeed.ai/api/v3/predictions/pred_test/result",
+      "method": "GET"
+    }
+  ]
+}

@@ -1,0 +1,1205 @@
+[
+  {
+    "file": "src/lib/seedanceContract.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "src/lib/seedanceClient.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "src/Workspace/SeedanceScenePanel.jsx",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/errors.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/images.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/config.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/provider.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/service.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/seedance/transport.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "scripts/local-video-server.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "scripts/local-ai-loopback.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "api/lib/local-ai/auth.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "src/Workspace/StoryboardTab.jsx",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 4,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "src/Workspace/VisualProfiles.jsx",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "src/Workspace/Workspace.jsx",
+    "errorCount": 45,
+    "warningCount": 1,
+    "baselineErrors": 45,
+    "baselineWarnings": 1,
+    "introduced": [],
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'React' is defined but never used.",
+        "line": 2,
+        "column": 8,
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 13,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "React"
+            },
+            "fix": {
+              "range": [
+                70,
+                76
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'React'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'AlignLeft' is defined but never used.",
+        "line": 7,
+        "column": 20,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 29,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "AlignLeft"
+            },
+            "fix": {
+              "range": [
+                351,
+                362
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'AlignLeft'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Play' is defined but never used.",
+        "line": 7,
+        "column": 162,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 166,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Play"
+            },
+            "fix": {
+              "range": [
+                493,
+                499
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Play'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Clock' is defined but never used.",
+        "line": 7,
+        "column": 168,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 173,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Clock"
+            },
+            "fix": {
+              "range": [
+                499,
+                506
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Clock'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Maximize' is defined but never used.",
+        "line": 7,
+        "column": 175,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 183,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Maximize"
+            },
+            "fix": {
+              "range": [
+                506,
+                516
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Maximize'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Video' is defined but never used.",
+        "line": 7,
+        "column": 185,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 190,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Video"
+            },
+            "fix": {
+              "range": [
+                516,
+                523
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Video'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Globe' is defined but never used.",
+        "line": 7,
+        "column": 192,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 197,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Globe"
+            },
+            "fix": {
+              "range": [
+                523,
+                530
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Globe'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Sun' is defined but never used.",
+        "line": 7,
+        "column": 199,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 202,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Sun"
+            },
+            "fix": {
+              "range": [
+                530,
+                535
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Sun'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'Moon' is defined but never used.",
+        "line": 7,
+        "column": 204,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 208,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "Moon"
+            },
+            "fix": {
+              "range": [
+                535,
+                541
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'Moon'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'modalHeader' is assigned a value but never used.",
+        "line": 50,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 50,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "modalHeader"
+            },
+            "fix": {
+              "range": [
+                2372,
+                2475
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'modalHeader'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'modalFooter' is assigned a value but never used.",
+        "line": 51,
+        "column": 7,
+        "messageId": "unusedVar",
+        "endLine": 51,
+        "endColumn": 18,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "modalFooter"
+            },
+            "fix": {
+              "range": [
+                2476,
+                2579
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'modalFooter'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'setDarkMode' is defined but never used.",
+        "line": 59,
+        "column": 70,
+        "messageId": "unusedVar",
+        "endLine": 59,
+        "endColumn": 81,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "setDarkMode"
+            },
+            "fix": {
+              "range": [
+                2993,
+                3006
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'setDarkMode'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'qwenEmbeddingUrl' is assigned a value but never used.",
+        "line": 102,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 102,
+        "endColumn": 26,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "qwenEmbeddingUrl"
+            },
+            "fix": {
+              "range": [
+                5104,
+                5120
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'qwenEmbeddingUrl'."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n  131 |   useEffect(() => {\n  132 |     if (activeGenModal) {\n> 133 |       setGenModalText(activeGenModal.textToGen || \"\");\n      |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  134 |     }\n  135 |   }, [activeGenModal]);\n  136 |",
+        "line": 133,
+        "column": 7,
+        "endLine": 133,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "react-hooks/exhaustive-deps",
+        "severity": 1,
+        "message": "React Hook useEffect has a missing dependency: 'location.state.characters'. Either include it or remove the dependency array.",
+        "line": 200,
+        "column": 6,
+        "endLine": 200,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "desc": "Update the dependencies array to be: [location.state.characters, projectId]",
+            "fix": {
+              "range": [
+                9371,
+                9382
+              ],
+              "text": "[location.state.characters, projectId]"
+            }
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'startFrameUrl' is assigned a value but never used.",
+        "line": 408,
+        "column": 15,
+        "messageId": "unusedVar",
+        "endLine": 408,
+        "endColumn": 28,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "startFrameUrl"
+            },
+            "fix": {
+              "range": [
+                18088,
+                18102
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'startFrameUrl'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'videoUrl' is assigned a value but never used.",
+        "line": 408,
+        "column": 30,
+        "messageId": "unusedVar",
+        "endLine": 408,
+        "endColumn": 38,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "videoUrl"
+            },
+            "fix": {
+              "range": [
+                18101,
+                18111
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'videoUrl'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'AdditionalPrompt' is assigned a value but never used.",
+        "line": 408,
+        "column": 40,
+        "messageId": "unusedVar",
+        "endLine": 408,
+        "endColumn": 56,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "AdditionalPrompt"
+            },
+            "fix": {
+              "range": [
+                18111,
+                18129
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'AdditionalPrompt'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 442,
+        "column": 103,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 104
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 442,
+        "column": 106,
+        "messageId": "unexpected",
+        "endLine": 442,
+        "endColumn": 109,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                19173,
+                19174
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 444,
+        "column": 145,
+        "messageId": "unusedVar",
+        "endLine": 444,
+        "endColumn": 146
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 444,
+        "column": 148,
+        "messageId": "unexpected",
+        "endLine": 444,
+        "endColumn": 151,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                19341,
+                19342
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 446,
+        "column": 105,
+        "messageId": "unusedVar",
+        "endLine": 446,
+        "endColumn": 106
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 446,
+        "column": 108,
+        "messageId": "unexpected",
+        "endLine": 446,
+        "endColumn": 111,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                19484,
+                19485
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 455,
+        "column": 201,
+        "messageId": "unusedVar",
+        "endLine": 455,
+        "endColumn": 202
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 455,
+        "column": 204,
+        "messageId": "unexpected",
+        "endLine": 455,
+        "endColumn": 207,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                19957,
+                19958
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 457,
+        "column": 215,
+        "messageId": "unusedVar",
+        "endLine": 457,
+        "endColumn": 216
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 457,
+        "column": 218,
+        "messageId": "unexpected",
+        "endLine": 457,
+        "endColumn": 221,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                20195,
+                20196
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 465,
+        "column": 199,
+        "messageId": "unusedVar",
+        "endLine": 465,
+        "endColumn": 200
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 465,
+        "column": 202,
+        "messageId": "unexpected",
+        "endLine": 465,
+        "endColumn": 205,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                20595,
+                20596
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 468,
+        "column": 145,
+        "messageId": "unusedVar",
+        "endLine": 468,
+        "endColumn": 146
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 468,
+        "column": 148,
+        "messageId": "unexpected",
+        "endLine": 468,
+        "endColumn": 151,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                20788,
+                20789
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 470,
+        "column": 105,
+        "messageId": "unusedVar",
+        "endLine": 470,
+        "endColumn": 106
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 470,
+        "column": 108,
+        "messageId": "unexpected",
+        "endLine": 470,
+        "endColumn": 111,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                20931,
+                20932
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 481,
+        "column": 20,
+        "messageId": "unusedVar",
+        "endLine": 481,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 481,
+        "column": 23,
+        "messageId": "unexpected",
+        "endLine": 481,
+        "endColumn": 26,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                21356,
+                21357
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 490,
+        "column": 22,
+        "messageId": "unusedVar",
+        "endLine": 490,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 490,
+        "column": 25,
+        "messageId": "unexpected",
+        "endLine": 490,
+        "endColumn": 28,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                21686,
+                21687
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 546,
+        "column": 54,
+        "messageId": "unusedVar",
+        "endLine": 546,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 546,
+        "column": 57,
+        "messageId": "unexpected",
+        "endLine": 546,
+        "endColumn": 60,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                23832,
+                23833
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 547,
+        "column": 60,
+        "messageId": "unusedVar",
+        "endLine": 547,
+        "endColumn": 61
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 547,
+        "column": 63,
+        "messageId": "unexpected",
+        "endLine": 547,
+        "endColumn": 66,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                23898,
+                23899
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 548,
+        "column": 54,
+        "messageId": "unusedVar",
+        "endLine": 548,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 548,
+        "column": 57,
+        "messageId": "unexpected",
+        "endLine": 548,
+        "endColumn": 60,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                23958,
+                23959
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 549,
+        "column": 56,
+        "messageId": "unusedVar",
+        "endLine": 549,
+        "endColumn": 57
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 549,
+        "column": 59,
+        "messageId": "unexpected",
+        "endLine": 549,
+        "endColumn": 62,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                24020,
+                24021
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "file": "vite.config.js",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 2,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/seedance-contract.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/seedance-http.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/seedance-ui.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/seedance-client.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/seedance-transport.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/support/seedance-fixtures.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/local-ai-real-http.test.mjs",
+    "errorCount": 1,
+    "warningCount": 0,
+    "baselineErrors": 1,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'config' is defined but never used.",
+        "line": 12,
+        "column": 10,
+        "messageId": "unusedVar",
+        "endLine": 12,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "config"
+            },
+            "fix": {
+              "range": [
+                485,
+                492
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'config'."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "file": "tests/visual-real-http.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  },
+  {
+    "file": "tests/spoken-text-contract.test.mjs",
+    "errorCount": 0,
+    "warningCount": 0,
+    "baselineErrors": 0,
+    "baselineWarnings": 0,
+    "introduced": [],
+    "messages": []
+  }
+]

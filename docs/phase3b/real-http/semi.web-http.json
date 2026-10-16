@@ -1,0 +1,1529 @@
+{
+  "status": "PASS",
+  "input": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+  "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+  "transport": "Web HTTP → gateway TCP → JobManager → CPU parser → Web HTTP",
+  "authentication": "Real Clerk SDK signature verification with SYNTHETIC ephemeral test sessions; live Clerk login NOT RUN",
+  "request": {
+    "projectType": "semi",
+    "script": "Primary_Content_Mode: RECIPE_REVIEW_FULL\r\nSecondary_Flavor: FOOD_DEBATE_OPINION\r\nCoverage_Mode: FULL_PROGRESSIVE\r\nAngle_Thesis: Dùng proxy storytelling bóc mẽ sự mâu thuẫn giữa việc bị ốm sụt sịt nhưng vẫn \"ra vẻ\" nấu mâm tiệc 4 món đa nhiệm, cuối cùng kết thúc bằng sự hạ mình xin vía dọn bát đĩa.\r\nPersona_Core: Người chồng suồng sã, \"ngoài lạnh trong ấm\", hay gọi khán giả là \"các vợ\", dùng góc nhìn thứ ba để châm biếm sự bày vẽ, kết thúc xưng \"em\" chân thành.\r\nNarrative_Thread: Sự mâu thuẫn giữa người ốm lười biếng và những thao tác nấu nướng lỉnh kỉnh, tạo nên nỗi hoang mang tột độ về đống bát đĩa.\r\nTarget_Audience_Context: Nam/nữ 20-35 tuổi thích các nội dung đời thường, nấu ăn giải trí, hài hước và có yếu tố thú cưng chữa lành.\r\nPrimary_Goal: MIXED\r\nTarget_Duration: ~104 seconds\r\nScene_Count: 22\r\nTTS_Pacing_Profile: DEFAULT_VI_4.0–4.5\r\nAffiliate_Mode: OFF\r\nRouting_Note: Khai thác tối đa chuỗi thao tác dùng đồ bếp mini, cắt kéo và sơ chế sẵn của video gốc, kết hợp với DNA Hook nghịch lý và Anticlimax của Creator 2 để tạo sự hài hước.\r\n\r\n=========================\r\nscene_1\r\n\r\nTime: 00:00 - 00:04\r\n\r\nTime_origin: 00:00 - 00:04\r\n\r\nScene_Duration: 4.0\r\n\r\nFootage: Hai tay xé gói nguyên liệu thuốc bắc đổ ra chiếc rây lọc.\r\n\r\nVoiceover: Seri nấu ăn chăm vợ. Chuyện là bả đang ốm sụt sịt mà đòi ăn tiệc.\r\n\r\nVO_Token_Count: 16\r\n\r\nVO_Target_Range: 12-14\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: HOOK\r\n\r\nReview_Angle: Đặt vấn đề bằng nghịch lý quen thuộc của persona: ốm nhưng đòi ăn sang.\r\n\r\nEffect: Tiếng xé nilon sột soạt.\r\n\r\n=========================\r\nscene_2\r\n\r\nTime: 00:04 - 00:09\r\n\r\nTime_origin: 00:04 - 00:09\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Lôi các gói nilon nhỏ xé tiếp nguyên liệu thuốc bắc.\r\n\r\nVoiceover: Tại sao lại thế thì để anh kể. Lôi đống thuốc bắc ra xé xé trông như bà lang băm.\r\n\r\nVO_Token_Count: 19\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: SETUP\r\n\r\nReview_Angle: Dùng discourse marker đặc trưng để mở rộng câu chuyện.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_3\r\n\r\nTime: 00:30 - 00:35\r\n\r\nTime_origin: 00:30 - 00:35\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Đong gạo và diêm mạch vào trong nồi cơm điện.\r\n\r\nVoiceover: Đong tí gạo với diêm mạch nấu cơm. Ốm mà ăn uống lỉnh kỉnh dã man.\r\n\r\nVO_Token_Count: 15\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: OBSERVATION\r\n\r\nReview_Angle: Than vãn sự rườm rà của việc chuẩn bị nhiều loại hạt.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_4\r\n\r\nTime: 00:50 - 00:55\r\n\r\nTime_origin: 00:50 - 00:55\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Cầm chiếc kéo xanh cắt lạp xưởng rơi thẳng vào lõi nồi cơm.\r\n\r\nVoiceover: Xong lôi cái kéo ra cắt lạp xưởng xộc xộc. Đúng bài lười chảy thây trốn rửa thớt.\r\n\r\nVO_Token_Count: 17\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: TENSION\r\n\r\nReview_Angle: Châm biếm hành động lười dùng dao thớt.\r\n\r\nEffect: Tiếng kéo cắt xoạch xoạch.\r\n\r\n=========================\r\nscene_5\r\n\r\nTime: 00:59 - 01:04\r\n\r\nTime_origin: 00:59 - 01:04\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Cho gà đã chần cùng các vị thuốc bắc vào nồi gang trắng đun.\r\n\r\nVoiceover: Tống thuốc bắc với đùi gà vào nồi hầm. Khúc này anh thấy mùi lười biếng bay mất rồi.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: ESCALATION\r\n\r\nReview_Angle: Nhận ra sự phức tạp tăng dần của bữa cơm giải cảm.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_6\r\n\r\nTime: 01:10 - 01:15\r\n\r\nTime_origin: 01:10 - 01:15\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Tiếp tục dùng kéo cắt các thân măng tây xanh.\r\n\r\nVoiceover: Quay sang cắt măng tây. Ốm thì ốm chứ kỹ năng múa kéo vẫn cứ là đỉnh chóp.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: CALLBACK\r\n\r\nReview_Angle: Gợi nhắc lại chi tiết lười rửa thớt một cách hài hước.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_7\r\n\r\nTime: 01:21 - 01:26\r\n\r\nTime_origin: 01:21 - 01:26\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Lấy khoai tây và súp lơ xanh từ trong các túi zip nhựa ra.\r\n\r\nVoiceover: Nhưng hoang mang tột độ là bả lôi mấy cái túi zip trữ rau củ gọt sẵn ra.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: CURIOSITY\r\n\r\nReview_Angle: Bất ngờ trước sự chuẩn bị xa của người nấu.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_8\r\n\r\nTime: 01:54 - 01:59\r\n\r\nTime_origin: 01:54 - 01:59\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Bật bếp luộc nồi nước nhỏ có khay lưới vớt bên trong.\r\n\r\nVoiceover: Đến đoạn luộc rau. Tưởng luộc nước lọc bình thường nhưng không, phải có tí mẹo cơ.\r\n\r\nVO_Token_Count: 17\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: SETUP\r\n\r\nReview_Angle: Tạo khoảng hở thông tin trước khi tiết lộ bí kíp nấu ăn.\r\n\r\nEffect: Tiếng nước sôi.\r\n\r\n=========================\r\nscene_9\r\n\r\nTime: 01:59 - 02:04\r\n\r\nTime_origin: 01:59 - 02:04\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Bóp tuýp mỡ lợn vào nồi nước đang sôi.\r\n\r\nVoiceover: Bóp tuýp mỡ lợn vào. Đậu má mỡ lợn giờ đóng tuýp như kem đánh răng à?\r\n\r\nVO_Token_Count: 16\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: REACTION\r\n\r\nReview_Angle: Câu hỏi tu từ ngạc nhiên trước bao bì lạ mắt của mỡ lợn.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_10\r\n\r\nTime: 02:04 - 02:09\r\n\r\nTime_origin: 02:04 - 02:09\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Luộc măng tây xanh mướt trong nồi nước mỡ.\r\n\r\nVoiceover: Cơ mà luộc rau có tí mỡ lợn nó xanh mướt mườn mượt, nhìn mlem thật sự.\r\n\r\nVO_Token_Count: 17\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: EXPLAIN\r\n\r\nReview_Angle: Công nhận hiệu quả của mẹo nấu ăn.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_11\r\n\r\nTime: 02:22 - 02:27\r\n\r\nTime_origin: 02:22 - 02:27\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Gắp rau củ luộc ra bát và trộn với muối, đường, dầu mè.\r\n\r\nVoiceover: Vớt ra táng thêm tí muối đường với dầu mè. Đa nhiệm thoăn thoắt chóng cả mặt.\r\n\r\nVO_Token_Count: 16\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: OBSERVATION\r\n\r\nReview_Angle: Bị choáng ngợp bởi tốc độ nấu ăn đa nhiệm.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_12\r\n\r\nTime: 02:43 - 02:48\r\n\r\nTime_origin: 02:43 - 02:48\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Mở nắp nồi gang, nước hầm gà thuốc bắc đang sôi lụp bụp.\r\n\r\nVoiceover: Nồi canh gà hầm lụp bụp. Mở nắp ra khói bốc lên thơm lộng óc các vợ ạ.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: SENSORY\r\n\r\nReview_Angle: Kích thích thị giác và khứu giác bằng từ ngữ cường điệu.\r\n\r\nEffect: Tiếng sôi lụp bụp.\r\n\r\n=========================\r\nscene_13\r\n\r\nTime: 02:57 - 03:02\r\n\r\nTime_origin: 02:57 - 03:02\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Pha nước chấm xì dầu với gừng tỏi băm.\r\n\r\nVoiceover: Tranh thủ pha bát nước chấm. Bày vẽ thế này tí anh rửa bát ốm đòn chứ đùa.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: CRITIQUE\r\n\r\nReview_Angle: Nỗi sợ dọn rửa bãi chiến trường quay trở lại.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_14\r\n\r\nTime: 03:10 - 03:15\r\n\r\nTime_origin: 03:10 - 03:15\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Mở nồi cơm lạp xưởng và cho thìa sốt nấm đen (truffle) vào.\r\n\r\nVoiceover: Nồi cơm chín bả múc hẳn cái sốt nấm đen xì xì trộn vào. Chơi sang vãi nồi.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: TENSION\r\n\r\nReview_Angle: Phản ứng với nguyên liệu cao cấp không hợp với hoàn cảnh người ốm.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_15\r\n\r\nTime: 03:17 - 03:22\r\n\r\nTime_origin: 03:17 - 03:22\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Dùng thìa gỗ trộn đều cơm lạp xưởng và măng tây trực tiếp trong lõi nồi cơm.\r\n\r\nVoiceover: Trộn thẳng trong cái ruột nồi cơm luôn. Làm màu nãy giờ cuối cùng cũng hiện nguyên hình.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: VERDICT\r\n\r\nReview_Angle: Lật tẩy bản chất lười biếng đằng sau sự bày biện món ăn.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_16\r\n\r\nTime: 03:29 - 03:34\r\n\r\nTime_origin: 03:29 - 03:34\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Luộc những viên khoai lang tím trong nồi đất nung mini.\r\n\r\nVoiceover: Chưa xong đâu, còn nấu chè tráng miệng. Mấy viên khoai tím nổi lềnh phềnh.\r\n\r\nVO_Token_Count: 15\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: ESCALATION\r\n\r\nReview_Angle: Cảm thán trước số lượng món ăn liên tục tăng lên.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_17\r\n\r\nTime: 03:34 - 03:39\r\n\r\nTime_origin: 03:34 - 03:39\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Cho thêm vụn nấm tuyết khô vào nồi chè.\r\n\r\nVoiceover: Rắc thêm tí vụn nấm tuyết. Ốm mà vẫn đòi ăn dưỡng nhan, anh cũng quỳ lạy luôn.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: HUMOR\r\n\r\nReview_Angle: Mỉa mai hài hước sự mâu thuẫn giữa việc bị ốm và nhu cầu làm đẹp.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_18\r\n\r\nTime: 03:40 - 03:45\r\n\r\nTime_origin: 03:40 - 03:45\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Rót nước cốt dừa trắng đục từ hộp giấy vào bát chè tím.\r\n\r\nVoiceover: Chốt hạ bằng hộp cốt dừa rót vào chè. Nhìn cái màu nó mỹ mãn tột độ.\r\n\r\nVO_Token_Count: 17\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: BEAUTY_REVEAL\r\n\r\nReview_Angle: Thỏa mãn với màu sắc và kết cấu món tráng miệng cuối cùng.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_19\r\n\r\nTime: 03:45 - 03:50\r\n\r\nTime_origin: 03:45 - 03:50\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Góc rộng quay trọn mâm cơm 4 món đủ màu sắc đặt trên bàn.\r\n\r\nVoiceover: Lên mâm 4 món hoành tráng. Ăn thì sướng đấy nhưng nghĩ đến đống bát là hoang mang.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: VERDICT\r\n\r\nReview_Angle: Lời kết lặp lại nỗi trăn trở muôn thuở của người dọn dẹp.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_20\r\n\r\nTime: 03:50 - 03:55\r\n\r\nTime_origin: 03:50 - 03:55\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Chú mèo lông vàng cuộn tròn ngủ trên chiếc ghế ăn.\r\n\r\nVoiceover: Đang định ngồi thì con báo thủ lông vàng này chiếm mẹ luôn cái ghế. Bất lực.\r\n\r\nVO_Token_Count: 17\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: LIFESTYLE\r\n\r\nReview_Angle: Khai thác khoảnh khắc chân thực, phá bĩnh đáng yêu của thú cưng.\r\n\r\nEffect: Không có.\r\n\r\n=========================\r\nscene_21\r\n\r\nTime: 03:55 - 04:00\r\n\r\nTime_origin: 03:55 - 04:00\r\n\r\nScene_Duration: 5.0\r\n\r\nFootage: Cảnh gắp cắn miếng súp lơ và miếng cánh gà hầm mềm.\r\n\r\nVoiceover: Nhai rau giòn sần sật, cắn miếng gà mềm nục ngậm mồm. Ngon đến nỗi quên cả ốm.\r\n\r\nVO_Token_Count: 18\r\n\r\nVO_Target_Range: 16-18\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: TASTE_REVEAL\r\n\r\nReview_Angle: Miêu tả sống động cảm giác nhai đồ ăn ngon.\r\n\r\nEffect: Tiếng nhai xì xụp.\r\n\r\n=========================\r\nscene_22\r\n\r\nTime: 04:00 - 04:06\r\n\r\nTime_origin: 04:00 - 04:06\r\n\r\nScene_Duration: 6.0\r\n\r\nFootage: Ăn miếng cơm trộn, húp thìa chè nấm tuyết cốt dừa.\r\n\r\nVoiceover: Húp bát chè béo ngậy nữa. Thôi em đi rửa bát cho vợ đây, xin vía cả nhà bình an nhé!\r\n\r\nVO_Token_Count: 21\r\n\r\nVO_Target_Range: 20-23\r\n\r\nAudio_Mode: VOICEOVER_FULL\r\n\r\nContent_Function: CTA\r\n\r\nReview_Angle: Anticlimax bẻ lái cảm xúc: chuyển xưng \"em\", nhận nhiệm vụ rửa bát và xin vía quen thuộc.\r\n\r\nEffect: Không có.",
+    "language": "vi"
+  },
+  "admission": {
+    "job_id": "cbe09529f12cea3b9fabeeb5ea6072be2cfd76824d16dcae",
+    "state": "queued",
+    "status_url": "/api/local-ai/jobs/cbe09529f12cea3b9fabeeb5ea6072be2cfd76824d16dcae",
+    "expires_at": "2026-10-11T13:06:47.587Z",
+    "max_polls": 120
+  },
+  "poll_states_observed": [
+    "running",
+    "completed"
+  ],
+  "response": {
+    "job_id": "cbe09529f12cea3b9fabeeb5ea6072be2cfd76824d16dcae",
+    "state": "completed",
+    "result": {
+      "projectType": "semi",
+      "execution": "deterministic_cpu",
+      "web_data": {
+        "characters": [],
+        "scenes": [
+          {
+            "scene_n": 1,
+            "time_origin": "00:00 - 00:04",
+            "Footage": "Hai tay xé gói nguyên liệu thuốc bắc đổ ra chiếc rây lọc.",
+            "Effect": "Tiếng xé nilon sột soạt.",
+            "Character": "",
+            "Voiceover": "Seri nấu ăn chăm vợ. Chuyện là bả đang ốm sụt sịt mà đòi ăn tiệc.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 16,
+            "status": "pending"
+          },
+          {
+            "scene_n": 2,
+            "time_origin": "00:04 - 00:09",
+            "Footage": "Lôi các gói nilon nhỏ xé tiếp nguyên liệu thuốc bắc.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Tại sao lại thế thì để anh kể. Lôi đống thuốc bắc ra xé xé trông như bà lang băm.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 20,
+            "status": "pending"
+          },
+          {
+            "scene_n": 3,
+            "time_origin": "00:30 - 00:35",
+            "Footage": "Đong gạo và diêm mạch vào trong nồi cơm điện.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Đong tí gạo với diêm mạch nấu cơm. Ốm mà ăn uống lỉnh kỉnh dã man.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 16,
+            "status": "pending"
+          },
+          {
+            "scene_n": 4,
+            "time_origin": "00:50 - 00:55",
+            "Footage": "Cầm chiếc kéo xanh cắt lạp xưởng rơi thẳng vào lõi nồi cơm.",
+            "Effect": "Tiếng kéo cắt xoạch xoạch.",
+            "Character": "",
+            "Voiceover": "Xong lôi cái kéo ra cắt lạp xưởng xộc xộc. Đúng bài lười chảy thây trốn rửa thớt.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 5,
+            "time_origin": "00:59 - 01:04",
+            "Footage": "Cho gà đã chần cùng các vị thuốc bắc vào nồi gang trắng đun.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Tống thuốc bắc với đùi gà vào nồi hầm. Khúc này anh thấy mùi lười biếng bay mất rồi.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 19,
+            "status": "pending"
+          },
+          {
+            "scene_n": 6,
+            "time_origin": "01:10 - 01:15",
+            "Footage": "Tiếp tục dùng kéo cắt các thân măng tây xanh.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Quay sang cắt măng tây. Ốm thì ốm chứ kỹ năng múa kéo vẫn cứ là đỉnh chóp.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 7,
+            "time_origin": "01:21 - 01:26",
+            "Footage": "Lấy khoai tây và súp lơ xanh từ trong các túi zip nhựa ra.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Nhưng hoang mang tột độ là bả lôi mấy cái túi zip trữ rau củ gọt sẵn ra.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 8,
+            "time_origin": "01:54 - 01:59",
+            "Footage": "Bật bếp luộc nồi nước nhỏ có khay lưới vớt bên trong.",
+            "Effect": "Tiếng nước sôi.",
+            "Character": "",
+            "Voiceover": "Đến đoạn luộc rau. Tưởng luộc nước lọc bình thường nhưng không, phải có tí mẹo cơ.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 9,
+            "time_origin": "01:59 - 02:04",
+            "Footage": "Bóp tuýp mỡ lợn vào nồi nước đang sôi.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Bóp tuýp mỡ lợn vào. Đậu má mỡ lợn giờ đóng tuýp như kem đánh răng à?",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 10,
+            "time_origin": "02:04 - 02:09",
+            "Footage": "Luộc măng tây xanh mướt trong nồi nước mỡ.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Cơ mà luộc rau có tí mỡ lợn nó xanh mướt mườn mượt, nhìn mlem thật sự.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 11,
+            "time_origin": "02:22 - 02:27",
+            "Footage": "Gắp rau củ luộc ra bát và trộn với muối, đường, dầu mè.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Vớt ra táng thêm tí muối đường với dầu mè. Đa nhiệm thoăn thoắt chóng cả mặt.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 12,
+            "time_origin": "02:43 - 02:48",
+            "Footage": "Mở nắp nồi gang, nước hầm gà thuốc bắc đang sôi lụp bụp.",
+            "Effect": "Tiếng sôi lụp bụp.",
+            "Character": "",
+            "Voiceover": "Nồi canh gà hầm lụp bụp. Mở nắp ra khói bốc lên thơm lộng óc các vợ ạ.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 13,
+            "time_origin": "02:57 - 03:02",
+            "Footage": "Pha nước chấm xì dầu với gừng tỏi băm.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Tranh thủ pha bát nước chấm. Bày vẽ thế này tí anh rửa bát ốm đòn chứ đùa.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 14,
+            "time_origin": "03:10 - 03:15",
+            "Footage": "Mở nồi cơm lạp xưởng và cho thìa sốt nấm đen (truffle) vào.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Nồi cơm chín bả múc hẳn cái sốt nấm đen xì xì trộn vào. Chơi sang vãi nồi.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 15,
+            "time_origin": "03:17 - 03:22",
+            "Footage": "Dùng thìa gỗ trộn đều cơm lạp xưởng và măng tây trực tiếp trong lõi nồi cơm.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Trộn thẳng trong cái ruột nồi cơm luôn. Làm màu nãy giờ cuối cùng cũng hiện nguyên hình.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 16,
+            "time_origin": "03:29 - 03:34",
+            "Footage": "Luộc những viên khoai lang tím trong nồi đất nung mini.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Chưa xong đâu, còn nấu chè tráng miệng. Mấy viên khoai tím nổi lềnh phềnh.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 15,
+            "status": "pending"
+          },
+          {
+            "scene_n": 17,
+            "time_origin": "03:34 - 03:39",
+            "Footage": "Cho thêm vụn nấm tuyết khô vào nồi chè.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Rắc thêm tí vụn nấm tuyết. Ốm mà vẫn đòi ăn dưỡng nhan, anh cũng quỳ lạy luôn.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 18,
+            "time_origin": "03:40 - 03:45",
+            "Footage": "Rót nước cốt dừa trắng đục từ hộp giấy vào bát chè tím.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Chốt hạ bằng hộp cốt dừa rót vào chè. Nhìn cái màu nó mỹ mãn tột độ.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 19,
+            "time_origin": "03:45 - 03:50",
+            "Footage": "Góc rộng quay trọn mâm cơm 4 món đủ màu sắc đặt trên bàn.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Lên mâm 4 món hoành tráng. Ăn thì sướng đấy nhưng nghĩ đến đống bát là hoang mang.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 20,
+            "time_origin": "03:50 - 03:55",
+            "Footage": "Chú mèo lông vàng cuộn tròn ngủ trên chiếc ghế ăn.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Đang định ngồi thì con báo thủ lông vàng này chiếm mẹ luôn cái ghế. Bất lực.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 21,
+            "time_origin": "03:55 - 04:00",
+            "Footage": "Cảnh gắp cắn miếng súp lơ và miếng cánh gà hầm mềm.",
+            "Effect": "Tiếng nhai xì xụp.",
+            "Character": "",
+            "Voiceover": "Nhai rau giòn sần sật, cắn miếng gà mềm nục ngậm mồm. Ngon đến nỗi quên cả ốm.",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 22,
+            "time_origin": "04:00 - 04:06",
+            "Footage": "Ăn miếng cơm trộn, húp thìa chè nấm tuyết cốt dừa.",
+            "Effect": "Không có.",
+            "Character": "",
+            "Voiceover": "Húp bát chè béo ngậy nữa. Thôi em đi rửa bát cho vợ đây, xin vía cả nhà bình an nhé!",
+            "Translate": "",
+            "Tone_of_Voice": "",
+            "Word_count": 21,
+            "status": "pending"
+          }
+        ]
+      },
+      "source_metadata": {
+        "source_sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+        "header_raw": "Primary_Content_Mode: RECIPE_REVIEW_FULL\r\nSecondary_Flavor: FOOD_DEBATE_OPINION\r\nCoverage_Mode: FULL_PROGRESSIVE\r\nAngle_Thesis: Dùng proxy storytelling bóc mẽ sự mâu thuẫn giữa việc bị ốm sụt sịt nhưng vẫn \"ra vẻ\" nấu mâm tiệc 4 món đa nhiệm, cuối cùng kết thúc bằng sự hạ mình xin vía dọn bát đĩa.\r\nPersona_Core: Người chồng suồng sã, \"ngoài lạnh trong ấm\", hay gọi khán giả là \"các vợ\", dùng góc nhìn thứ ba để châm biếm sự bày vẽ, kết thúc xưng \"em\" chân thành.\r\nNarrative_Thread: Sự mâu thuẫn giữa người ốm lười biếng và những thao tác nấu nướng lỉnh kỉnh, tạo nên nỗi hoang mang tột độ về đống bát đĩa.\r\nTarget_Audience_Context: Nam/nữ 20-35 tuổi thích các nội dung đời thường, nấu ăn giải trí, hài hước và có yếu tố thú cưng chữa lành.\r\nPrimary_Goal: MIXED\r\nTarget_Duration: ~104 seconds\r\nScene_Count: 22\r\nTTS_Pacing_Profile: DEFAULT_VI_4.0–4.5\r\nAffiliate_Mode: OFF\r\nRouting_Note: Khai thác tối đa chuỗi thao tác dùng đồ bếp mini, cắt kéo và sơ chế sẵn của video gốc, kết hợp với DNA Hook nghịch lý và Anticlimax của Creator 2 để tạo sự hài hước.\r\n\r\n=========================\r\n",
+        "header_metadata": {
+          "Primary_Content_Mode": "RECIPE_REVIEW_FULL",
+          "Secondary_Flavor": "FOOD_DEBATE_OPINION",
+          "Coverage_Mode": "FULL_PROGRESSIVE",
+          "Angle_Thesis": "Dùng proxy storytelling bóc mẽ sự mâu thuẫn giữa việc bị ốm sụt sịt nhưng vẫn \"ra vẻ\" nấu mâm tiệc 4 món đa nhiệm, cuối cùng kết thúc bằng sự hạ mình xin vía dọn bát đĩa.",
+          "Persona_Core": "Người chồng suồng sã, \"ngoài lạnh trong ấm\", hay gọi khán giả là \"các vợ\", dùng góc nhìn thứ ba để châm biếm sự bày vẽ, kết thúc xưng \"em\" chân thành.",
+          "Narrative_Thread": "Sự mâu thuẫn giữa người ốm lười biếng và những thao tác nấu nướng lỉnh kỉnh, tạo nên nỗi hoang mang tột độ về đống bát đĩa.",
+          "Target_Audience_Context": "Nam/nữ 20-35 tuổi thích các nội dung đời thường, nấu ăn giải trí, hài hước và có yếu tố thú cưng chữa lành.",
+          "Primary_Goal": "MIXED",
+          "Target_Duration": "~104 seconds",
+          "Scene_Count": "22",
+          "TTS_Pacing_Profile": "DEFAULT_VI_4.0–4.5",
+          "Affiliate_Mode": "OFF",
+          "Routing_Note": "Khai thác tối đa chuỗi thao tác dùng đồ bếp mini, cắt kéo và sơ chế sẵn của video gốc, kết hợp với DNA Hook nghịch lý và Anticlimax của Creator 2 để tạo sự hài hước."
+        },
+        "scenes": [
+          {
+            "scene_id": "scene_1",
+            "metadata": {
+              "VO_Token_Count": "16",
+              "VO_Target_Range": "12-14",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "HOOK",
+              "Review_Angle": "Đặt vấn đề bằng nghịch lý quen thuộc của persona: ốm nhưng đòi ăn sang."
+            },
+            "Time": "00:00 - 00:04",
+            "Scene_Duration": "4.0"
+          },
+          {
+            "scene_id": "scene_2",
+            "metadata": {
+              "VO_Token_Count": "19",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "SETUP",
+              "Review_Angle": "Dùng discourse marker đặc trưng để mở rộng câu chuyện."
+            },
+            "Time": "00:04 - 00:09",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_3",
+            "metadata": {
+              "VO_Token_Count": "15",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "OBSERVATION",
+              "Review_Angle": "Than vãn sự rườm rà của việc chuẩn bị nhiều loại hạt."
+            },
+            "Time": "00:30 - 00:35",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_4",
+            "metadata": {
+              "VO_Token_Count": "17",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "TENSION",
+              "Review_Angle": "Châm biếm hành động lười dùng dao thớt."
+            },
+            "Time": "00:50 - 00:55",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_5",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "ESCALATION",
+              "Review_Angle": "Nhận ra sự phức tạp tăng dần của bữa cơm giải cảm."
+            },
+            "Time": "00:59 - 01:04",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_6",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "CALLBACK",
+              "Review_Angle": "Gợi nhắc lại chi tiết lười rửa thớt một cách hài hước."
+            },
+            "Time": "01:10 - 01:15",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_7",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "CURIOSITY",
+              "Review_Angle": "Bất ngờ trước sự chuẩn bị xa của người nấu."
+            },
+            "Time": "01:21 - 01:26",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_8",
+            "metadata": {
+              "VO_Token_Count": "17",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "SETUP",
+              "Review_Angle": "Tạo khoảng hở thông tin trước khi tiết lộ bí kíp nấu ăn."
+            },
+            "Time": "01:54 - 01:59",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_9",
+            "metadata": {
+              "VO_Token_Count": "16",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "REACTION",
+              "Review_Angle": "Câu hỏi tu từ ngạc nhiên trước bao bì lạ mắt của mỡ lợn."
+            },
+            "Time": "01:59 - 02:04",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_10",
+            "metadata": {
+              "VO_Token_Count": "17",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "EXPLAIN",
+              "Review_Angle": "Công nhận hiệu quả của mẹo nấu ăn."
+            },
+            "Time": "02:04 - 02:09",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_11",
+            "metadata": {
+              "VO_Token_Count": "16",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "OBSERVATION",
+              "Review_Angle": "Bị choáng ngợp bởi tốc độ nấu ăn đa nhiệm."
+            },
+            "Time": "02:22 - 02:27",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_12",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "SENSORY",
+              "Review_Angle": "Kích thích thị giác và khứu giác bằng từ ngữ cường điệu."
+            },
+            "Time": "02:43 - 02:48",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_13",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "CRITIQUE",
+              "Review_Angle": "Nỗi sợ dọn rửa bãi chiến trường quay trở lại."
+            },
+            "Time": "02:57 - 03:02",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_14",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "TENSION",
+              "Review_Angle": "Phản ứng với nguyên liệu cao cấp không hợp với hoàn cảnh người ốm."
+            },
+            "Time": "03:10 - 03:15",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_15",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "VERDICT",
+              "Review_Angle": "Lật tẩy bản chất lười biếng đằng sau sự bày biện món ăn."
+            },
+            "Time": "03:17 - 03:22",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_16",
+            "metadata": {
+              "VO_Token_Count": "15",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "ESCALATION",
+              "Review_Angle": "Cảm thán trước số lượng món ăn liên tục tăng lên."
+            },
+            "Time": "03:29 - 03:34",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_17",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "HUMOR",
+              "Review_Angle": "Mỉa mai hài hước sự mâu thuẫn giữa việc bị ốm và nhu cầu làm đẹp."
+            },
+            "Time": "03:34 - 03:39",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_18",
+            "metadata": {
+              "VO_Token_Count": "17",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "BEAUTY_REVEAL",
+              "Review_Angle": "Thỏa mãn với màu sắc và kết cấu món tráng miệng cuối cùng."
+            },
+            "Time": "03:40 - 03:45",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_19",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "VERDICT",
+              "Review_Angle": "Lời kết lặp lại nỗi trăn trở muôn thuở của người dọn dẹp."
+            },
+            "Time": "03:45 - 03:50",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_20",
+            "metadata": {
+              "VO_Token_Count": "17",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "LIFESTYLE",
+              "Review_Angle": "Khai thác khoảnh khắc chân thực, phá bĩnh đáng yêu của thú cưng."
+            },
+            "Time": "03:50 - 03:55",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_21",
+            "metadata": {
+              "VO_Token_Count": "18",
+              "VO_Target_Range": "16-18",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "TASTE_REVEAL",
+              "Review_Angle": "Miêu tả sống động cảm giác nhai đồ ăn ngon."
+            },
+            "Time": "03:55 - 04:00",
+            "Scene_Duration": "5.0"
+          },
+          {
+            "scene_id": "scene_22",
+            "metadata": {
+              "VO_Token_Count": "21",
+              "VO_Target_Range": "20-23",
+              "Audio_Mode": "VOICEOVER_FULL",
+              "Content_Function": "CTA",
+              "Review_Angle": "Anticlimax bẻ lái cảm xúc: chuyển xưng \"em\", nhận nhiệm vụ rửa bát và xin vía quen thuộc."
+            },
+            "Time": "04:00 - 04:06",
+            "Scene_Duration": "6.0"
+          }
+        ]
+      }
+    },
+    "error": null,
+    "metrics": {
+      "queue_wait_seconds": 0,
+      "request_latency_seconds": 0.01499999999987267,
+      "scene_count": 22,
+      "character_count": 0,
+      "execution": "deterministic_cpu"
+    },
+    "expires_at": "2026-10-11T13:06:47.587Z",
+    "polls_remaining": 118
+  },
+  "scene_comparisons": [
+    {
+      "scene_id": "scene_1",
+      "expected": {
+        "Time": "00:00 - 00:04",
+        "Time_origin": "00:00 - 00:04",
+        "Scene_Duration": "4.0",
+        "Footage": "Hai tay xé gói nguyên liệu thuốc bắc đổ ra chiếc rây lọc.",
+        "Voiceover": "Seri nấu ăn chăm vợ. Chuyện là bả đang ốm sụt sịt mà đòi ăn tiệc.",
+        "VO_Token_Count": "16",
+        "VO_Target_Range": "12-14",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "HOOK",
+        "Review_Angle": "Đặt vấn đề bằng nghịch lý quen thuộc của persona: ốm nhưng đòi ăn sang.",
+        "Effect": "Tiếng xé nilon sột soạt."
+      },
+      "actual": {
+        "scene_n": 1,
+        "time_origin": "00:00 - 00:04",
+        "Footage": "Hai tay xé gói nguyên liệu thuốc bắc đổ ra chiếc rây lọc.",
+        "Effect": "Tiếng xé nilon sột soạt.",
+        "Character": "",
+        "Voiceover": "Seri nấu ăn chăm vợ. Chuyện là bả đang ốm sụt sịt mà đòi ăn tiệc.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 16,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_1",
+        "metadata": {
+          "VO_Token_Count": "16",
+          "VO_Target_Range": "12-14",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "HOOK",
+          "Review_Angle": "Đặt vấn đề bằng nghịch lý quen thuộc của persona: ốm nhưng đòi ăn sang."
+        },
+        "Time": "00:00 - 00:04",
+        "Scene_Duration": "4.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_2",
+      "expected": {
+        "Time": "00:04 - 00:09",
+        "Time_origin": "00:04 - 00:09",
+        "Scene_Duration": "5.0",
+        "Footage": "Lôi các gói nilon nhỏ xé tiếp nguyên liệu thuốc bắc.",
+        "Voiceover": "Tại sao lại thế thì để anh kể. Lôi đống thuốc bắc ra xé xé trông như bà lang băm.",
+        "VO_Token_Count": "19",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "SETUP",
+        "Review_Angle": "Dùng discourse marker đặc trưng để mở rộng câu chuyện.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 2,
+        "time_origin": "00:04 - 00:09",
+        "Footage": "Lôi các gói nilon nhỏ xé tiếp nguyên liệu thuốc bắc.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Tại sao lại thế thì để anh kể. Lôi đống thuốc bắc ra xé xé trông như bà lang băm.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 20,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_2",
+        "metadata": {
+          "VO_Token_Count": "19",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "SETUP",
+          "Review_Angle": "Dùng discourse marker đặc trưng để mở rộng câu chuyện."
+        },
+        "Time": "00:04 - 00:09",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_3",
+      "expected": {
+        "Time": "00:30 - 00:35",
+        "Time_origin": "00:30 - 00:35",
+        "Scene_Duration": "5.0",
+        "Footage": "Đong gạo và diêm mạch vào trong nồi cơm điện.",
+        "Voiceover": "Đong tí gạo với diêm mạch nấu cơm. Ốm mà ăn uống lỉnh kỉnh dã man.",
+        "VO_Token_Count": "15",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "OBSERVATION",
+        "Review_Angle": "Than vãn sự rườm rà của việc chuẩn bị nhiều loại hạt.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 3,
+        "time_origin": "00:30 - 00:35",
+        "Footage": "Đong gạo và diêm mạch vào trong nồi cơm điện.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Đong tí gạo với diêm mạch nấu cơm. Ốm mà ăn uống lỉnh kỉnh dã man.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 16,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_3",
+        "metadata": {
+          "VO_Token_Count": "15",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "OBSERVATION",
+          "Review_Angle": "Than vãn sự rườm rà của việc chuẩn bị nhiều loại hạt."
+        },
+        "Time": "00:30 - 00:35",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_4",
+      "expected": {
+        "Time": "00:50 - 00:55",
+        "Time_origin": "00:50 - 00:55",
+        "Scene_Duration": "5.0",
+        "Footage": "Cầm chiếc kéo xanh cắt lạp xưởng rơi thẳng vào lõi nồi cơm.",
+        "Voiceover": "Xong lôi cái kéo ra cắt lạp xưởng xộc xộc. Đúng bài lười chảy thây trốn rửa thớt.",
+        "VO_Token_Count": "17",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "TENSION",
+        "Review_Angle": "Châm biếm hành động lười dùng dao thớt.",
+        "Effect": "Tiếng kéo cắt xoạch xoạch."
+      },
+      "actual": {
+        "scene_n": 4,
+        "time_origin": "00:50 - 00:55",
+        "Footage": "Cầm chiếc kéo xanh cắt lạp xưởng rơi thẳng vào lõi nồi cơm.",
+        "Effect": "Tiếng kéo cắt xoạch xoạch.",
+        "Character": "",
+        "Voiceover": "Xong lôi cái kéo ra cắt lạp xưởng xộc xộc. Đúng bài lười chảy thây trốn rửa thớt.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_4",
+        "metadata": {
+          "VO_Token_Count": "17",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "TENSION",
+          "Review_Angle": "Châm biếm hành động lười dùng dao thớt."
+        },
+        "Time": "00:50 - 00:55",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_5",
+      "expected": {
+        "Time": "00:59 - 01:04",
+        "Time_origin": "00:59 - 01:04",
+        "Scene_Duration": "5.0",
+        "Footage": "Cho gà đã chần cùng các vị thuốc bắc vào nồi gang trắng đun.",
+        "Voiceover": "Tống thuốc bắc với đùi gà vào nồi hầm. Khúc này anh thấy mùi lười biếng bay mất rồi.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "ESCALATION",
+        "Review_Angle": "Nhận ra sự phức tạp tăng dần của bữa cơm giải cảm.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 5,
+        "time_origin": "00:59 - 01:04",
+        "Footage": "Cho gà đã chần cùng các vị thuốc bắc vào nồi gang trắng đun.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Tống thuốc bắc với đùi gà vào nồi hầm. Khúc này anh thấy mùi lười biếng bay mất rồi.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 19,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_5",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "ESCALATION",
+          "Review_Angle": "Nhận ra sự phức tạp tăng dần của bữa cơm giải cảm."
+        },
+        "Time": "00:59 - 01:04",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_6",
+      "expected": {
+        "Time": "01:10 - 01:15",
+        "Time_origin": "01:10 - 01:15",
+        "Scene_Duration": "5.0",
+        "Footage": "Tiếp tục dùng kéo cắt các thân măng tây xanh.",
+        "Voiceover": "Quay sang cắt măng tây. Ốm thì ốm chứ kỹ năng múa kéo vẫn cứ là đỉnh chóp.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "CALLBACK",
+        "Review_Angle": "Gợi nhắc lại chi tiết lười rửa thớt một cách hài hước.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 6,
+        "time_origin": "01:10 - 01:15",
+        "Footage": "Tiếp tục dùng kéo cắt các thân măng tây xanh.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Quay sang cắt măng tây. Ốm thì ốm chứ kỹ năng múa kéo vẫn cứ là đỉnh chóp.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_6",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "CALLBACK",
+          "Review_Angle": "Gợi nhắc lại chi tiết lười rửa thớt một cách hài hước."
+        },
+        "Time": "01:10 - 01:15",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_7",
+      "expected": {
+        "Time": "01:21 - 01:26",
+        "Time_origin": "01:21 - 01:26",
+        "Scene_Duration": "5.0",
+        "Footage": "Lấy khoai tây và súp lơ xanh từ trong các túi zip nhựa ra.",
+        "Voiceover": "Nhưng hoang mang tột độ là bả lôi mấy cái túi zip trữ rau củ gọt sẵn ra.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "CURIOSITY",
+        "Review_Angle": "Bất ngờ trước sự chuẩn bị xa của người nấu.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 7,
+        "time_origin": "01:21 - 01:26",
+        "Footage": "Lấy khoai tây và súp lơ xanh từ trong các túi zip nhựa ra.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Nhưng hoang mang tột độ là bả lôi mấy cái túi zip trữ rau củ gọt sẵn ra.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_7",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "CURIOSITY",
+          "Review_Angle": "Bất ngờ trước sự chuẩn bị xa của người nấu."
+        },
+        "Time": "01:21 - 01:26",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_8",
+      "expected": {
+        "Time": "01:54 - 01:59",
+        "Time_origin": "01:54 - 01:59",
+        "Scene_Duration": "5.0",
+        "Footage": "Bật bếp luộc nồi nước nhỏ có khay lưới vớt bên trong.",
+        "Voiceover": "Đến đoạn luộc rau. Tưởng luộc nước lọc bình thường nhưng không, phải có tí mẹo cơ.",
+        "VO_Token_Count": "17",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "SETUP",
+        "Review_Angle": "Tạo khoảng hở thông tin trước khi tiết lộ bí kíp nấu ăn.",
+        "Effect": "Tiếng nước sôi."
+      },
+      "actual": {
+        "scene_n": 8,
+        "time_origin": "01:54 - 01:59",
+        "Footage": "Bật bếp luộc nồi nước nhỏ có khay lưới vớt bên trong.",
+        "Effect": "Tiếng nước sôi.",
+        "Character": "",
+        "Voiceover": "Đến đoạn luộc rau. Tưởng luộc nước lọc bình thường nhưng không, phải có tí mẹo cơ.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_8",
+        "metadata": {
+          "VO_Token_Count": "17",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "SETUP",
+          "Review_Angle": "Tạo khoảng hở thông tin trước khi tiết lộ bí kíp nấu ăn."
+        },
+        "Time": "01:54 - 01:59",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_9",
+      "expected": {
+        "Time": "01:59 - 02:04",
+        "Time_origin": "01:59 - 02:04",
+        "Scene_Duration": "5.0",
+        "Footage": "Bóp tuýp mỡ lợn vào nồi nước đang sôi.",
+        "Voiceover": "Bóp tuýp mỡ lợn vào. Đậu má mỡ lợn giờ đóng tuýp như kem đánh răng à?",
+        "VO_Token_Count": "16",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "REACTION",
+        "Review_Angle": "Câu hỏi tu từ ngạc nhiên trước bao bì lạ mắt của mỡ lợn.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 9,
+        "time_origin": "01:59 - 02:04",
+        "Footage": "Bóp tuýp mỡ lợn vào nồi nước đang sôi.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Bóp tuýp mỡ lợn vào. Đậu má mỡ lợn giờ đóng tuýp như kem đánh răng à?",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_9",
+        "metadata": {
+          "VO_Token_Count": "16",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "REACTION",
+          "Review_Angle": "Câu hỏi tu từ ngạc nhiên trước bao bì lạ mắt của mỡ lợn."
+        },
+        "Time": "01:59 - 02:04",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_10",
+      "expected": {
+        "Time": "02:04 - 02:09",
+        "Time_origin": "02:04 - 02:09",
+        "Scene_Duration": "5.0",
+        "Footage": "Luộc măng tây xanh mướt trong nồi nước mỡ.",
+        "Voiceover": "Cơ mà luộc rau có tí mỡ lợn nó xanh mướt mườn mượt, nhìn mlem thật sự.",
+        "VO_Token_Count": "17",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "EXPLAIN",
+        "Review_Angle": "Công nhận hiệu quả của mẹo nấu ăn.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 10,
+        "time_origin": "02:04 - 02:09",
+        "Footage": "Luộc măng tây xanh mướt trong nồi nước mỡ.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Cơ mà luộc rau có tí mỡ lợn nó xanh mướt mườn mượt, nhìn mlem thật sự.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_10",
+        "metadata": {
+          "VO_Token_Count": "17",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "EXPLAIN",
+          "Review_Angle": "Công nhận hiệu quả của mẹo nấu ăn."
+        },
+        "Time": "02:04 - 02:09",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_11",
+      "expected": {
+        "Time": "02:22 - 02:27",
+        "Time_origin": "02:22 - 02:27",
+        "Scene_Duration": "5.0",
+        "Footage": "Gắp rau củ luộc ra bát và trộn với muối, đường, dầu mè.",
+        "Voiceover": "Vớt ra táng thêm tí muối đường với dầu mè. Đa nhiệm thoăn thoắt chóng cả mặt.",
+        "VO_Token_Count": "16",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "OBSERVATION",
+        "Review_Angle": "Bị choáng ngợp bởi tốc độ nấu ăn đa nhiệm.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 11,
+        "time_origin": "02:22 - 02:27",
+        "Footage": "Gắp rau củ luộc ra bát và trộn với muối, đường, dầu mè.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Vớt ra táng thêm tí muối đường với dầu mè. Đa nhiệm thoăn thoắt chóng cả mặt.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_11",
+        "metadata": {
+          "VO_Token_Count": "16",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "OBSERVATION",
+          "Review_Angle": "Bị choáng ngợp bởi tốc độ nấu ăn đa nhiệm."
+        },
+        "Time": "02:22 - 02:27",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_12",
+      "expected": {
+        "Time": "02:43 - 02:48",
+        "Time_origin": "02:43 - 02:48",
+        "Scene_Duration": "5.0",
+        "Footage": "Mở nắp nồi gang, nước hầm gà thuốc bắc đang sôi lụp bụp.",
+        "Voiceover": "Nồi canh gà hầm lụp bụp. Mở nắp ra khói bốc lên thơm lộng óc các vợ ạ.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "SENSORY",
+        "Review_Angle": "Kích thích thị giác và khứu giác bằng từ ngữ cường điệu.",
+        "Effect": "Tiếng sôi lụp bụp."
+      },
+      "actual": {
+        "scene_n": 12,
+        "time_origin": "02:43 - 02:48",
+        "Footage": "Mở nắp nồi gang, nước hầm gà thuốc bắc đang sôi lụp bụp.",
+        "Effect": "Tiếng sôi lụp bụp.",
+        "Character": "",
+        "Voiceover": "Nồi canh gà hầm lụp bụp. Mở nắp ra khói bốc lên thơm lộng óc các vợ ạ.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_12",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "SENSORY",
+          "Review_Angle": "Kích thích thị giác và khứu giác bằng từ ngữ cường điệu."
+        },
+        "Time": "02:43 - 02:48",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_13",
+      "expected": {
+        "Time": "02:57 - 03:02",
+        "Time_origin": "02:57 - 03:02",
+        "Scene_Duration": "5.0",
+        "Footage": "Pha nước chấm xì dầu với gừng tỏi băm.",
+        "Voiceover": "Tranh thủ pha bát nước chấm. Bày vẽ thế này tí anh rửa bát ốm đòn chứ đùa.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "CRITIQUE",
+        "Review_Angle": "Nỗi sợ dọn rửa bãi chiến trường quay trở lại.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 13,
+        "time_origin": "02:57 - 03:02",
+        "Footage": "Pha nước chấm xì dầu với gừng tỏi băm.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Tranh thủ pha bát nước chấm. Bày vẽ thế này tí anh rửa bát ốm đòn chứ đùa.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_13",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "CRITIQUE",
+          "Review_Angle": "Nỗi sợ dọn rửa bãi chiến trường quay trở lại."
+        },
+        "Time": "02:57 - 03:02",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_14",
+      "expected": {
+        "Time": "03:10 - 03:15",
+        "Time_origin": "03:10 - 03:15",
+        "Scene_Duration": "5.0",
+        "Footage": "Mở nồi cơm lạp xưởng và cho thìa sốt nấm đen (truffle) vào.",
+        "Voiceover": "Nồi cơm chín bả múc hẳn cái sốt nấm đen xì xì trộn vào. Chơi sang vãi nồi.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "TENSION",
+        "Review_Angle": "Phản ứng với nguyên liệu cao cấp không hợp với hoàn cảnh người ốm.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 14,
+        "time_origin": "03:10 - 03:15",
+        "Footage": "Mở nồi cơm lạp xưởng và cho thìa sốt nấm đen (truffle) vào.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Nồi cơm chín bả múc hẳn cái sốt nấm đen xì xì trộn vào. Chơi sang vãi nồi.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_14",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "TENSION",
+          "Review_Angle": "Phản ứng với nguyên liệu cao cấp không hợp với hoàn cảnh người ốm."
+        },
+        "Time": "03:10 - 03:15",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_15",
+      "expected": {
+        "Time": "03:17 - 03:22",
+        "Time_origin": "03:17 - 03:22",
+        "Scene_Duration": "5.0",
+        "Footage": "Dùng thìa gỗ trộn đều cơm lạp xưởng và măng tây trực tiếp trong lõi nồi cơm.",
+        "Voiceover": "Trộn thẳng trong cái ruột nồi cơm luôn. Làm màu nãy giờ cuối cùng cũng hiện nguyên hình.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "VERDICT",
+        "Review_Angle": "Lật tẩy bản chất lười biếng đằng sau sự bày biện món ăn.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 15,
+        "time_origin": "03:17 - 03:22",
+        "Footage": "Dùng thìa gỗ trộn đều cơm lạp xưởng và măng tây trực tiếp trong lõi nồi cơm.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Trộn thẳng trong cái ruột nồi cơm luôn. Làm màu nãy giờ cuối cùng cũng hiện nguyên hình.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_15",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "VERDICT",
+          "Review_Angle": "Lật tẩy bản chất lười biếng đằng sau sự bày biện món ăn."
+        },
+        "Time": "03:17 - 03:22",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_16",
+      "expected": {
+        "Time": "03:29 - 03:34",
+        "Time_origin": "03:29 - 03:34",
+        "Scene_Duration": "5.0",
+        "Footage": "Luộc những viên khoai lang tím trong nồi đất nung mini.",
+        "Voiceover": "Chưa xong đâu, còn nấu chè tráng miệng. Mấy viên khoai tím nổi lềnh phềnh.",
+        "VO_Token_Count": "15",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "ESCALATION",
+        "Review_Angle": "Cảm thán trước số lượng món ăn liên tục tăng lên.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 16,
+        "time_origin": "03:29 - 03:34",
+        "Footage": "Luộc những viên khoai lang tím trong nồi đất nung mini.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Chưa xong đâu, còn nấu chè tráng miệng. Mấy viên khoai tím nổi lềnh phềnh.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 15,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_16",
+        "metadata": {
+          "VO_Token_Count": "15",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "ESCALATION",
+          "Review_Angle": "Cảm thán trước số lượng món ăn liên tục tăng lên."
+        },
+        "Time": "03:29 - 03:34",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_17",
+      "expected": {
+        "Time": "03:34 - 03:39",
+        "Time_origin": "03:34 - 03:39",
+        "Scene_Duration": "5.0",
+        "Footage": "Cho thêm vụn nấm tuyết khô vào nồi chè.",
+        "Voiceover": "Rắc thêm tí vụn nấm tuyết. Ốm mà vẫn đòi ăn dưỡng nhan, anh cũng quỳ lạy luôn.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "HUMOR",
+        "Review_Angle": "Mỉa mai hài hước sự mâu thuẫn giữa việc bị ốm và nhu cầu làm đẹp.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 17,
+        "time_origin": "03:34 - 03:39",
+        "Footage": "Cho thêm vụn nấm tuyết khô vào nồi chè.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Rắc thêm tí vụn nấm tuyết. Ốm mà vẫn đòi ăn dưỡng nhan, anh cũng quỳ lạy luôn.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_17",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "HUMOR",
+          "Review_Angle": "Mỉa mai hài hước sự mâu thuẫn giữa việc bị ốm và nhu cầu làm đẹp."
+        },
+        "Time": "03:34 - 03:39",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_18",
+      "expected": {
+        "Time": "03:40 - 03:45",
+        "Time_origin": "03:40 - 03:45",
+        "Scene_Duration": "5.0",
+        "Footage": "Rót nước cốt dừa trắng đục từ hộp giấy vào bát chè tím.",
+        "Voiceover": "Chốt hạ bằng hộp cốt dừa rót vào chè. Nhìn cái màu nó mỹ mãn tột độ.",
+        "VO_Token_Count": "17",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "BEAUTY_REVEAL",
+        "Review_Angle": "Thỏa mãn với màu sắc và kết cấu món tráng miệng cuối cùng.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 18,
+        "time_origin": "03:40 - 03:45",
+        "Footage": "Rót nước cốt dừa trắng đục từ hộp giấy vào bát chè tím.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Chốt hạ bằng hộp cốt dừa rót vào chè. Nhìn cái màu nó mỹ mãn tột độ.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_18",
+        "metadata": {
+          "VO_Token_Count": "17",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "BEAUTY_REVEAL",
+          "Review_Angle": "Thỏa mãn với màu sắc và kết cấu món tráng miệng cuối cùng."
+        },
+        "Time": "03:40 - 03:45",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_19",
+      "expected": {
+        "Time": "03:45 - 03:50",
+        "Time_origin": "03:45 - 03:50",
+        "Scene_Duration": "5.0",
+        "Footage": "Góc rộng quay trọn mâm cơm 4 món đủ màu sắc đặt trên bàn.",
+        "Voiceover": "Lên mâm 4 món hoành tráng. Ăn thì sướng đấy nhưng nghĩ đến đống bát là hoang mang.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "VERDICT",
+        "Review_Angle": "Lời kết lặp lại nỗi trăn trở muôn thuở của người dọn dẹp.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 19,
+        "time_origin": "03:45 - 03:50",
+        "Footage": "Góc rộng quay trọn mâm cơm 4 món đủ màu sắc đặt trên bàn.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Lên mâm 4 món hoành tráng. Ăn thì sướng đấy nhưng nghĩ đến đống bát là hoang mang.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_19",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "VERDICT",
+          "Review_Angle": "Lời kết lặp lại nỗi trăn trở muôn thuở của người dọn dẹp."
+        },
+        "Time": "03:45 - 03:50",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_20",
+      "expected": {
+        "Time": "03:50 - 03:55",
+        "Time_origin": "03:50 - 03:55",
+        "Scene_Duration": "5.0",
+        "Footage": "Chú mèo lông vàng cuộn tròn ngủ trên chiếc ghế ăn.",
+        "Voiceover": "Đang định ngồi thì con báo thủ lông vàng này chiếm mẹ luôn cái ghế. Bất lực.",
+        "VO_Token_Count": "17",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "LIFESTYLE",
+        "Review_Angle": "Khai thác khoảnh khắc chân thực, phá bĩnh đáng yêu của thú cưng.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 20,
+        "time_origin": "03:50 - 03:55",
+        "Footage": "Chú mèo lông vàng cuộn tròn ngủ trên chiếc ghế ăn.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Đang định ngồi thì con báo thủ lông vàng này chiếm mẹ luôn cái ghế. Bất lực.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_20",
+        "metadata": {
+          "VO_Token_Count": "17",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "LIFESTYLE",
+          "Review_Angle": "Khai thác khoảnh khắc chân thực, phá bĩnh đáng yêu của thú cưng."
+        },
+        "Time": "03:50 - 03:55",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_21",
+      "expected": {
+        "Time": "03:55 - 04:00",
+        "Time_origin": "03:55 - 04:00",
+        "Scene_Duration": "5.0",
+        "Footage": "Cảnh gắp cắn miếng súp lơ và miếng cánh gà hầm mềm.",
+        "Voiceover": "Nhai rau giòn sần sật, cắn miếng gà mềm nục ngậm mồm. Ngon đến nỗi quên cả ốm.",
+        "VO_Token_Count": "18",
+        "VO_Target_Range": "16-18",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "TASTE_REVEAL",
+        "Review_Angle": "Miêu tả sống động cảm giác nhai đồ ăn ngon.",
+        "Effect": "Tiếng nhai xì xụp."
+      },
+      "actual": {
+        "scene_n": 21,
+        "time_origin": "03:55 - 04:00",
+        "Footage": "Cảnh gắp cắn miếng súp lơ và miếng cánh gà hầm mềm.",
+        "Effect": "Tiếng nhai xì xụp.",
+        "Character": "",
+        "Voiceover": "Nhai rau giòn sần sật, cắn miếng gà mềm nục ngậm mồm. Ngon đến nỗi quên cả ốm.",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_21",
+        "metadata": {
+          "VO_Token_Count": "18",
+          "VO_Target_Range": "16-18",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "TASTE_REVEAL",
+          "Review_Angle": "Miêu tả sống động cảm giác nhai đồ ăn ngon."
+        },
+        "Time": "03:55 - 04:00",
+        "Scene_Duration": "5.0"
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_22",
+      "expected": {
+        "Time": "04:00 - 04:06",
+        "Time_origin": "04:00 - 04:06",
+        "Scene_Duration": "6.0",
+        "Footage": "Ăn miếng cơm trộn, húp thìa chè nấm tuyết cốt dừa.",
+        "Voiceover": "Húp bát chè béo ngậy nữa. Thôi em đi rửa bát cho vợ đây, xin vía cả nhà bình an nhé!",
+        "VO_Token_Count": "21",
+        "VO_Target_Range": "20-23",
+        "Audio_Mode": "VOICEOVER_FULL",
+        "Content_Function": "CTA",
+        "Review_Angle": "Anticlimax bẻ lái cảm xúc: chuyển xưng \"em\", nhận nhiệm vụ rửa bát và xin vía quen thuộc.",
+        "Effect": "Không có."
+      },
+      "actual": {
+        "scene_n": 22,
+        "time_origin": "04:00 - 04:06",
+        "Footage": "Ăn miếng cơm trộn, húp thìa chè nấm tuyết cốt dừa.",
+        "Effect": "Không có.",
+        "Character": "",
+        "Voiceover": "Húp bát chè béo ngậy nữa. Thôi em đi rửa bát cho vợ đây, xin vía cả nhà bình an nhé!",
+        "Translate": "",
+        "Tone_of_Voice": "",
+        "Word_count": 21,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_22",
+        "metadata": {
+          "VO_Token_Count": "21",
+          "VO_Target_Range": "20-23",
+          "Audio_Mode": "VOICEOVER_FULL",
+          "Content_Function": "CTA",
+          "Review_Angle": "Anticlimax bẻ lái cảm xúc: chuyển xưng \"em\", nhận nhiệm vụ rửa bát và xin vía quen thuộc."
+        },
+        "Time": "04:00 - 04:06",
+        "Scene_Duration": "6.0"
+      },
+      "status": "PASS"
+    }
+  ],
+  "gateway_health_http": 503,
+  "gateway_health": {
+    "status": "unavailable",
+    "model": {
+      "name": "Qwen/Qwen3-VL-8B-Instruct",
+      "precision": "nf4",
+      "compute_dtype": "bfloat16",
+      "attention": "sdpa_chunked",
+      "gpu_mode": "shared"
+    },
+    "model_ready": false,
+    "busy": false,
+    "worker_state": "disabled",
+    "queue_depth": 0,
+    "queue_capacity": 4,
+    "model_load_count": 0,
+    "model_load_seconds": null,
+    "error": null,
+    "cpu_workflows": {
+      "ready": true,
+      "state": "ready",
+      "busy": false,
+      "queue_depth": 0,
+      "queue_capacity": 4,
+      "max_workers": 1
+    },
+    "retained_jobs": 0,
+    "job_limit": 64
+  },
+  "real_qwen_inference": "NOT RUN"
+}

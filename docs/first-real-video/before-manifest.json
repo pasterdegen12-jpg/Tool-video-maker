@@ -1,0 +1,26 @@
+[
+  {
+    "path": "api/lib/seedance/journal.js",
+    "sha256": "a752e1f7587080e5dbffd0237c1e8008e96fd4c4a7cfa787edae1aab4faff630"
+  },
+  {
+    "path": "api/lib/seedance/service.js",
+    "sha256": "36ef0076dba9aacb0996ede58cc83e095c6d0427eda6ddf2f8cb7d3c363342ba"
+  },
+  {
+    "path": "api/lib/seedance/errors.js",
+    "sha256": "dc4c9eff8943d37a78cc6cd10d78073c159a4e40d397911e0acf1f5b26a82363"
+  },
+  {
+    "path": "src/lib/seedanceClient.js",
+    "sha256": "d149b493245073621004cb65cfc33932cc4522d49310ff2efffcd676bb0fcb86"
+  },
+  {
+    "path": "src/Workspace/SeedanceScenePanel.jsx",
+    "sha256": "fb2c018abba4239e836235680e0d4c1ad2a27a3987d69bb35e9b90bcdfdb260f"
+  },
+  {
+    "path": "tests/seedance-ui.test.mjs",
+    "sha256": "00caca4cb1e850fc018477a89105512960e1477a97f4147810115d608219e2db"
+  }
+]

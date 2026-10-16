@@ -1,0 +1,34 @@
+{
+  "live_clerk": "NOT RUN",
+  "live_firestore": "NOT RUN",
+  "persistence": "NOT IMPLEMENTED",
+  "process_environment_presence": {
+    "CLERK_JWT_KEY": false,
+    "CLERK_ISSUER": false,
+    "LOCAL_AI_GATEWAY_URL": false,
+    "LOCAL_AI_GATEWAY_TOKEN": false,
+    "LOCAL_AI_BRIDGE_ENABLED": false,
+    "LOCAL_AI_VISUAL_ENABLED": false,
+    "VITE_ENABLE_LOCAL_VISUAL_ID": false
+  },
+  "files": {
+    ".env": {
+      "CLERK_JWT_KEY": false,
+      "CLERK_ISSUER": false,
+      "LOCAL_AI_GATEWAY_URL": false,
+      "LOCAL_AI_GATEWAY_TOKEN": false,
+      "LOCAL_AI_BRIDGE_ENABLED": false,
+      "LOCAL_AI_VISUAL_ENABLED": false,
+      "VITE_ENABLE_LOCAL_VISUAL_ID": false
+    },
+    ".env.local": {
+      "CLERK_JWT_KEY": false,
+      "CLERK_ISSUER": false,
+      "LOCAL_AI_GATEWAY_URL": false,
+      "LOCAL_AI_GATEWAY_TOKEN": false,
+      "LOCAL_AI_BRIDGE_ENABLED": false,
+      "LOCAL_AI_VISUAL_ENABLED": false,
+      "VITE_ENABLE_LOCAL_VISUAL_ID": false
+    }
+  }
+}

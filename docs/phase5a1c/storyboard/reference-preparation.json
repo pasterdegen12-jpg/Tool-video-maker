@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-13T15:15:51.173Z",
+  "source": "Operator-selected scene_3 OpenFrame, downloaded through observed UI image",
+  "originalBytes": 1670198,
+  "originalSha256": "4457871e0fa8462c4b2be25da0758007253f11e2cbc132ec57ea2ee351707419",
+  "width": 1536,
+  "height": 2752,
+  "pixels": 4227072,
+  "compressedBytes": 961827,
+  "compressedSha256": "fd475fcca3c6edb84bc370433c63988f81dc328b4cb3cdbaed8d757eb204e090",
+  "jpegQuality": 90,
+  "dimensionsUnchanged": true,
+  "originalUnmodified": true,
+  "cpuLibrary": "jpeg-js (existing dependency)",
+  "reencodedPixelValuesMayDiffer": true,
+  "metadataCopied": false,
+  "backendMaxPixels": 4000000
+}

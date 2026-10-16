@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-13T15:18:32.672Z",
+  "status": "STOPPED_BY_OPERATOR_AT_IMAGE_PIXEL_LIMIT",
+  "projectTitle": "Dự án Full AI - 12:33:38 AM",
+  "scene": 3,
+  "operatorSceneApproved": true,
+  "operatorImageSelected": "Saved OpenFrame updated by operator; reused exact observed image via UI download",
+  "originalImageFrontendTest": "RUN - rejected over 1 MiB; no preview accepted",
+  "cpuCompression": "RUN - original dimensions and source file retained",
+  "operatorResizeApproval": false,
+  "compressedImageSubmittedToUi": false,
+  "backendImageValidation": "NOT RUN over HTTP; dimension incompatibility established from existing validateImage/dimensions source and decoded dimensions",
+  "realClerkSignedInUi": "PASS",
+  "realClerkPositiveQuote": "NOT RUN",
+  "quotePrice": "NOT RUN",
+  "quoteSettingsInvalidation": "NOT RUN",
+  "paidEnabled": false,
+  "providerUploadOrPredictionInitiated": 0,
+  "promptUnchanged": true,
+  "changedRenderedSceneFields": [
+    "startFrameUrl"
+  ],
+  "allAuthoredFieldsUnchanged": true,
+  "openFrameChangeObservedBeforeAgentReferencePreparation": true,
+  "agentFirestoreWritePerformed": false,
+  "protectedFileCount": 79,
+  "protectedChanged": []
+}

@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import MainEditor from './MainEditor';
 import Workspace from './Workspace/Workspace';
 import HistoryModel from './HistoryModel';
+import GeminiRequestTest from './GeminiRequestTest';
 
 import { LayoutTemplate, PlaySquare, History, Loader2, Sun, Moon } from 'lucide-react';
 import { SignedIn, SignedOut, SignIn, UserButton } from "@clerk/clerk-react";
@@ -149,6 +150,9 @@ export default function App() {
         {/* ── Page Content ──────────────────────────────────────────── */}
         <div className="flex-1 overflow-hidden relative z-0">
           <Routes>
+            {import.meta.env.DEV && import.meta.env.VITE_ENABLE_GEMINI_TEST === 'true' && (
+              <Route path="/gemini-request-test" element={<GeminiRequestTest />} />
+            )}
             <Route
               path="/"
               element={

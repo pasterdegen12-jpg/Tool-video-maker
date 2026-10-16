@@ -1,0 +1,103 @@
+Generate Video — Scene 3
+Đóng
+
+WaveSpeed · Seedance 1.5 Pro Standard · một scene · chưa lưu Cloud. Không cần Qwen Set ID. Đóng hoặc đổi scene chỉ dừng chờ trên giao diện; job provider có thể vẫn chạy.
+
+Tìm / khôi phục lần gửi
+Nội dung scene gốc — chỉ đọc
+videoUrl
+https://www.w3schools.com/html/mov_bbb.mp4
+Tone_of_Voice
+Nghiêm nghị (Lạnh lùng)
+Context
+opening
+startFrameUrl
+https://pub-a8fcac683b704e1f9d7d1240947dfdcf.r2.dev/project_proj_1789061618441/avatar_1791987357742.jpeg
+Voiceover
+You relocated it directly under your tires. Ms. Harper, please explain the incident.
+status
+pending
+scene_n
+3
+Word_count
+16
+Action
+Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa
+Camera
+Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền
+Character
+Thẩm phán
+Translate
+Anh đã di dời nó nằm trực tiếp dưới lốp xe của anh. Cô Harper, vui lòng giải thích sự việc.
+
+Ảnh OpenFrame/R2 hiện chưa được xác minh quyền truy cập cho provider. Chọn bản ảnh gốc từ máy; không thay ảnh hoặc dữ liệu scene đang lưu.
+
+Ảnh tham chiếu PNG/JPEG, tối đa 25 MiB / 24 MP
+
+Editing_photo_room_background_2K_20260910150656.jpeg_2K_20260912152737.jpeg · 590888 byte · 1536×2752 px · SHA-256: 94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b. Giữ nguyên file gốc.
+
+Chấp nhận ảnh local không bảo đảm WaveSpeed chấp nhận: giới hạn byte/pixel riêng của Seedance chưa được xác minh. Không tự nén, đổi định dạng hoặc thu nhỏ ảnh. Báo giá local chưa phải kiểm tra provider.
+
+Không sử dụng Visual Profile. Character gốc được giữ nguyên.
+
+Dữ liệu Full AI cũ: đọc lời thoại nguyên văn từ Voiceover; không đổi scene.
+
+Prompt đầy đủ, tạm thời (2000 ký tự tối đa của ứng dụng)
+
+Translate được giữ riêng và không đưa vào phần lời nói. Các field trống không được bổ sung nội dung.
+
+Tốc độ nói (từ/phút)
+Khoảng nghỉ (giây)
+Thời lượng
+4 giây
+5 giây
+6 giây
+7 giây
+8 giây
+9 giây
+Độ phân giải
+480p
+720p
+Tỷ lệ khung hình
+16:9
+9:16
+1:1
+4:3
+3:4
+21:9
+Seed
+ Âm thanh Seedance
+ camera_fixed — cố định camera
+
+Camera gốc: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền. Kiểm tra camera_fixed trước khi xác nhận; tắt không thêm chỉ dẫn chuyển động. Seed -1 là ngẫu nhiên.
+
+13 từ × 60 / 150 + 0.8 giây nghỉ ≈ 6 giây. Gợi ý: 6 giây.Dùng gợi ý
+
+Ước tính: USD 0.1440. Đây là giá tham khảo, phí thực tế có thể khác.
+
+Seedance không bảo đảm đọc Dialogue nguyên văn hoặc đồng bộ chính xác. Cần nghe và kiểm tra video trả về. Tắt âm thanh không gọi Generate Audio hiện có.
+
+Kiểm tra ảnh & lấy báo giá
+
+Bước báo giá chỉ chuyển ảnh đến backend local để kiểm tra; chưa upload WaveSpeed và chưa tính phí.
+
+bytedance/seedance-v1.5-pro/image-to-video · Scene 3 · 6s · 480p · 16:9 · audio true · camera_fixed true · seed -1
+
+Giá tham khảo USD 0.1440
+
+Nguồn giá chính thức · kiểm tra 2026-10-12 · xác nhận hết hạn 9:11:35 PM
+
+Ảnh SHA-256: 94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b
+Prompt SHA-256: 63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4
+
+ Tôi đồng ý chuyển đúng ảnh đã xem sang WaveSpeed (bao gồm metadata trong file).
+ Tôi xác nhận prompt, camera, thông số và phí tham khảo cho MỘT video này; phí thực tế có thể khác.
+
+Backend đang tắt gửi yêu cầu tính phí. Chưa upload ảnh tới provider.
+
+Lần trước thất bại trước khi gửi prediction. Thử lại sẽ tạo một lần gửi mới có thể tính phí; giữ nguyên bản ghi cũ.
+
+Lần trước: 453784079c656769af51a6b6effc04bc6e91163f80b4e722
+
+Phê duyệt thử lại một lần
+Generate Video — xác nhận tính phí

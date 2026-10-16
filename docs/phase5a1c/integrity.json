@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-13T14:37:26.574Z",
+  "protectedFileCount": 79,
+  "protectedChanges": [],
+  "scriptChecks": {
+    "full": {
+      "path": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+      "sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "matchesPrevious": true,
+      "sceneCount": 23
+    },
+    "semi": {
+      "path": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+      "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "matchesPrevious": true,
+      "sceneCount": 22
+    }
+  },
+  "parserExecuted": false,
+  "firestoreWritePerformed": false,
+  "explanation": "Byte comparison of existing local files only; no inference or parser quality claim."
+}

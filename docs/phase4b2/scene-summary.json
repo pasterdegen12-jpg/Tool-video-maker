@@ -1,0 +1,24 @@
+{
+  "full": {
+    "scene_count": 23,
+    "speaker_counts": {
+      "Judge": 10,
+      "Defendant": 8,
+      "Plaintiff": 5
+    },
+    "per_scene_pass": true,
+    "dialogues_preserved": true,
+    "translations_preserved": true,
+    "no_voiceover_or_cutting_field": true
+  },
+  "semi": {
+    "scene_count": 22,
+    "character_entities": 0,
+    "per_scene_pass": true,
+    "voiceovers_preserved": true,
+    "time_origins_preserved": true,
+    "independent_footage": true,
+    "missing_fields_empty": true,
+    "original_times_all_equal": true
+  }
+}

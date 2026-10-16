@@ -1,0 +1,227 @@
+{
+  "F:/tool-ai-dh/local-ai-gateway/ai_gateway/gpu.py": {
+    "sha256": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+    "matches": [
+      {
+        "line": 14,
+        "text": "    def acquire(self):"
+      },
+      {
+        "line": 34,
+        "text": "            if not self.path.is_file():"
+      },
+      {
+        "line": 36,
+        "text": "                    raise GatewayError('GPU_LOCK_MISSING',"
+      },
+      {
+        "line": 74,
+        "text": "def gpu_snapshot():"
+      }
+    ]
+  },
+  "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py": {
+    "sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+    "matches": [
+      {
+        "line": 23,
+        "text": "    def start(self):"
+      },
+      {
+        "line": 33,
+        "text": "            expected = {'torch': '2.5.1+cu121', 'transformers': '4.57.1', 'bitsandbytes': '0.50.2'}"
+      },
+      {
+        "line": 37,
+        "text": "            if before['other_compute_pids']:"
+      },
+      {
+        "line": 100,
+        "text": "    def generate_visual(self, request):"
+      },
+      {
+        "line": 110,
+        "text": "            messages = [{'role': 'user', 'content': [{'type': 'image'}, {'type': 'text', 'text': PROMPT}]}]"
+      }
+    ]
+  },
+  "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py": {
+    "sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+    "matches": [
+      {
+        "line": 14,
+        "text": "    gpu_mode: str = 'shared'"
+      },
+      {
+        "line": 16,
+        "text": "    gpu_task: str = 'legacy_script'"
+      },
+      {
+        "line": 17,
+        "text": "    visual_model_size: str = '4b'"
+      },
+      {
+        "line": 50,
+        "text": "    def from_env(cls):"
+      },
+      {
+        "line": 60,
+        "text": "    def worker_config(self):"
+      }
+    ]
+  },
+  "F:/Cooking-AI-review/app/services/speech_service.py": {
+    "sha256": "3a68cf752fbbeee4b4010cd23f7c76ebd34813f7061baf0974dc181fc243c92a",
+    "matches": [
+      {
+        "line": 131,
+        "text": "                with FileLock(str(self.root/'jobs/.speech_gpu.lock'),timeout=speech.worker_timeout_seconds):"
+      }
+    ]
+  },
+  "F:/Cooking-AI-review/scripts/dedicated_worker.py": {
+    "sha256": "98aa1496485a06b189853f6d9e540e9ceb289709eceb51451919a0c1e76e121e",
+    "matches": [
+      {
+        "line": 290,
+        "text": "        with FileLock(str(ROOT/'jobs/.speech_gpu.lock'),timeout=1):"
+      }
+    ]
+  },
+  "F:/Cooking-AI-review/scripts/run_phase3a2.py": {
+    "sha256": "bd4f2dc554ab82131f907a798a10bc43be4386084498e6c7322638291525140d",
+    "matches": [
+      {
+        "line": 27,
+        "text": "from filelock import FileLock"
+      },
+      {
+        "line": 109,
+        "text": "    with FileLock(lock_file, timeout=1800):"
+      }
+    ]
+  },
+  "F:/Cooking-AI-review/.venv/Lib/site-packages/filelock/_windows.py": {
+    "sha256": "b0b024fbe72738ad5ffbd453b800003928e1e1705cc5ad11de3cb6c375e0519b",
+    "matches": [
+      {
+        "line": 24,
+        "text": "    _FILE_OPEN_IF: Final[int] = 3  # open the file if it exists, create it otherwise; the NtCreateFile OPEN_ALWAYS"
+      },
+      {
+        "line": 179,
+        "text": "        def _acquire(self) -> None:"
+      },
+      {
+        "line": 198,
+        "text": "        def _release(self) -> None:"
+      },
+      {
+        "line": 206,
+        "text": "            if not self._preserve_lock_file:  # preserve_lock_file keeps a stable file identity for the caller (#605)"
+      },
+      {
+        "line": 208,
+        "text": "                    Path(self.lock_file).unlink()"
+      },
+      {
+        "line": 314,
+        "text": "        def _acquire(self) -> None:"
+      },
+      {
+        "line": 317,
+        "text": "        def _release(self) -> None:"
+      }
+    ]
+  },
+  "F:/tool-ai-dh/web-ai/src/lib/visualProfile.js": {
+    "sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+    "matches": [
+      {
+        "line": 19,
+        "text": "export function resolveSceneCharacterProfile(scene, characters, projectType = 'full-ai') {"
+      },
+      {
+        "line": 20,
+        "text": "  if (projectType !== 'full-ai') return { status: 'not_applicable', profile: null };"
+      },
+      {
+        "line": 21,
+        "text": "  const reference = typeof scene?.Character === 'string' ? scene.Character.trim() : '';"
+      }
+    ]
+  },
+  "F:/tool-ai-dh/web-ai/src/Workspace/VisualProfiles.jsx": {
+    "sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+    "matches": [
+      {
+        "line": 3,
+        "text": "import { approveVisualProfile, characterBinding, resolveSceneCharacterProfile, visualProfilesVisible } from '../lib/visualProfile.js';"
+      },
+      {
+        "line": 9,
+        "text": "export function VisualProfilesProvider({ projectId, projectType, characters, children }) {"
+      },
+      {
+        "line": 13,
+        "text": "function AuthenticatedProfiles({ projectId, characters, children }) {"
+      },
+      {
+        "line": 18,
+        "text": "function SessionProfiles({ characters, auth, children }) {"
+      },
+      {
+        "line": 20,
+        "text": "  const [approved, setApproved] = useState({});"
+      },
+      {
+        "line": 21,
+        "text": "  const effective = characters.map(c => ({ ...c, visualProfile: approved[c.id] ?? c.visualProfile }));"
+      },
+      {
+        "line": 22,
+        "text": "  function confirm(character, proposal, image) {"
+      },
+      {
+        "line": 25,
+        "text": "    const profile = approveVisualProfile(character, proposal, { dataUrl: image.dataUrl, sha256: image.image_sha256 });"
+      },
+      {
+        "line": 29,
+        "text": "  return <Profiles.Provider value={{ characters: effective, confirm, auth }}>{children}</Profiles.Provider>;"
+      },
+      {
+        "line": 31,
+        "text": "export function SetIdPanel({ character, disabled = false }) {"
+      },
+      {
+        "line": 38,
+        "text": "function Detection({ context, character, disabled }) {"
+      },
+      {
+        "line": 51,
+        "text": "  async function choose(event) {"
+      },
+      {
+        "line": 66,
+        "text": "  function cancel() {"
+      },
+      {
+        "line": 89,
+        "text": "        if (context.confirm(character, state.result, image)) setState({ status: 'approved', message: 'Đã duyệt trong phiên này. Các scene liên quan dùng chung profile.' });"
+      },
+      {
+        "line": 93,
+        "text": "    {resolved.status === 'approved' && <div data-approved-visual-id={resolved.profile.visualId} className=\"text-xs space-y-2\">"
+      },
+      {
+        "line": 100,
+        "text": "export function SceneVisualProfile({ scene }) {"
+      },
+      {
+        "line": 105,
+        "text": "    {result.status === 'approved' ? 'Visual ID: ' + result.profile.visualId"
+      }
+    ]
+  }
+}

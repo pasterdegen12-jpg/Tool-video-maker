@@ -1,0 +1,93 @@
+{
+  "checked_at_utc": "2026-10-12T06:57:28.741622+00:00",
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "F:\\Cooking-AI-review\\.venv\\Scripts\\python.exe",
+  "packages": {
+    "torch": "2.5.1+cu121",
+    "transformers": "4.57.1",
+    "bitsandbytes": "0.50.2",
+    "accelerate": "1.11.0",
+    "Pillow": "11.3.0",
+    "lm-format-enforcer": "0.11.3",
+    "filelock": "3.32.3",
+    "pydantic": "2.11.7"
+  },
+  "models": [
+    {
+      "path": "F:\\Cooking-AI-review\\models\\qwen3-vl-4b",
+      "exists": true,
+      "requested_for_phase4b": true,
+      "model_type": "qwen3_vl",
+      "architectures": [
+        "Qwen3VLForConditionalGeneration"
+      ],
+      "hidden_size": 2560,
+      "index_total_size": 8875631616,
+      "shards": [
+        {
+          "name": "model-00001-of-00002.safetensors",
+          "exists": true,
+          "bytes": 4967229296
+        },
+        {
+          "name": "model-00002-of-00002.safetensors",
+          "exists": true,
+          "bytes": 3908490048
+        }
+      ],
+      "processor_files": {
+        "preprocessor_config.json": true,
+        "tokenizer_config.json": true,
+        "tokenizer.json": true,
+        "chat_template.json": true,
+        "chat_template.jinja": false
+      }
+    },
+    {
+      "path": "F:\\Cooking-AI-review\\models\\qwen3-vl-8b",
+      "exists": true,
+      "requested_for_phase4b": false,
+      "model_type": "qwen3_vl",
+      "architectures": [
+        "Qwen3VLForConditionalGeneration"
+      ],
+      "hidden_size": 4096,
+      "index_total_size": 17534247392,
+      "shards": [
+        {
+          "name": "model-00001-of-00004.safetensors",
+          "exists": true,
+          "bytes": 4902275944
+        },
+        {
+          "name": "model-00002-of-00004.safetensors",
+          "exists": true,
+          "bytes": 4915962496
+        },
+        {
+          "name": "model-00003-of-00004.safetensors",
+          "exists": true,
+          "bytes": 4999831048
+        },
+        {
+          "name": "model-00004-of-00004.safetensors",
+          "exists": true,
+          "bytes": 2716270024
+        }
+      ],
+      "processor_files": {
+        "preprocessor_config.json": true,
+        "tokenizer_config.json": true,
+        "tokenizer.json": true,
+        "chat_template.json": true,
+        "chat_template.jinja": false
+      }
+    }
+  ],
+  "adapter_version_gate_matches": true,
+  "qwen3_vl_class_in_installed_source": true,
+  "torch_imported": false,
+  "cuda_runtime_test": "NOT RUN",
+  "nf4_kernel_test": "NOT RUN",
+  "checkpoint_load": "NOT RUN"
+}

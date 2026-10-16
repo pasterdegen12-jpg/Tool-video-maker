@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-16T13:45:44.820Z",
+  "tests": 292,
+  "failures": 0,
+  "lint": "PASS",
+  "build": "PASS",
+  "paid_enabled": false,
+  "frontend_key_empty": true,
+  "backend_key_present": true,
+  "writer_pid": 15196,
+  "protected_files_checked": 72,
+  "protected_changes": [
+    {
+      "path": "api/lib/seedance/transport.js",
+      "unchanged": false
+    },
+    {
+      "path": "tests/seedance-transport.test.mjs",
+      "unchanged": false
+    }
+  ],
+  "journal_records_preserved": true,
+  "journal_records": 1,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "build_files_scanned": 10,
+  "build_secret_findings": [],
+  "protected_unexpected_changes": [],
+  "missing_session_http_status": 401,
+  "missing_session_error_code": "UNAUTHORIZED"
+}

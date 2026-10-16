@@ -1,0 +1,42 @@
+[
+  {
+    "id": "453784079c656769af51a6b6effc04bc6e91163f80b4e722",
+    "stage": "FAILED",
+    "imageHash": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+    "promptHash": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+    "settingsHash": "d1daeee354b0fbf1a7c14c6003012fef97864d720cdff6c18ff1dabd4259629b",
+    "createdAt": 1792077217788,
+    "events": [
+      {
+        "stage": "QUOTED",
+        "at": 1792077217788
+      },
+      {
+        "at": 1792077232353,
+        "stage": "UPLOADING"
+      },
+      {
+        "at": 1792077232863,
+        "stage": "FAILED"
+      }
+    ],
+    "upstreamId": null,
+    "sha256": "98a773ecb93a291413c71d1cdd4673450bf281539780d73f82d4f403e1521d2c"
+  },
+  {
+    "id": "5ef2606dc52c8fa9bceb5eaaeb6748e0a7f19ddd96af22c2",
+    "stage": "QUOTED",
+    "imageHash": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+    "promptHash": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+    "settingsHash": "d1daeee354b0fbf1a7c14c6003012fef97864d720cdff6c18ff1dabd4259629b",
+    "createdAt": 1792159775015,
+    "events": [
+      {
+        "stage": "QUOTED",
+        "at": 1792159775015
+      }
+    ],
+    "upstreamId": null,
+    "sha256": "44b9b1dbe37dc45c61058e0576da07a9b56fdd6ac26d27af46af577869af7fe2"
+  }
+]

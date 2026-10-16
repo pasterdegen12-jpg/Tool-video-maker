@@ -1,0 +1,187 @@
+{
+  "checked_at_utc": "2026-10-12T06:57:31.886705+00:00",
+  "probe": "read-only; no acquire, model import or CUDA context",
+  "setting_presence": {
+    "GATEWAY_COOKING_ROOT": false,
+    "GATEWAY_MODEL_PATH": false,
+    "GATEWAY_INFERENCE_PYTHON": false,
+    "GATEWAY_GPU_LOCK_PATH": false,
+    "GATEWAY_GPU_MODE": false,
+    "GATEWAY_GPU_TASK": false,
+    "GATEWAY_VISUAL_MODEL_SIZE": false,
+    "GATEWAY_VISUAL_MODEL_PATH": false,
+    "GATEWAY_START_GPU_WORKER": false,
+    "GATEWAY_MIN_FREE_VRAM_MB": false,
+    "GATEWAY_SERVICE_TOKEN": false
+  },
+  "settings_validated": false,
+  "settings_error": "Required/valid gateway configuration is absent; no credential was supplied by the probe.",
+  "defaults_only": {
+    "cooking_root": "F:\\Cooking-AI-review",
+    "model_path": "F:\\Cooking-AI-review\\models\\qwen3-vl-8b",
+    "inference_python": "F:\\Cooking-AI-review\\.venv\\Scripts\\python.exe",
+    "gpu_lock_path": "F:\\Cooking-AI-review\\jobs\\.speech_gpu.lock",
+    "gpu_mode": "shared",
+    "gpu_task": "legacy_script",
+    "visual_model_size": "4b",
+    "visual_model_path": "None",
+    "start_gpu_worker": "True",
+    "min_free_vram_mb": "10500"
+  },
+  "lock": {
+    "path": "F:\\Cooking-AI-review\\jobs\\.speech_gpu.lock",
+    "exists_before": false,
+    "is_file": false,
+    "acquire_executed": false,
+    "source_gate_if_shared": "GPU_LOCK_MISSING",
+    "exists_after": false
+  },
+  "nvidia_memory": {
+    "returncode": 0,
+    "stdout": "0, NVIDIA GeForce RTX 3060, 12288, 665, 11463, 536.23",
+    "stderr": ""
+  },
+  "nvidia_processes": {
+    "returncode": 0,
+    "stdout": "1228, [Insufficient Permissions], [N/A]\n6080, C:\\Windows\\explorer.exe, [N/A]\n9624, C:\\Windows\\SystemApps\\Microsoft.Windows.Search_cw5n1h2txyewy\\SearchApp.exe, [N/A]\n10836, C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe, [N/A]\n10448, C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe, [N/A]\n1496, C:\\Program Files\\Riot Vanguard\\vgtray.exe, [N/A]\n6908, C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe, [N/A]\n6376, C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\Zalo.exe, [N/A]\n12904, C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\plugins\\capture\\ZaloCall.exe, [N/A]\n9920, C:\\Users\\Admin\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\cfb32733c877621e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe, [N/A]\n2592, C:\\Program Files\\WindowsApps\\Microsoft.ZuneVideo_10.26061.10051.0_x64__8wekyb3d8bbwe\\Video.UI.exe, [N/A]\n13300, C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe, [N/A]\n1544, C:\\Program Files\\WindowsApps\\Microsoft.549981C3F5F10_4.2308.1005.0_x64__8wekyb3d8bbwe\\Cortana.exe, [N/A]\n14960, C:\\Users\\Admin\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe, [N/A]",
+    "stderr": ""
+  },
+  "gateway_snapshot": {
+    "name": "NVIDIA GeForce RTX 3060",
+    "total_mb": 12884.901888,
+    "used_mb": 697.30304,
+    "free_mb": 12019.826688,
+    "other_compute_pids": [
+      1228,
+      6080,
+      9624,
+      10836,
+      10448,
+      1496,
+      6908,
+      6376,
+      12904,
+      9920,
+      2592,
+      13300,
+      1544,
+      14960
+    ]
+  },
+  "process_inventory": [
+    {
+      "pid": 1228,
+      "nvidia_identity": "[Insufficient Permissions]",
+      "used_gpu_memory": "[N/A]",
+      "owner_status": "OPEN_PROCESS_DENIED_OR_UNAVAILABLE",
+      "winerror": 5
+    },
+    {
+      "pid": 6080,
+      "nvidia_identity": "C:\\Windows\\explorer.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Windows\\explorer.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 9624,
+      "nvidia_identity": "C:\\Windows\\SystemApps\\Microsoft.Windows.Search_cw5n1h2txyewy\\SearchApp.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Windows\\SystemApps\\Microsoft.Windows.Search_cw5n1h2txyewy\\SearchApp.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 10836,
+      "nvidia_identity": "C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 10448,
+      "nvidia_identity": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 1496,
+      "nvidia_identity": "C:\\Program Files\\Riot Vanguard\\vgtray.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Program Files\\Riot Vanguard\\vgtray.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 6908,
+      "nvidia_identity": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 6376,
+      "nvidia_identity": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\Zalo.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\Zalo.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 12904,
+      "nvidia_identity": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\plugins\\capture\\ZaloCall.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\plugins\\capture\\ZaloCall.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 9920,
+      "nvidia_identity": "C:\\Users\\Admin\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\cfb32733c877621e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Users\\Admin\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\cfb32733c877621e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 2592,
+      "nvidia_identity": "C:\\Program Files\\WindowsApps\\Microsoft.ZuneVideo_10.26061.10051.0_x64__8wekyb3d8bbwe\\Video.UI.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Program Files\\WindowsApps\\Microsoft.ZuneVideo_10.26061.10051.0_x64__8wekyb3d8bbwe\\Video.UI.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 13300,
+      "nvidia_identity": "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 1544,
+      "nvidia_identity": "C:\\Program Files\\WindowsApps\\Microsoft.549981C3F5F10_4.2308.1005.0_x64__8wekyb3d8bbwe\\Cortana.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Program Files\\WindowsApps\\Microsoft.549981C3F5F10_4.2308.1005.0_x64__8wekyb3d8bbwe\\Cortana.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    },
+    {
+      "pid": 14960,
+      "nvidia_identity": "C:\\Users\\Admin\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe",
+      "used_gpu_memory": "[N/A]",
+      "process_path": "C:\\Users\\Admin\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe",
+      "owner": "DESKTOP-OAQCL63\\Admin",
+      "owner_status": "VERIFIED_READ_ONLY"
+    }
+  ],
+  "torch_imported": false,
+  "reservation_attempted": false,
+  "model_start_attempted": false
+}

@@ -1,0 +1,58 @@
+{
+  "status": "PROPOSED_ONLY_NOT_APPROVED_NOT_SUBMITTED",
+  "sourceFile": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+  "sourceSha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+  "sceneId": "scene_22",
+  "scene": {
+    "scene_n": 22,
+    "Context": "resolution",
+    "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+    "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+    "Character": "Plaintiff",
+    "Dialogue": "\"Oh, thank God. What about my house?\"",
+    "Translate": "\"Ôi, tạ ơn Chúa. Vậy còn ngôi nhà của tôi thì sao?\"",
+    "Tone_of_Voice": "(relieved, breathless)",
+    "Word_count": 7,
+    "status": "pending"
+  },
+  "exactDialogue": "\"Oh, thank God. What about my house?\"",
+  "profile": null,
+  "image": {
+    "filename": null,
+    "sha256": null,
+    "singlePersonOpenFrameVerified": false,
+    "selection": "OPERATOR_REQUIRED"
+  },
+  "model": "bytedance/seedance-v1.5-pro/image-to-video",
+  "settings": {
+    "duration": 5,
+    "resolution": "480p",
+    "aspect_ratio": "16:9",
+    "generate_audio": true,
+    "camera_fixed": true,
+    "seed": -1
+  },
+  "assumptions": {
+    "words": 7,
+    "seconds": 3.6,
+    "suggested": 4,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  "cost": {
+    "microUsd": 120000,
+    "usd": "0.1200",
+    "currency": "USD",
+    "version": "seedance-standard-reference-2026-10-12",
+    "source": "https://wavespeed.ai/docs/docs-api/bytedance/bytedance-seedance-v1.5-pro-image-to-video",
+    "verifiedDate": "2026-10-12",
+    "kind": "reference_estimate"
+  },
+  "prompt": "Use the original authored values below. Do not add or paraphrase spoken dialogue, actions or camera instructions. Only ORIGINAL SPOKEN DIALOGUE is spoken text.\n\nORIGINAL CONTEXT:\nresolution\n\nORIGINAL CHARACTER:\nPlaintiff\n\nORIGINAL ACTION:\nGiữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\n\nORIGINAL CAMERA:\nCamera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\n\nORIGINAL SPOKEN DIALOGUE:\n\"Oh, thank God. What about my house?\"\n\nORIGINAL TONE:\n(relieved, breathless)",
+  "promptSha256": "b20e85b9624c2e38df18aba2314d889a8aac7f5399068c03129792d244fad738",
+  "imageTransferConsent": "PENDING",
+  "paidApproval": "PENDING",
+  "browserAuthReadiness": "NOT RUN - backend Clerk config missing",
+  "liveProjectDataComparison": "NOT RUN"
+}

@@ -1,0 +1,98 @@
+{
+  "web": [
+    {
+      "path": "F:/tool-ai-dh/web-ai/package.json",
+      "before_sha256": "c20c365cd0ca797be725a899b2e10cdb6f1cc6b1a241254130220d3380470e26",
+      "after_sha256": "1ab99968516fe70fb3330b483716823e67e9fe5776beeb600b4651d97152027e"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/package-lock.json",
+      "before_sha256": "fc75801241f7cd6c2353f88957f37e3be9df79f0bb0e0a410c85af7f75266d47",
+      "after_sha256": "a300d6c754078f307cd86754ba0620e5e0b670ac7b1ac1ab34f3d8bc88f208ee"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/vite.config.js",
+      "before_sha256": "088b78f1c8de985632e493247d906f17f82bf440f09a1c7ed6d8289df644809c",
+      "after_sha256": "0aeceee9f5f9425ac8c82b50ee59e39bcd3c65b6bbacba1e07e6b53ac2cb3d03"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/auth.js",
+      "status": "added",
+      "sha256": "f23bb69e49dee4426ff3f2c48c2c4c889feaf450d95b4b4c8ffbfc5152749fc3"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/bridge.js",
+      "status": "added",
+      "sha256": "02d6af96945015d36ba8e6595bf5aa2bd581f6f7c1d121fe133312d15c629042"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/client.js",
+      "status": "added",
+      "sha256": "1e2c8c880f47cb6c9da37642d5089f801bfa9d15d128c2da12725c2a786b51d6"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/config.js",
+      "status": "added",
+      "sha256": "2a8faaaa08cdaf260889153b982a36d4b3b4b58ac82023990ca43fd31df71dbd"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/errors.js",
+      "status": "added",
+      "sha256": "d3101c0b037b1be29d22768757427bf779a519eb452f85767c9c4451b15edab2"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/local-ai/analyze.js",
+      "status": "added",
+      "sha256": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/local-ai/jobs/[jobId].js",
+      "status": "added",
+      "sha256": "5be0ad253b954242cc20291fbd1b6b61b8e44e2d982f836575b17ec39690432f"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/scripts/local-ai-server.mjs",
+      "status": "added",
+      "sha256": "ba75f9f100ae259046457e9c2ddee7932c5c0f34860ed0cfca3523e82f417d7c"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/local-ai-bridge.test.mjs",
+      "status": "added",
+      "sha256": "b5ce54b9308085762effae3bd8bb918a8bc886a20a5f55f39b4c01eab4357f5c"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/local-ai-real-http.test.mjs",
+      "status": "added",
+      "sha256": "c4861bbb5c3443b3861df70c73dfc0b46dbc63526cfa80f066880ecd46fc4d0b"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/support/local-ai-fixtures.mjs",
+      "status": "added",
+      "sha256": "23ff530de2719886bfe40000c26230ebcd17e1526f3a05edc622c606c697e7a8"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/support/gateway_cpu.py",
+      "status": "added",
+      "sha256": "7f3de4c167c6c1b0737e6925e231c538f8c21b26bd74f9dddefd5ae0765d68a8"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/docs/local-ai-bridge.md",
+      "status": "added",
+      "sha256": "82c5c5ac575637648501d65d6e38a5e962f507d866e4fa455e7d74721dcf8424"
+    }
+  ],
+  "gateway": [
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_jobs.py",
+      "before_sha256": "ca29daa1b8b3dd0b1c7b7088ee8561fb67464f7c012fb697514f33e75814114f",
+      "after_sha256": "fa2e0401de938a1ed693cea30956f309ea856da4321c96e10a609be8d316144f",
+      "change": "Expired timestamp fixture only; no runtime changes"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_http_workflows.py",
+      "before_sha256": "7ced324c2a39f6469974fd2f5a48ce31a7f7d63a650106d912787621cce4a238",
+      "after_sha256": "5e44a119273a072bfedf9e34ae2db49c77ae19a17f1ff181125e3af2a65f14cf",
+      "change": "Expired timestamp fixture only; no runtime changes"
+    }
+  ]
+}

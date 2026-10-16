@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-15T15:11:26.815Z",
+  "backend_pid": 18260,
+  "paid": true,
+  "records": [
+    {
+      "id": "6ffc6bdae469b267c0329d2745b41dde0216bffce86372d4",
+      "stage": "QUOTED",
+      "upstreamId": null,
+      "imageHash": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+      "promptHash": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+      "createdAt": 1792077039382
+    }
+  ]
+}

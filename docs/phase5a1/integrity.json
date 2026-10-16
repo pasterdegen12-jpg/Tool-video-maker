@@ -1,0 +1,203 @@
+{
+  "checked_at": "2026-10-12T18:00:47.835Z",
+  "scope": "Read-only original files and fresh CPU HTTP regression; live project before/after UI NOT RUN",
+  "full": {
+    "path": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+    "sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+    "scenes": [
+      {
+        "scene_id": "scene_1",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_2",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_3",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_4",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_5",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_6",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_7",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_8",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_9",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_10",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_11",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_12",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_13",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_14",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_15",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_16",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_17",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_18",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_19",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_20",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_21",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_22",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_23",
+        "status": "PASS"
+      }
+    ],
+    "fileStillMatchesOriginal": true
+  },
+  "semi": {
+    "path": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+    "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+    "scenes": [
+      {
+        "scene_id": "scene_1",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_2",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_3",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_4",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_5",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_6",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_7",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_8",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_9",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_10",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_11",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_12",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_13",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_14",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_15",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_16",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_17",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_18",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_19",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_20",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_21",
+        "status": "PASS"
+      },
+      {
+        "scene_id": "scene_22",
+        "status": "PASS"
+      }
+    ],
+    "fileStillMatchesOriginal": true
+  },
+  "proposedSceneMutation": false,
+  "liveUiIntegrity": "NOT RUN",
+  "realImageValidation": "NOT RUN - operator image not supplied",
+  "liveClerk": "NOT RUN",
+  "providerRequestsInAcceptance": 0
+}

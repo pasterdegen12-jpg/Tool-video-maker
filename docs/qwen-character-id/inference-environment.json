@@ -1,0 +1,16 @@
+{
+  "interpreter": "F:\\tool-ai-dh\\local-ai-gateway\\.venv-inference\\Scripts\\python.exe",
+  "base": "C:\\Users\\Admin\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+  "versions": {
+    "torch": "2.5.1+cu121",
+    "torchvision": "0.20.1+cu121",
+    "transformers": "4.57.1",
+    "bitsandbytes": "0.50.2",
+    "accelerate": "1.11.0",
+    "lm-format-enforcer": "0.11.3",
+    "pydantic": "2.11.7",
+    "Pillow": "12.3.0"
+  },
+  "model_loaded": false,
+  "cuda_initialized": false
+}

@@ -1,0 +1,232 @@
+[
+  {
+    "scene_n": 1,
+    "Character": "Judge",
+    "words": 14,
+    "seconds": 6.4,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 2,
+    "Character": "Defendant",
+    "words": 15,
+    "seconds": 6.8,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 3,
+    "Character": "Plaintiff",
+    "words": 15,
+    "seconds": 6.8,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 4,
+    "Character": "Judge",
+    "words": 21,
+    "seconds": 9.21,
+    "suggested": null,
+    "fits": false,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 5,
+    "Character": "Defendant",
+    "words": 17,
+    "seconds": 7.6,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 6,
+    "Character": "Plaintiff",
+    "words": 16,
+    "seconds": 7.2,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 7,
+    "Character": "Judge",
+    "words": 15,
+    "seconds": 6.8,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 8,
+    "Character": "Defendant",
+    "words": 22,
+    "seconds": 9.61,
+    "suggested": null,
+    "fits": false,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 9,
+    "Character": "Plaintiff",
+    "words": 18,
+    "seconds": 8,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 10,
+    "Character": "Defendant",
+    "words": 12,
+    "seconds": 5.6,
+    "suggested": 6,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 11,
+    "Character": "Judge",
+    "words": 15,
+    "seconds": 6.8,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 12,
+    "Character": "Defendant",
+    "words": 7,
+    "seconds": 3.6,
+    "suggested": 4,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 13,
+    "Character": "Judge",
+    "words": 20,
+    "seconds": 8.81,
+    "suggested": 9,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 14,
+    "Character": "Defendant",
+    "words": 8,
+    "seconds": 4,
+    "suggested": 4,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 15,
+    "Character": "Judge",
+    "words": 16,
+    "seconds": 7.2,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 16,
+    "Character": "Plaintiff",
+    "words": 14,
+    "seconds": 6.4,
+    "suggested": 7,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 17,
+    "Character": "Judge",
+    "words": 17,
+    "seconds": 7.6,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 18,
+    "Character": "Defendant",
+    "words": 9,
+    "seconds": 4.41,
+    "suggested": 5,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 19,
+    "Character": "Judge",
+    "words": 22,
+    "seconds": 9.61,
+    "suggested": null,
+    "fits": false,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 20,
+    "Character": "Defendant",
+    "words": 10,
+    "seconds": 4.8,
+    "suggested": 5,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 21,
+    "Character": "Judge",
+    "words": 18,
+    "seconds": 8,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 22,
+    "Character": "Plaintiff",
+    "words": 7,
+    "seconds": 3.6,
+    "suggested": 4,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  {
+    "scene_n": 23,
+    "Character": "Judge",
+    "words": 18,
+    "seconds": 8,
+    "suggested": 8,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  }
+]

@@ -1,0 +1,11 @@
+--- tests/test_jobs.py (before Phase 3A)
++++ tests/test_jobs.py (Phase 3A)
+@@
+-        job.updated = 0
++        job.updated = job.created - settings.job_ttl_seconds - 1
+--- tests/test_http_workflows.py (before Phase 3A)
++++ tests/test_http_workflows.py (Phase 3A)
+@@
+-        client.portal.call(setattr, client.app.state.manager.get(ids[0]), 'updated', 0)
++        client.portal.call(setattr, client.app.state.manager.get(ids[0]), 'updated',
++                           time.monotonic() - cpu_settings.job_ttl_seconds - 1)

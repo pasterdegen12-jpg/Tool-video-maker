@@ -1,0 +1,57 @@
+{
+  "fileInputs": [
+    {}
+  ],
+  "imagePreview": false,
+  "original": [
+    {
+      "key": "status",
+      "value": "pending"
+    },
+    {
+      "key": "scene_n",
+      "value": "3"
+    },
+    {
+      "key": "Action",
+      "value": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa"
+    },
+    {
+      "key": "Tone_of_Voice",
+      "value": "Nghiêm nghị (Lạnh lùng)"
+    },
+    {
+      "key": "Context",
+      "value": "opening"
+    },
+    {
+      "key": "Character",
+      "value": "Thẩm phán"
+    },
+    {
+      "key": "Voiceover",
+      "value": "You relocated it directly under your tires. Ms. Harper, please explain the incident."
+    },
+    {
+      "key": "Camera",
+      "value": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền"
+    },
+    {
+      "key": "startFrameUrl",
+      "value": "https://pub-a8fcac683b704e1f9d7d1240947dfdcf.r2.dev/project_proj_1789061618441/scene_bg_1791987065224.jpeg"
+    },
+    {
+      "key": "Word_count",
+      "value": "16"
+    },
+    {
+      "key": "Translate",
+      "value": "Anh đã di dời nó nằm trực tiếp dưới lốp xe của anh. Cô Harper, vui lòng giải thích sự việc."
+    },
+    {
+      "key": "videoUrl",
+      "value": "https://www.w3schools.com/html/mov_bbb.mp4"
+    }
+  ],
+  "quoteDisabled": true
+}

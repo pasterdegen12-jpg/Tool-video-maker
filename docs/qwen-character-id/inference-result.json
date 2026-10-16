@@ -1,0 +1,19 @@
+{
+  "status": "OK",
+  "reference_sha256": "6050e6c5a2ce8a8d540d751b23a0d7245cb71599f61ec3cac37d2877313d62f4",
+  "source_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "inference": {
+    "status": "detected",
+    "visual_id": "judge_elderly",
+    "visual_description": "elderly woman with blonde hair in bun, wearing black robe and white collar, glasses, sitting at wooden desk with pen and paper"
+  },
+  "metrics": {
+    "input_tokens": 653,
+    "generated_token_count": 55,
+    "inference_seconds": 6.997332299999471,
+    "tokens_per_second": 7.860138355870874,
+    "finish_reason": "eos",
+    "peak_allocated_mb": 3287.439872,
+    "peak_reserved_mb": 4525.654016
+  }
+}

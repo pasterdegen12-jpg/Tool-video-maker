@@ -1,0 +1,63 @@
+{
+  "capturedAt": "2026-10-13T15:17:50.042Z",
+  "reason": "Operator declined resizing and requested stop at pixel limit blocker",
+  "imageSelected": false,
+  "original": [
+    {
+      "key": "videoUrl",
+      "value": "https://www.w3schools.com/html/mov_bbb.mp4"
+    },
+    {
+      "key": "status",
+      "value": "pending"
+    },
+    {
+      "key": "scene_n",
+      "value": "3"
+    },
+    {
+      "key": "Context",
+      "value": "opening"
+    },
+    {
+      "key": "Character",
+      "value": "Thẩm phán"
+    },
+    {
+      "key": "startFrameUrl",
+      "value": "https://pub-a8fcac683b704e1f9d7d1240947dfdcf.r2.dev/project_proj_1789061618441/scene_bg_1791903431294.jpeg"
+    },
+    {
+      "key": "Action",
+      "value": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa"
+    },
+    {
+      "key": "Voiceover",
+      "value": "You relocated it directly under your tires. Ms. Harper, please explain the incident."
+    },
+    {
+      "key": "Tone_of_Voice",
+      "value": "Nghiêm nghị (Lạnh lùng)"
+    },
+    {
+      "key": "Translate",
+      "value": "Anh đã di dời nó nằm trực tiếp dưới lốp xe của anh. Cô Harper, vui lòng giải thích sự việc."
+    },
+    {
+      "key": "Camera",
+      "value": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền"
+    },
+    {
+      "key": "Word_count",
+      "value": "16"
+    }
+  ],
+  "prompt": "Use the original authored values below. Do not add or paraphrase spoken dialogue, actions or camera instructions. Only ORIGINAL SPOKEN DIALOGUE is spoken text.\n\nORIGINAL CONTEXT:\nopening\n\nORIGINAL CHARACTER:\nThẩm phán\n\nORIGINAL ACTION:\nGiữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa\n\nORIGINAL CAMERA:\nCamera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\n\nORIGINAL SPOKEN DIALOGUE:\nYou relocated it directly under your tires. Ms. Harper, please explain the incident.\n\nORIGINAL TONE:\nNghiêm nghị (Lạnh lùng)",
+  "promptReadOnly": true,
+  "quoteDisabled": true,
+  "state": "error",
+  "statuses": [
+    "Thời lượng đang chọn ngắn hơn ước tính 6 giây. Hãy tăng thời lượng.",
+    "Ảnh không hợp lệ; chọn PNG/JPEG tối đa 1 MiB."
+  ]
+}

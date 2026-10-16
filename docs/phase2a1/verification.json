@@ -1,0 +1,38 @@
+{
+  "started_utc": "2026-10-11T06:48:52.708158+00:00",
+  "finished_utc": "2026-10-11T06:48:55.518498+00:00",
+  "command": "F:\\tool-ai-dh\\local-ai-gateway\\.venv\\Scripts\\python.exe -I -B C:\\Users\\Admin\\AppData\\Local\\Temp\\qwen-phase2a1-MLY42X\\verify.py",
+  "pytest_args": [
+    "-q",
+    "F:\\tool-ai-dh\\local-ai-gateway\\tests",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp=C:\\Users\\Admin\\AppData\\Local\\Temp\\qwen-phase2a1-MLY42X\\pytest-data",
+    "--junitxml=C:\\Users\\Admin\\AppData\\Local\\Temp\\qwen-phase2a1-MLY42X\\gateway.junit.xml"
+  ],
+  "exit_code": 0,
+  "test_count": 134,
+  "existing_131_retained": 131,
+  "non_pass": 0,
+  "parser_file": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\workflow_parser.py",
+  "adapter_file": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\web_adapters.py",
+  "unchanged_gateway_modules": [
+    "analysis.py",
+    "api.py",
+    "config.py",
+    "errors.py",
+    "gpu.py",
+    "inference.py",
+    "jobs.py",
+    "process.py",
+    "schemas.py",
+    "worker.py",
+    "workflow_parser.py",
+    "workflow_schemas.py",
+    "__init__.py",
+    "__main__.py"
+  ],
+  "model_modules_loaded": [],
+  "real_inference": "NOT RUN"
+}

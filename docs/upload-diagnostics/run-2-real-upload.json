@@ -1,0 +1,39 @@
+{
+  "label": "REAL UPLOAD ONLY — NO VIDEO PREDICTION",
+  "started_at": "2026-10-15T16:07:14.245Z",
+  "paid_enabled": false,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "image_bytes": 590888,
+  "mime_type": "image/jpeg",
+  "state": "FAIL",
+  "requests": [
+    {
+      "step": "TICKET_REQUEST",
+      "started_at": "2026-10-15T16:07:14.248Z",
+      "http_status": 200,
+      "finished_at": "2026-10-15T16:07:14.561Z"
+    },
+    {
+      "step": "IMAGE_PUT",
+      "started_at": "2026-10-15T16:07:14.626Z",
+      "http_status": 403,
+      "finished_at": "2026-10-15T16:07:15.165Z"
+    }
+  ],
+  "prediction_requests": 0,
+  "ticket_checks": {
+    "filename_matches_request": false,
+    "filename_is_string": true,
+    "size_matches": true,
+    "type_is_image": true,
+    "method_is_put": true
+  },
+  "failure": {
+    "step": "IMAGE_PUT",
+    "code": "UPLOAD_FAILED",
+    "http_status": 403,
+    "reason": "HTTP_STATUS",
+    "at": 1792080435165
+  },
+  "finished_at": "2026-10-15T16:07:15.165Z"
+}

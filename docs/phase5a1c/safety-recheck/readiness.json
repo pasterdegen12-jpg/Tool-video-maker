@@ -1,0 +1,102 @@
+{
+  "checkedAt": "2026-10-13T14:35:18.650Z",
+  "files": [
+    {
+      "file": ".env",
+      "variables": {
+        "NODE_ENV": "MISSING",
+        "LOCAL_VIDEO_ENABLED": "MISSING",
+        "LOCAL_VIDEO_PAID_ENABLED": "MISSING",
+        "LOCAL_AI_WEB_ORIGIN": "MISSING",
+        "CLERK_ISSUER": "MISSING",
+        "CLERK_JWT_KEY": "MISSING",
+        "VITE_CLERK_PUBLISHABLE_KEY": "PRESENT",
+        "WAVESPEED_API_KEY": "MISSING",
+        "VITE_WAVESPEED_API_KEY": "PRESENT"
+      }
+    },
+    {
+      "file": ".env.local",
+      "variables": {
+        "NODE_ENV": "MISSING",
+        "LOCAL_VIDEO_ENABLED": "MISSING",
+        "LOCAL_VIDEO_PAID_ENABLED": "MISSING",
+        "LOCAL_AI_WEB_ORIGIN": "MISSING",
+        "CLERK_ISSUER": "MISSING",
+        "CLERK_JWT_KEY": "MISSING",
+        "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+        "WAVESPEED_API_KEY": "MISSING",
+        "VITE_WAVESPEED_API_KEY": "MISSING"
+      }
+    },
+    {
+      "file": ".env.video.local",
+      "variables": {
+        "NODE_ENV": "PRESENT",
+        "LOCAL_VIDEO_ENABLED": "PRESENT",
+        "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+        "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+        "CLERK_ISSUER": "PRESENT",
+        "CLERK_JWT_KEY": "PRESENT",
+        "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+        "WAVESPEED_API_KEY": "EMPTY",
+        "VITE_WAVESPEED_API_KEY": "EMPTY"
+      }
+    }
+  ],
+  "envVideoFileExists": true,
+  "envVideoIgnored": true,
+  "ignoreRule": ".gitignore:27:.env*\t.env.video.local",
+  "envVideoTracked": false,
+  "processVariables": {
+    "NODE_ENV": "PRESENT",
+    "LOCAL_VIDEO_ENABLED": "PRESENT",
+    "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+    "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+    "CLERK_ISSUER": "PRESENT",
+    "CLERK_JWT_KEY": "PRESENT",
+    "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+    "WAVESPEED_API_KEY": "EMPTY",
+    "VITE_WAVESPEED_API_KEY": "EMPTY"
+  },
+  "backendAcceptancePresence": {
+    "NODE_ENV": "PRESENT",
+    "LOCAL_VIDEO_ENABLED": "PRESENT",
+    "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+    "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+    "CLERK_ISSUER": "PRESENT",
+    "CLERK_JWT_KEY": "PRESENT",
+    "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+    "WAVESPEED_API_KEY": "EMPTY",
+    "VITE_WAVESPEED_API_KEY": "EMPTY"
+  },
+  "frontendAcceptancePresence": {
+    "NODE_ENV": "PRESENT",
+    "LOCAL_VIDEO_ENABLED": "PRESENT",
+    "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+    "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+    "CLERK_ISSUER": "PRESENT",
+    "CLERK_JWT_KEY": "PRESENT",
+    "VITE_CLERK_PUBLISHABLE_KEY": "PRESENT",
+    "WAVESPEED_API_KEY": "EMPTY",
+    "VITE_WAVESPEED_API_KEY": "EMPTY"
+  },
+  "clerkMissingEveryInspectedSource": [],
+  "issuerSyntaxValid": true,
+  "publicKeySyntaxValid": true,
+  "publishableKeySyntaxValid": true,
+  "frontendInstanceMatchesIssuer": true,
+  "publicKeyMatchesInstance": "NOT RUN - no network key lookup/session verification",
+  "configuredOrigin": "http://localhost:5173",
+  "paidFlag": "false",
+  "paidDefaultInCode": false,
+  "configError": null,
+  "safeFlagsOnlyConfigError": null,
+  "ports": {
+    "5173": "NOT_LISTENING",
+    "8790": "NOT_LISTENING"
+  },
+  "servicesStarted": false,
+  "browserAcceptance": "NOT RUN",
+  "providerRequests": 0
+}

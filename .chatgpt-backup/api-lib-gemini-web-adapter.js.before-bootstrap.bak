@@ -1,0 +1,60 @@
+import { GeminiTestError } from './errors.js';
+import { parseGeminiResponse } from './parse-response.js';
+
+// Deliberately incomplete: no endpoint, RPC ID or token layout is assumed.
+// One adapter belongs to exactly one request. Never cache instances or credentials.
+export class GeminiWebAdapter {
+  #session;
+
+  constructor(session) {
+    this.#session = session;
+  }
+
+  async initialize() {
+    this.validateSession();
+    await this.refreshPageTokens();
+  }
+
+  validateSession() {
+    // Syntax validation only; this does not establish a signed-in Gemini session.
+    if (typeof this.#session !== 'string' || this.#session.length > 16384 ||
+        !this.#session.trim() || /[\r\n\0]/.test(this.#session) || !this.#session.includes('=')) {
+      throw new GeminiTestError('INVALID_SESSION', 400);
+    }
+  }
+
+  async refreshPageTokens() {
+    // Missing: observed bootstrap response and dynamic token locations.
+    throw new GeminiTestError('GEMINI_PROTOCOL_CHANGED', 501);
+  }
+
+  async createConversation() {
+    throw new GeminiTestError('GEMINI_PROTOCOL_CHANGED', 501);
+  }
+
+  async sendTextPrompt() {
+    // Missing: verified URL/method, request envelope and response framing.
+    throw new GeminiTestError('GEMINI_PROTOCOL_CHANGED', 501);
+  }
+
+  async uploadFile() {
+    throw new GeminiTestError('VIDEO_UPLOAD_FAILED', 501);
+  }
+
+  async sendPromptWithFiles() {
+    throw new GeminiTestError('GEMINI_PROTOCOL_CHANGED', 501);
+  }
+
+  parseResponse(raw) {
+    return parseGeminiResponse(raw);
+  }
+
+  detectSessionExpired() {
+    // Unknown until the upstream authentication failure format is observed.
+    return null;
+  }
+
+  dispose() {
+    this.#session = undefined;
+  }
+}

@@ -1,0 +1,302 @@
+{
+  "checked_at_utc": "2026-10-12T06:58:13.742Z",
+  "secrets_logged": false,
+  "inherited": {
+    "NODE_ENV": {
+      "present": false,
+      "nonempty": false
+    },
+    "VERCEL": {
+      "present": false,
+      "nonempty": false
+    },
+    "VITE_CLERK_PUBLISHABLE_KEY": {
+      "present": false,
+      "nonempty": false
+    },
+    "VITE_ENABLE_LOCAL_VISUAL_ID": {
+      "present": false,
+      "nonempty": false
+    },
+    "LOCAL_AI_BRIDGE_ENABLED": {
+      "present": false,
+      "nonempty": false
+    },
+    "LOCAL_AI_VISUAL_ENABLED": {
+      "present": false,
+      "nonempty": false
+    },
+    "CLERK_JWT_KEY": {
+      "present": false,
+      "nonempty": false
+    },
+    "CLERK_ISSUER": {
+      "present": false,
+      "nonempty": false
+    },
+    "LOCAL_AI_WEB_ORIGIN": {
+      "present": false,
+      "nonempty": false
+    },
+    "LOCAL_AI_GATEWAY_URL": {
+      "present": false,
+      "nonempty": false
+    },
+    "LOCAL_AI_GATEWAY_TOKEN": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_SERVICE_TOKEN": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_GPU_TASK": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_VISUAL_MODEL_SIZE": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_VISUAL_MODEL_PATH": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_GPU_MODE": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_START_GPU_WORKER": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_INFERENCE_PYTHON": {
+      "present": false,
+      "nonempty": false
+    },
+    "GATEWAY_GPU_LOCK_PATH": {
+      "present": false,
+      "nonempty": false
+    }
+  },
+  "files": [
+    {
+      "path": "F:/tool-ai-dh/web-ai/.env",
+      "exists": true,
+      "entries": {
+        "NODE_ENV": {
+          "present": false,
+          "nonempty": false
+        },
+        "VERCEL": {
+          "present": false,
+          "nonempty": false
+        },
+        "VITE_CLERK_PUBLISHABLE_KEY": {
+          "present": true,
+          "nonempty": true
+        },
+        "VITE_ENABLE_LOCAL_VISUAL_ID": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_BRIDGE_ENABLED": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_VISUAL_ENABLED": {
+          "present": false,
+          "nonempty": false
+        },
+        "CLERK_JWT_KEY": {
+          "present": false,
+          "nonempty": false
+        },
+        "CLERK_ISSUER": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_WEB_ORIGIN": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_GATEWAY_URL": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_GATEWAY_TOKEN": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_SERVICE_TOKEN": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_TASK": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_VISUAL_MODEL_SIZE": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_VISUAL_MODEL_PATH": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_MODE": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_START_GPU_WORKER": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_INFERENCE_PYTHON": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_LOCK_PATH": {
+          "present": false,
+          "nonempty": false
+        }
+      }
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/.env.local",
+      "exists": true,
+      "entries": {
+        "NODE_ENV": {
+          "present": false,
+          "nonempty": false
+        },
+        "VERCEL": {
+          "present": false,
+          "nonempty": false
+        },
+        "VITE_CLERK_PUBLISHABLE_KEY": {
+          "present": false,
+          "nonempty": false
+        },
+        "VITE_ENABLE_LOCAL_VISUAL_ID": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_BRIDGE_ENABLED": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_VISUAL_ENABLED": {
+          "present": false,
+          "nonempty": false
+        },
+        "CLERK_JWT_KEY": {
+          "present": false,
+          "nonempty": false
+        },
+        "CLERK_ISSUER": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_WEB_ORIGIN": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_GATEWAY_URL": {
+          "present": false,
+          "nonempty": false
+        },
+        "LOCAL_AI_GATEWAY_TOKEN": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_SERVICE_TOKEN": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_TASK": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_VISUAL_MODEL_SIZE": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_VISUAL_MODEL_PATH": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_MODE": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_START_GPU_WORKER": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_INFERENCE_PYTHON": {
+          "present": false,
+          "nonempty": false
+        },
+        "GATEWAY_GPU_LOCK_PATH": {
+          "present": false,
+          "nonempty": false
+        }
+      }
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/.env.development",
+      "exists": false
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/.env.development.local",
+      "exists": false
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/.env.local-ai.local",
+      "exists": false
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/.env",
+      "exists": false
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/.env.local",
+      "exists": false
+    }
+  ],
+  "bridge_launch_context": "Inherited environment over .env.local-ai.local, if launched via documented --env-file command. No server launched.",
+  "gateway_launch_context": "Inherited environment only: start.cmd/Settings.from_env do not load dotenv files.",
+  "frontend": {
+    "publishable_key_present": true,
+    "visual_id_enabled": false
+  },
+  "bridge_expected": {
+    "development": false,
+    "no_vercel": true,
+    "opt_in": false,
+    "visual_enabled": false,
+    "jwt_key_present": false,
+    "issuer_present": false,
+    "gateway_url_present": false,
+    "gateway_token_present": false,
+    "origin_explicit": false,
+    "origin_default_if_unset": "http://localhost:5173"
+  },
+  "bridge_config_validation": {
+    "status": "FAIL",
+    "code": "INTEGRATION_DISABLED"
+  },
+  "service_token_match": {
+    "status": "NOT RUN",
+    "reason": "Both actual service tokens are not configured in launch contexts"
+  },
+  "gateway": {
+    "service_token_present": false,
+    "visual_task_enabled": false,
+    "visual_size_4b_if_enabled": true,
+    "worker_explicitly_disabled": false,
+    "mode_explicitly_configured": false
+  },
+  "browser_session": "NOT RUN"
+}

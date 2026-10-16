@@ -1,0 +1,62 @@
+[
+  {
+    "file": "src/lib/visualProfile.js",
+    "sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8"
+  },
+  {
+    "file": "src/Workspace/VisualProfiles.jsx",
+    "sha256": "c9934c960c319356733887c61b8d652be12f6fc94410091757cb766f9dad1457"
+  },
+  {
+    "file": "src/Workspace/Workspace.jsx",
+    "sha256": "a047bcb4be0e6f89155184c804127487aa349658e84899a18593251a9a92690d"
+  },
+  {
+    "file": "src/Workspace/SetupTab.jsx",
+    "sha256": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935"
+  },
+  {
+    "file": "src/Workspace/StoryboardTab.jsx",
+    "sha256": "85b644b7a21bd9c60b7c1c3fb2199c4de4b8afa8eb3f650e537b0ffee4c0f586"
+  },
+  {
+    "file": "src/Workspace/SeedanceScenePanel.jsx",
+    "sha256": "1441a844577c45c4db21cbcb02f3b9f5da7da434e92b4a7d599d00a714a00e34"
+  },
+  {
+    "file": "src/lib/seedanceContract.js",
+    "sha256": "8d8c0be858dffe714201e20c90f9434f8c518d62c2177a190596123f50280cdf"
+  },
+  {
+    "file": "src/firebase.js",
+    "sha256": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289"
+  },
+  {
+    "file": "tests/visual-ui.test.mjs",
+    "sha256": "108dd1b1c8af2ac59ccd80ab4477f07936c73e87d6e88e8606436a8cf7c4d0bb"
+  },
+  {
+    "file": "tests/visual-profile.test.mjs",
+    "sha256": "dc38ae7a58f5b3773aa88cd938d7491433699be3f3c2e44a9d2ea01838c64543"
+  },
+  {
+    "file": "tests/seedance-ui.test.mjs",
+    "sha256": "feddd64b481904c54ccfcd9a8f5774933a28330d184c60bf1af0ce93f23df6a9"
+  },
+  {
+    "file": "tests/seedance-contract.test.mjs",
+    "sha256": "0060302e72395bc309a41cbff8025fb17e9aa9d79ce02e9c02ee3694e8a7d027"
+  },
+  {
+    "file": "api/lib/local-ai/bridge.js",
+    "sha256": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee"
+  },
+  {
+    "file": "scripts/local-ai-server.mjs",
+    "sha256": "ba75f9f100ae259046457e9c2ddee7932c5c0f34860ed0cfca3523e82f417d7c"
+  },
+  {
+    "file": "src/lib/visualProfileClient.js",
+    "sha256": "6f298581039d6c4741626753b3f5c7779f6313b0c33c4c5f2ce1ec4ed48d35d9"
+  }
+]

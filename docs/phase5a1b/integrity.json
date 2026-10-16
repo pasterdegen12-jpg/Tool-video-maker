@@ -1,0 +1,2353 @@
+{
+  "checkedAt": "2026-10-13T06:50:43.725Z",
+  "protectedFileCount": 79,
+  "protectedChanges": [],
+  "sourceResults": {
+    "full": {
+      "file": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+      "sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "matchesPhase5a1Hash": true,
+      "sceneIds": [
+        "scene_1",
+        "scene_2",
+        "scene_3",
+        "scene_4",
+        "scene_5",
+        "scene_6",
+        "scene_7",
+        "scene_8",
+        "scene_9",
+        "scene_10",
+        "scene_11",
+        "scene_12",
+        "scene_13",
+        "scene_14",
+        "scene_15",
+        "scene_16",
+        "scene_17",
+        "scene_18",
+        "scene_19",
+        "scene_20",
+        "scene_21",
+        "scene_22",
+        "scene_23"
+      ],
+      "sceneOrderMatchesCapture": true,
+      "comparison": "Direct original text lines against previously captured expected/actual; current parser NOT RUN",
+      "rows": [
+        {
+          "scene_id": "scene_1",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_2",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_3",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_4",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_5",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_6",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_7",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_8",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_9",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_10",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_11",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_12",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_13",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_14",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_15",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_16",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_17",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_18",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_19",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_20",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_21",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_22",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_23",
+          "fields": [
+            {
+              "field": "Context",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Character",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Tone",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dialogue",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Dịch",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Camera",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Action",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        }
+      ]
+    },
+    "semi": {
+      "file": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+      "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "matchesPhase5a1Hash": true,
+      "sceneIds": [
+        "scene_1",
+        "scene_2",
+        "scene_3",
+        "scene_4",
+        "scene_5",
+        "scene_6",
+        "scene_7",
+        "scene_8",
+        "scene_9",
+        "scene_10",
+        "scene_11",
+        "scene_12",
+        "scene_13",
+        "scene_14",
+        "scene_15",
+        "scene_16",
+        "scene_17",
+        "scene_18",
+        "scene_19",
+        "scene_20",
+        "scene_21",
+        "scene_22"
+      ],
+      "sceneOrderMatchesCapture": true,
+      "comparison": "Direct original text lines against previously captured expected/actual; current parser NOT RUN",
+      "rows": [
+        {
+          "scene_id": "scene_1",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_2",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_3",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_4",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_5",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_6",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_7",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_8",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_9",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_10",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_11",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_12",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_13",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_14",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_15",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_16",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_17",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_18",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_19",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_20",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_21",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        },
+        {
+          "scene_id": "scene_22",
+          "fields": [
+            {
+              "field": "Time",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Time_origin",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Scene_Duration",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Footage",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Voiceover",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Token_Count",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "VO_Target_Range",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Audio_Mode",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Content_Function",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Review_Angle",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            },
+            {
+              "field": "Effect",
+              "sourceStillContainsExactFieldLine": true,
+              "capturedAdapterValueStillMatchesExpected": true
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "scene22": {
+    "compositionExecuted": true,
+    "promptMatchesPrevious": true,
+    "promptSha256": "b20e85b9624c2e38df18aba2314d889a8aac7f5399068c03129792d244fad738",
+    "inputUnchanged": true,
+    "settings": {
+      "duration": 5,
+      "resolution": "480p",
+      "aspect_ratio": "16:9",
+      "generate_audio": true,
+      "camera_fixed": true,
+      "seed": -1
+    },
+    "plan": {
+      "words": 7,
+      "seconds": 3.6,
+      "suggested": 4,
+      "fits": true,
+      "wordsPerMinute": 150,
+      "pauseSeconds": 0.8
+    },
+    "cost": {
+      "microUsd": 120000,
+      "usd": "0.1200",
+      "currency": "USD",
+      "version": "seedance-standard-reference-2026-10-12",
+      "source": "https://wavespeed.ai/docs/docs-api/bytedance/bytedance-seedance-v1.5-pro-image-to-video",
+      "verifiedDate": "2026-10-12",
+      "kind": "reference_estimate"
+    },
+    "temporaryPromptFile": "docs/phase5a1/proposed-scene-22-prompt.txt",
+    "liveProjectComparison": "NOT RUN",
+    "referenceImage": "NOT RUN - operator-selected file missing"
+  },
+  "webSuiteThisPhase": "NOT RUN - no production source changes",
+  "buildThisPhase": "NOT RUN",
+  "realClerk": "NOT RUN - configuration missing",
+  "browser": "NOT RUN",
+  "realProviderRequests": 0
+}

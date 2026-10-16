@@ -1,0 +1,34 @@
+{
+  "checked_at": "2026-10-15T15:19:49.957Z",
+  "attempt_id": "453784079c656769af51a6b6effc04bc6e91163f80b4e722",
+  "scene_id": 3,
+  "stage": "FAILED",
+  "state": "failed",
+  "provider_prediction_id": null,
+  "video_url": null,
+  "polls": 0,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "prompt_sha256": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+  "settings_sha256": "d1daeee354b0fbf1a7c14c6003012fef97864d720cdff6c18ff1dabd4259629b",
+  "events": [
+    {
+      "stage": "QUOTED",
+      "at": 1792077217788,
+      "at_iso": "2026-10-15T15:13:37.788Z"
+    },
+    {
+      "at": 1792077232353,
+      "stage": "UPLOADING",
+      "at_iso": "2026-10-15T15:13:52.353Z"
+    },
+    {
+      "at": 1792077232863,
+      "stage": "FAILED",
+      "at_iso": "2026-10-15T15:13:52.863Z"
+    }
+  ],
+  "http_status": "NOT RECORDED",
+  "provider_error_code": "NOT RECORDED",
+  "failed_substep": "NOT RECORDED",
+  "retry_performed": false
+}

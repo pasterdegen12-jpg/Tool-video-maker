@@ -1,0 +1,19 @@
+{
+  "configuredAt": "2026-10-13T07:16:16.960Z",
+  "source": "Authenticated Clerk dashboard public key fingerprint + exact instance public JWKS URL",
+  "dashboardSignedIn": true,
+  "environment": "Development",
+  "publishableKeyInstanceMatched": true,
+  "publicJwksFetched": true,
+  "jwksHttpStatus": 200,
+  "publicKeyMatchesDashboard": true,
+  "issuerConfigured": true,
+  "jwtPublicKeyConfigured": true,
+  "paidEnabled": "false",
+  "origin": "http://localhost:5173",
+  "frontendWaveSpeedEmpty": true,
+  "backendWaveSpeedEmpty": true,
+  "originalEnvFilesChanged": false,
+  "secretKeyRead": false,
+  "sessionTokenExported": false
+}

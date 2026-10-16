@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-10-13T15:16:22.952Z",
+  "process": {
+    "paidEnabled": false,
+    "origin": "http://localhost:5173",
+    "backendWaveSpeedEmpty": true,
+    "frontendWaveSpeedEmpty": true
+  },
+  "routes": [
+    {
+      "name": "backend_missing_session",
+      "status": 401,
+      "code": "UNAUTHORIZED"
+    },
+    {
+      "name": "proxy_missing_session",
+      "status": 401,
+      "code": "UNAUTHORIZED"
+    },
+    {
+      "name": "proxy_invalid_session",
+      "status": 401,
+      "code": "UNAUTHORIZED"
+    },
+    {
+      "name": "proxy_wrong_origin",
+      "status": 403,
+      "code": "FORBIDDEN_ORIGIN"
+    }
+  ],
+  "frontendIsolation": {
+    "servedModuleHttpStatus": 200,
+    "knownWaveSpeedSecretPresent": false,
+    "servedFrontendWaveSpeedVariableEmpty": true,
+    "clerkPublicPemPresent": false
+  },
+  "listeners": [
+    {
+      "localAddress": "127.0.0.1:5173",
+      "state": "LISTENING",
+      "pid": 15892
+    },
+    {
+      "localAddress": "127.0.0.1:8790",
+      "state": "LISTENING",
+      "pid": 9448
+    }
+  ],
+  "realSessionValidation": "NOT RUN YET",
+  "note": "Missing/invalid-session requests contain no real or synthetic signed JWT; no images or submit requests."
+}

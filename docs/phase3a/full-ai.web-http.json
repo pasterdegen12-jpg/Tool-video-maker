@@ -1,0 +1,1143 @@
+{
+  "status": "PASS",
+  "input": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+  "sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+  "transport": "Web HTTP → gateway TCP → JobManager → CPU parser → Web HTTP",
+  "authentication": "Real Clerk SDK signature verification with SYNTHETIC ephemeral test sessions; live Clerk login NOT RUN",
+  "request": {
+    "projectType": "full-ai",
+    "script": "# Tiêu đề: State Tries To STEAL House Over A $200 Garage Sale?! 🤯\r\n# ID: COURT_GARAGE_SALE_001\r\n# Hook / cold-open: Thẩm phán chỉ trích gay gắt luật sư công bang vì đã đóng băng thế chấp nhà của một người đàn ông chỉ vì ông ta bán đồ cũ trong garage.\r\n# Estimated duration: ~120s\r\n# Tóm tắt câu chuyện: Một người đàn ông tổ chức bán đồ cũ (garage sale) thu được 200 đô la thì bị thanh tra bang phạt 1.800 đô la vì \"không có giấy phép kinh doanh bán lẻ\". Do không có tiền nộp phạt, bang đã siết nợ (đặt lien) lên ngôi nhà của ông. Thẩm phán phẫn nộ lật lại luật thương mại, vạch trần sự phi lý của luật sư bang, bác bỏ khoản phạt và buộc bang trả án phí.\r\n\r\nscene_1\r\nContext: hook\r\nCharacter: Judge\r\nTone: (disbelief, sharp)\r\nDialogue: \"You froze this man's entire mortgage over a used sofa and some stuffed animals?\"\r\nDịch: \"Anh đóng băng toàn bộ thế chấp nhà của người đàn ông này chỉ vì một chiếc ghế sofa cũ và vài con thú nhồi bông sao?\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Khó chịu, nhíu mày. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_2\r\nContext: hook\r\nCharacter: Defendant\r\nTone: (rigid, arrogant)\r\nDialogue: \"Your Honor, the law is absolute. He operated an unlicensed retail operation on state soil.\"\r\nDịch: \"Thưa Tòa, luật pháp là tuyệt đối. Ông ta đã điều hành một cơ sở bán lẻ không phép trên đất của bang.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự mãn, hất cằm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_3\r\nContext: hook\r\nCharacter: Plaintiff\r\nTone: (outraged, frantic)\r\nDialogue: \"It was a garage sale! I made two hundred bucks selling my grandkids' old toys!\"\r\nDịch: \"Đó là một buổi bán đồ cũ trong garage! Tôi kiếm được hai trăm đô từ việc bán đồ chơi cũ của các cháu tôi!\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Bức xúc, giơ hai tay lên. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_4\r\nContext: opening\r\nCharacter: Judge\r\nTone: (authoritative, resetting)\r\nDialogue: \"Hold on. Let me get the facts straight. The state slapped an eighteen-hundred dollar fine on you... for a yard sale?\"\r\nDịch: \"Khoan đã. Để tôi làm rõ các sự kiện. Bang đã giáng một khoản phạt một ngàn tám trăm đô la lên ông... vì một buổi bán đồ cũ ngoài sân?\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nghiêm túc, lật hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_5\r\nContext: opening\r\nCharacter: Defendant\r\nTone: (bureaucratic, cold)\r\nDialogue: \"He violated the commercial code. When the fine went unpaid, the lien was a standard collection procedure.\"\r\nDịch: \"Ông ta đã vi phạm luật thương mại. Khi khoản phạt không được nộp, việc siết nợ là một thủ tục thu hồi tiêu chuẩn.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lạnh lùng, nói như cái máy. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_6\r\nContext: build\r\nCharacter: Plaintiff\r\nTone: (furious, exasperated)\r\nDialogue: \"Standard procedure?! I can't refinance my house! You guys treated me like a tax-evading drug lord!\"\r\nDịch: \"Thủ tục tiêu chuẩn sao?! Tôi không thể tái cấp vốn cho ngôi nhà của mình! Các người đối xử với tôi như một tên trùm ma túy trốn thuế vậy!\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Phẫn nộ, chỉ tay vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_7\r\nContext: build\r\nCharacter: Judge\r\nTone: (probing, stern)\r\nDialogue: \"Counselor, do you realize how absurd this looks? You're bankrupting a citizen over spring cleaning.\"\r\nDịch: \"Luật sư, anh có nhận ra chuyện này nực cười đến mức nào không? Anh đang làm phá sản một công dân chỉ vì việc dọn dẹp nhà cửa mùa xuân.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cau mày, nhìn xoáy vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_8\r\nContext: build\r\nCharacter: Defendant\r\nTone: (defensive, firm)\r\nDialogue: \"We don't make the rules, Your Honor. The retail sale of goods to the public requires a trader's license. Plain and simple.\"\r\nDịch: \"Chúng tôi không đặt ra luật lệ, thưa Tòa. Việc bán lẻ hàng hóa cho công chúng đòi hỏi phải có giấy phép kinh doanh. Rất rõ ràng và đơn giản.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cứng nhắc, nhún vai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_9\r\nContext: build\r\nCharacter: Plaintiff\r\nTone: (desperate, genuine)\r\nDialogue: \"I'm not a trader! I do this once a year with my neighbors. We trade old gardening tools!\"\r\nDịch: \"Tôi không phải là dân buôn! Tôi làm việc này mỗi năm một lần với những người hàng xóm. Chúng tôi trao đổi dụng cụ làm vườn cũ!\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tuyệt vọng, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_10\r\nContext: build\r\nCharacter: Defendant\r\nTone: (smug, unyielding)\r\nDialogue: \"Ignorance of the law doesn't exempt him from the eighteen-hundred dollar penalty.\"\r\nDịch: \"Việc thiếu hiểu biết về pháp luật không miễn trừ cho ông ta khỏi khoản phạt một ngàn tám trăm đô la.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười đắc thắng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_11\r\nContext: climax\r\nCharacter: Judge\r\nTone: (challenged, aggressive)\r\nDialogue: \"You want to talk about the law? Let's open the state commercial code right now.\"\r\nDịch: \"Anh muốn nói về luật pháp sao? Hãy mở bộ luật thương mại của bang ra ngay bây giờ.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tức giận, lật mạnh cuốn sách luật. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_12\r\nContext: climax\r\nCharacter: Defendant\r\nTone: (confident, quick)\r\nDialogue: \"Section four, Your Honor. Unlicensed retail sales.\"\r\nDịch: \"Mục bốn, thưa Tòa. Bán lẻ không có giấy phép.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự tin, khoanh tay. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_13\r\nContext: climax\r\nCharacter: Judge\r\nTone: (reading, mocking)\r\nDialogue: \"Let's read the exact definition of a retail trader, shall we? 'Systematic commercial activity... for the purpose of generating profit.'\"\r\nDịch: \"Hãy đọc chính xác định nghĩa về thương nhân bán lẻ nhé? 'Hoạt động thương mại có tính hệ thống... nhằm mục đích tạo ra lợi nhuận.'\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Đọc to, nhấn mạnh từng từ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_14\r\nContext: climax\r\nCharacter: Defendant\r\nTone: (interrupting, eager)\r\nDialogue: \"Exactly, and he generated two hundred dollars of—\"\r\nDịch: \"Chính xác, và ông ta đã tạo ra hai trăm đô la từ—\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chồm lên, vội vã cướp lời. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_15\r\nContext: climax\r\nCharacter: Judge\r\nTone: (loud, shutting down)\r\nDialogue: \"A once-a-year garage sale is not 'systematic commercial activity'! It's a guy getting rid of junk!\"\r\nDịch: \"Một buổi bán đồ cũ mỗi năm một lần không phải là 'hoạt động thương mại có tính hệ thống'! Đó chỉ là một người đàn ông dọn dẹp đồ bỏ đi!\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cắt ngang, gắt gỏng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_16\r\nContext: climax\r\nCharacter: Plaintiff\r\nTone: (validated, sarcastic)\r\nDialogue: \"Exactly! Are my neighbors supposed to incorporate a business just to sell a lawnmower?\"\r\nDịch: \"Chính xác! Chẳng lẽ hàng xóm của tôi phải thành lập công ty chỉ để bán một cái máy cắt cỏ sao?\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Gật đầu mạnh, mỉa mai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_17\r\nContext: resolution\r\nCharacter: Judge\r\nTone: (demanding, fan-service)\r\nDialogue: \"Show me the exact statute that strictly prohibits selling your own used couch. Show it to me.\"\r\nDịch: \"Chỉ cho tôi xem điều luật chính xác nào nghiêm cấm việc bán chiếc ghế dài cũ của chính mình. Chỉ cho tôi xem.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chỉ tay về phía bị đơn, ánh mắt sắc lẹm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_18\r\nContext: resolution\r\nCharacter: Defendant\r\nTone: (stammering, nervous)\r\nDialogue: \"Well... the- the broad interpretation of the code implies—\"\r\nDịch: \"Chà... việc- việc diễn giải mở rộng của bộ luật ngụ ý rằng—\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lúng túng, đổ mồ hôi hột. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_19\r\nContext: resolution\r\nCharacter: Judge\r\nTone: (disgusted, harsh)\r\nDialogue: \"There is no such law! You slapped a lien on this man's home because some overzealous inspector wanted to hit a quota!\"\r\nDịch: \"Làm gì có đạo luật nào như thế! Anh đã siết nợ ngôi nhà của người đàn ông này chỉ vì gã thanh tra quá khích nào đó muốn chạy đủ chỉ tiêu!\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nhếch mép khinh bỉ, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_20\r\nContext: resolution\r\nCharacter: Defendant\r\nTone: (weak, pleading)\r\nDialogue: \"Your Honor, the state must regulate unrecorded transactions to protect—\"\r\nDịch: \"Thưa Tòa, bang phải quản lý các giao dịch không được ghi chép để bảo vệ—\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Yếu ớt, cố gắng bào chữa. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_21\r\nContext: resolution\r\nCharacter: Judge\r\nTone: (final, commanding)\r\nDialogue: \"The only thing I'm protecting today is this citizen from your department. The eighteen-hundred dollar fine is dismissed.\"\r\nDịch: \"Thứ duy nhất tôi đang bảo vệ hôm nay là người công dân này khỏi cái sở ban ngành của anh. Khoản tiền phạt một ngàn tám trăm đô la bị bác bỏ.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Quyền uy, giọng đanh thép. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\nscene_22\r\nContext: resolution\r\nCharacter: Plaintiff\r\nTone: (relieved, breathless)\r\nDialogue: \"Oh, thank God. What about my house?\"\r\nDịch: \"Ôi, tạ ơn Chúa. Vậy còn ngôi nhà của tôi thì sao?\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.\r\n\r\nscene_23\r\nContext: resolution\r\nCharacter: Judge\r\nTone: (mic-drop, satisfied)\r\nDialogue: \"The lien is removed immediately. And congratulations, Counselor, the state is paying all court costs. We're done here.\"\r\nDịch: \"Lệnh siết nợ phải được gỡ bỏ ngay lập tức. Và xin chúc mừng luật sư, bang sẽ phải chi trả toàn bộ án phí. Chúng ta kết thúc tại đây.\"\r\nCamera: Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền\r\nAction: Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười nửa miệng, dứt khoát đóng hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.\r\n\r\n",
+    "language": "en"
+  },
+  "admission": {
+    "job_id": "70a54d50f3e1317a97bb3c89db2668def2366dc566198ebd",
+    "state": "queued",
+    "status_url": "/api/local-ai/jobs/70a54d50f3e1317a97bb3c89db2668def2366dc566198ebd",
+    "expires_at": "2026-10-11T12:41:40.335Z",
+    "max_polls": 120
+  },
+  "poll_states_observed": [
+    "completed"
+  ],
+  "response": {
+    "job_id": "70a54d50f3e1317a97bb3c89db2668def2366dc566198ebd",
+    "state": "completed",
+    "result": {
+      "projectType": "full-ai",
+      "execution": "deterministic_cpu",
+      "web_data": {
+        "characters": [
+          {
+            "id": "judge",
+            "name": "Judge",
+            "description": "",
+            "voiceTone": ""
+          },
+          {
+            "id": "defendant",
+            "name": "Defendant",
+            "description": "",
+            "voiceTone": ""
+          },
+          {
+            "id": "plaintiff",
+            "name": "Plaintiff",
+            "description": "",
+            "voiceTone": ""
+          }
+        ],
+        "scenes": [
+          {
+            "scene_n": 1,
+            "Context": "hook",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Khó chịu, nhíu mày. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"You froze this man's entire mortgage over a used sofa and some stuffed animals?\"",
+            "Translate": "\"Anh đóng băng toàn bộ thế chấp nhà của người đàn ông này chỉ vì một chiếc ghế sofa cũ và vài con thú nhồi bông sao?\"",
+            "Tone_of_Voice": "(disbelief, sharp)",
+            "Word_count": 14,
+            "status": "pending"
+          },
+          {
+            "scene_n": 2,
+            "Context": "hook",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự mãn, hất cằm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Your Honor, the law is absolute. He operated an unlicensed retail operation on state soil.\"",
+            "Translate": "\"Thưa Tòa, luật pháp là tuyệt đối. Ông ta đã điều hành một cơ sở bán lẻ không phép trên đất của bang.\"",
+            "Tone_of_Voice": "(rigid, arrogant)",
+            "Word_count": 15,
+            "status": "pending"
+          },
+          {
+            "scene_n": 3,
+            "Context": "hook",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Bức xúc, giơ hai tay lên. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Plaintiff",
+            "Dialogue": "\"It was a garage sale! I made two hundred bucks selling my grandkids' old toys!\"",
+            "Translate": "\"Đó là một buổi bán đồ cũ trong garage! Tôi kiếm được hai trăm đô từ việc bán đồ chơi cũ của các cháu tôi!\"",
+            "Tone_of_Voice": "(outraged, frantic)",
+            "Word_count": 15,
+            "status": "pending"
+          },
+          {
+            "scene_n": 4,
+            "Context": "opening",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nghiêm túc, lật hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"Hold on. Let me get the facts straight. The state slapped an eighteen-hundred dollar fine on you... for a yard sale?\"",
+            "Translate": "\"Khoan đã. Để tôi làm rõ các sự kiện. Bang đã giáng một khoản phạt một ngàn tám trăm đô la lên ông... vì một buổi bán đồ cũ ngoài sân?\"",
+            "Tone_of_Voice": "(authoritative, resetting)",
+            "Word_count": 21,
+            "status": "pending"
+          },
+          {
+            "scene_n": 5,
+            "Context": "opening",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lạnh lùng, nói như cái máy. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"He violated the commercial code. When the fine went unpaid, the lien was a standard collection procedure.\"",
+            "Translate": "\"Ông ta đã vi phạm luật thương mại. Khi khoản phạt không được nộp, việc siết nợ là một thủ tục thu hồi tiêu chuẩn.\"",
+            "Tone_of_Voice": "(bureaucratic, cold)",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 6,
+            "Context": "build",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Phẫn nộ, chỉ tay vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Plaintiff",
+            "Dialogue": "\"Standard procedure?! I can't refinance my house! You guys treated me like a tax-evading drug lord!\"",
+            "Translate": "\"Thủ tục tiêu chuẩn sao?! Tôi không thể tái cấp vốn cho ngôi nhà của mình! Các người đối xử với tôi như một tên trùm ma túy trốn thuế vậy!\"",
+            "Tone_of_Voice": "(furious, exasperated)",
+            "Word_count": 16,
+            "status": "pending"
+          },
+          {
+            "scene_n": 7,
+            "Context": "build",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cau mày, nhìn xoáy vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"Counselor, do you realize how absurd this looks? You're bankrupting a citizen over spring cleaning.\"",
+            "Translate": "\"Luật sư, anh có nhận ra chuyện này nực cười đến mức nào không? Anh đang làm phá sản một công dân chỉ vì việc dọn dẹp nhà cửa mùa xuân.\"",
+            "Tone_of_Voice": "(probing, stern)",
+            "Word_count": 15,
+            "status": "pending"
+          },
+          {
+            "scene_n": 8,
+            "Context": "build",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cứng nhắc, nhún vai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"We don't make the rules, Your Honor. The retail sale of goods to the public requires a trader's license. Plain and simple.\"",
+            "Translate": "\"Chúng tôi không đặt ra luật lệ, thưa Tòa. Việc bán lẻ hàng hóa cho công chúng đòi hỏi phải có giấy phép kinh doanh. Rất rõ ràng và đơn giản.\"",
+            "Tone_of_Voice": "(defensive, firm)",
+            "Word_count": 22,
+            "status": "pending"
+          },
+          {
+            "scene_n": 9,
+            "Context": "build",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tuyệt vọng, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Plaintiff",
+            "Dialogue": "\"I'm not a trader! I do this once a year with my neighbors. We trade old gardening tools!\"",
+            "Translate": "\"Tôi không phải là dân buôn! Tôi làm việc này mỗi năm một lần với những người hàng xóm. Chúng tôi trao đổi dụng cụ làm vườn cũ!\"",
+            "Tone_of_Voice": "(desperate, genuine)",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 10,
+            "Context": "build",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười đắc thắng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Ignorance of the law doesn't exempt him from the eighteen-hundred dollar penalty.\"",
+            "Translate": "\"Việc thiếu hiểu biết về pháp luật không miễn trừ cho ông ta khỏi khoản phạt một ngàn tám trăm đô la.\"",
+            "Tone_of_Voice": "(smug, unyielding)",
+            "Word_count": 12,
+            "status": "pending"
+          },
+          {
+            "scene_n": 11,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tức giận, lật mạnh cuốn sách luật. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"You want to talk about the law? Let's open the state commercial code right now.\"",
+            "Translate": "\"Anh muốn nói về luật pháp sao? Hãy mở bộ luật thương mại của bang ra ngay bây giờ.\"",
+            "Tone_of_Voice": "(challenged, aggressive)",
+            "Word_count": 15,
+            "status": "pending"
+          },
+          {
+            "scene_n": 12,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự tin, khoanh tay. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Section four, Your Honor. Unlicensed retail sales.\"",
+            "Translate": "\"Mục bốn, thưa Tòa. Bán lẻ không có giấy phép.\"",
+            "Tone_of_Voice": "(confident, quick)",
+            "Word_count": 7,
+            "status": "pending"
+          },
+          {
+            "scene_n": 13,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Đọc to, nhấn mạnh từng từ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"Let's read the exact definition of a retail trader, shall we? 'Systematic commercial activity... for the purpose of generating profit.'\"",
+            "Translate": "\"Hãy đọc chính xác định nghĩa về thương nhân bán lẻ nhé? 'Hoạt động thương mại có tính hệ thống... nhằm mục đích tạo ra lợi nhuận.'\"",
+            "Tone_of_Voice": "(reading, mocking)",
+            "Word_count": 20,
+            "status": "pending"
+          },
+          {
+            "scene_n": 14,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chồm lên, vội vã cướp lời. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Exactly, and he generated two hundred dollars of—\"",
+            "Translate": "\"Chính xác, và ông ta đã tạo ra hai trăm đô la từ—\"",
+            "Tone_of_Voice": "(interrupting, eager)",
+            "Word_count": 8,
+            "status": "pending"
+          },
+          {
+            "scene_n": 15,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cắt ngang, gắt gỏng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"A once-a-year garage sale is not 'systematic commercial activity'! It's a guy getting rid of junk!\"",
+            "Translate": "\"Một buổi bán đồ cũ mỗi năm một lần không phải là 'hoạt động thương mại có tính hệ thống'! Đó chỉ là một người đàn ông dọn dẹp đồ bỏ đi!\"",
+            "Tone_of_Voice": "(loud, shutting down)",
+            "Word_count": 16,
+            "status": "pending"
+          },
+          {
+            "scene_n": 16,
+            "Context": "climax",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Gật đầu mạnh, mỉa mai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Plaintiff",
+            "Dialogue": "\"Exactly! Are my neighbors supposed to incorporate a business just to sell a lawnmower?\"",
+            "Translate": "\"Chính xác! Chẳng lẽ hàng xóm của tôi phải thành lập công ty chỉ để bán một cái máy cắt cỏ sao?\"",
+            "Tone_of_Voice": "(validated, sarcastic)",
+            "Word_count": 14,
+            "status": "pending"
+          },
+          {
+            "scene_n": 17,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chỉ tay về phía bị đơn, ánh mắt sắc lẹm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"Show me the exact statute that strictly prohibits selling your own used couch. Show it to me.\"",
+            "Translate": "\"Chỉ cho tôi xem điều luật chính xác nào nghiêm cấm việc bán chiếc ghế dài cũ của chính mình. Chỉ cho tôi xem.\"",
+            "Tone_of_Voice": "(demanding, fan-service)",
+            "Word_count": 17,
+            "status": "pending"
+          },
+          {
+            "scene_n": 18,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lúng túng, đổ mồ hôi hột. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Well... the- the broad interpretation of the code implies—\"",
+            "Translate": "\"Chà... việc- việc diễn giải mở rộng của bộ luật ngụ ý rằng—\"",
+            "Tone_of_Voice": "(stammering, nervous)",
+            "Word_count": 9,
+            "status": "pending"
+          },
+          {
+            "scene_n": 19,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nhếch mép khinh bỉ, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"There is no such law! You slapped a lien on this man's home because some overzealous inspector wanted to hit a quota!\"",
+            "Translate": "\"Làm gì có đạo luật nào như thế! Anh đã siết nợ ngôi nhà của người đàn ông này chỉ vì gã thanh tra quá khích nào đó muốn chạy đủ chỉ tiêu!\"",
+            "Tone_of_Voice": "(disgusted, harsh)",
+            "Word_count": 22,
+            "status": "pending"
+          },
+          {
+            "scene_n": 20,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Yếu ớt, cố gắng bào chữa. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Defendant",
+            "Dialogue": "\"Your Honor, the state must regulate unrecorded transactions to protect—\"",
+            "Translate": "\"Thưa Tòa, bang phải quản lý các giao dịch không được ghi chép để bảo vệ—\"",
+            "Tone_of_Voice": "(weak, pleading)",
+            "Word_count": 10,
+            "status": "pending"
+          },
+          {
+            "scene_n": 21,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Quyền uy, giọng đanh thép. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"The only thing I'm protecting today is this citizen from your department. The eighteen-hundred dollar fine is dismissed.\"",
+            "Translate": "\"Thứ duy nhất tôi đang bảo vệ hôm nay là người công dân này khỏi cái sở ban ngành của anh. Khoản tiền phạt một ngàn tám trăm đô la bị bác bỏ.\"",
+            "Tone_of_Voice": "(final, commanding)",
+            "Word_count": 18,
+            "status": "pending"
+          },
+          {
+            "scene_n": 22,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+            "Character": "Plaintiff",
+            "Dialogue": "\"Oh, thank God. What about my house?\"",
+            "Translate": "\"Ôi, tạ ơn Chúa. Vậy còn ngôi nhà của tôi thì sao?\"",
+            "Tone_of_Voice": "(relieved, breathless)",
+            "Word_count": 7,
+            "status": "pending"
+          },
+          {
+            "scene_n": 23,
+            "Context": "resolution",
+            "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+            "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười nửa miệng, dứt khoát đóng hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+            "Character": "Judge",
+            "Dialogue": "\"The lien is removed immediately. And congratulations, Counselor, the state is paying all court costs. We're done here.\"",
+            "Translate": "\"Lệnh siết nợ phải được gỡ bỏ ngay lập tức. Và xin chúc mừng luật sư, bang sẽ phải chi trả toàn bộ án phí. Chúng ta kết thúc tại đây.\"",
+            "Tone_of_Voice": "(mic-drop, satisfied)",
+            "Word_count": 18,
+            "status": "pending"
+          }
+        ]
+      },
+      "source_metadata": {
+        "source_sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+        "header_raw": "# Tiêu đề: State Tries To STEAL House Over A $200 Garage Sale?! 🤯\r\n# ID: COURT_GARAGE_SALE_001\r\n# Hook / cold-open: Thẩm phán chỉ trích gay gắt luật sư công bang vì đã đóng băng thế chấp nhà của một người đàn ông chỉ vì ông ta bán đồ cũ trong garage.\r\n# Estimated duration: ~120s\r\n# Tóm tắt câu chuyện: Một người đàn ông tổ chức bán đồ cũ (garage sale) thu được 200 đô la thì bị thanh tra bang phạt 1.800 đô la vì \"không có giấy phép kinh doanh bán lẻ\". Do không có tiền nộp phạt, bang đã siết nợ (đặt lien) lên ngôi nhà của ông. Thẩm phán phẫn nộ lật lại luật thương mại, vạch trần sự phi lý của luật sư bang, bác bỏ khoản phạt và buộc bang trả án phí.\r\n\r\n",
+        "header_metadata": {
+          "Tiêu đề": "State Tries To STEAL House Over A $200 Garage Sale?! 🤯",
+          "ID": "COURT_GARAGE_SALE_001",
+          "Estimated duration": "~120s",
+          "Tóm tắt câu chuyện": "Một người đàn ông tổ chức bán đồ cũ (garage sale) thu được 200 đô la thì bị thanh tra bang phạt 1.800 đô la vì \"không có giấy phép kinh doanh bán lẻ\". Do không có tiền nộp phạt, bang đã siết nợ (đặt lien) lên ngôi nhà của ông. Thẩm phán phẫn nộ lật lại luật thương mại, vạch trần sự phi lý của luật sư bang, bác bỏ khoản phạt và buộc bang trả án phí."
+        },
+        "scenes": [
+          {
+            "scene_id": "scene_1",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_2",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_3",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_4",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_5",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_6",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_7",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_8",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_9",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_10",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_11",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_12",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_13",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_14",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_15",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_16",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_17",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_18",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_19",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_20",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_21",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_22",
+            "metadata": {}
+          },
+          {
+            "scene_id": "scene_23",
+            "metadata": {}
+          }
+        ]
+      }
+    },
+    "error": null,
+    "metrics": {
+      "queue_wait_seconds": 0,
+      "request_latency_seconds": 0,
+      "scene_count": 23,
+      "character_count": 3,
+      "execution": "deterministic_cpu"
+    },
+    "expires_at": "2026-10-11T12:41:40.335Z",
+    "polls_remaining": 119
+  },
+  "scene_comparisons": [
+    {
+      "scene_id": "scene_1",
+      "expected": {
+        "Context": "hook",
+        "Character": "Judge",
+        "Tone": "(disbelief, sharp)",
+        "Dialogue": "\"You froze this man's entire mortgage over a used sofa and some stuffed animals?\"",
+        "Dịch": "\"Anh đóng băng toàn bộ thế chấp nhà của người đàn ông này chỉ vì một chiếc ghế sofa cũ và vài con thú nhồi bông sao?\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Khó chịu, nhíu mày. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 1,
+        "Context": "hook",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Khó chịu, nhíu mày. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"You froze this man's entire mortgage over a used sofa and some stuffed animals?\"",
+        "Translate": "\"Anh đóng băng toàn bộ thế chấp nhà của người đàn ông này chỉ vì một chiếc ghế sofa cũ và vài con thú nhồi bông sao?\"",
+        "Tone_of_Voice": "(disbelief, sharp)",
+        "Word_count": 14,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_1",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_2",
+      "expected": {
+        "Context": "hook",
+        "Character": "Defendant",
+        "Tone": "(rigid, arrogant)",
+        "Dialogue": "\"Your Honor, the law is absolute. He operated an unlicensed retail operation on state soil.\"",
+        "Dịch": "\"Thưa Tòa, luật pháp là tuyệt đối. Ông ta đã điều hành một cơ sở bán lẻ không phép trên đất của bang.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự mãn, hất cằm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 2,
+        "Context": "hook",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự mãn, hất cằm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Your Honor, the law is absolute. He operated an unlicensed retail operation on state soil.\"",
+        "Translate": "\"Thưa Tòa, luật pháp là tuyệt đối. Ông ta đã điều hành một cơ sở bán lẻ không phép trên đất của bang.\"",
+        "Tone_of_Voice": "(rigid, arrogant)",
+        "Word_count": 15,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_2",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_3",
+      "expected": {
+        "Context": "hook",
+        "Character": "Plaintiff",
+        "Tone": "(outraged, frantic)",
+        "Dialogue": "\"It was a garage sale! I made two hundred bucks selling my grandkids' old toys!\"",
+        "Dịch": "\"Đó là một buổi bán đồ cũ trong garage! Tôi kiếm được hai trăm đô từ việc bán đồ chơi cũ của các cháu tôi!\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Bức xúc, giơ hai tay lên. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 3,
+        "Context": "hook",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Bức xúc, giơ hai tay lên. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Plaintiff",
+        "Dialogue": "\"It was a garage sale! I made two hundred bucks selling my grandkids' old toys!\"",
+        "Translate": "\"Đó là một buổi bán đồ cũ trong garage! Tôi kiếm được hai trăm đô từ việc bán đồ chơi cũ của các cháu tôi!\"",
+        "Tone_of_Voice": "(outraged, frantic)",
+        "Word_count": 15,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_3",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_4",
+      "expected": {
+        "Context": "opening",
+        "Character": "Judge",
+        "Tone": "(authoritative, resetting)",
+        "Dialogue": "\"Hold on. Let me get the facts straight. The state slapped an eighteen-hundred dollar fine on you... for a yard sale?\"",
+        "Dịch": "\"Khoan đã. Để tôi làm rõ các sự kiện. Bang đã giáng một khoản phạt một ngàn tám trăm đô la lên ông... vì một buổi bán đồ cũ ngoài sân?\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nghiêm túc, lật hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 4,
+        "Context": "opening",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nghiêm túc, lật hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"Hold on. Let me get the facts straight. The state slapped an eighteen-hundred dollar fine on you... for a yard sale?\"",
+        "Translate": "\"Khoan đã. Để tôi làm rõ các sự kiện. Bang đã giáng một khoản phạt một ngàn tám trăm đô la lên ông... vì một buổi bán đồ cũ ngoài sân?\"",
+        "Tone_of_Voice": "(authoritative, resetting)",
+        "Word_count": 21,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_4",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_5",
+      "expected": {
+        "Context": "opening",
+        "Character": "Defendant",
+        "Tone": "(bureaucratic, cold)",
+        "Dialogue": "\"He violated the commercial code. When the fine went unpaid, the lien was a standard collection procedure.\"",
+        "Dịch": "\"Ông ta đã vi phạm luật thương mại. Khi khoản phạt không được nộp, việc siết nợ là một thủ tục thu hồi tiêu chuẩn.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lạnh lùng, nói như cái máy. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 5,
+        "Context": "opening",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lạnh lùng, nói như cái máy. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"He violated the commercial code. When the fine went unpaid, the lien was a standard collection procedure.\"",
+        "Translate": "\"Ông ta đã vi phạm luật thương mại. Khi khoản phạt không được nộp, việc siết nợ là một thủ tục thu hồi tiêu chuẩn.\"",
+        "Tone_of_Voice": "(bureaucratic, cold)",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_5",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_6",
+      "expected": {
+        "Context": "build",
+        "Character": "Plaintiff",
+        "Tone": "(furious, exasperated)",
+        "Dialogue": "\"Standard procedure?! I can't refinance my house! You guys treated me like a tax-evading drug lord!\"",
+        "Dịch": "\"Thủ tục tiêu chuẩn sao?! Tôi không thể tái cấp vốn cho ngôi nhà của mình! Các người đối xử với tôi như một tên trùm ma túy trốn thuế vậy!\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Phẫn nộ, chỉ tay vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 6,
+        "Context": "build",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Phẫn nộ, chỉ tay vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Plaintiff",
+        "Dialogue": "\"Standard procedure?! I can't refinance my house! You guys treated me like a tax-evading drug lord!\"",
+        "Translate": "\"Thủ tục tiêu chuẩn sao?! Tôi không thể tái cấp vốn cho ngôi nhà của mình! Các người đối xử với tôi như một tên trùm ma túy trốn thuế vậy!\"",
+        "Tone_of_Voice": "(furious, exasperated)",
+        "Word_count": 16,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_6",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_7",
+      "expected": {
+        "Context": "build",
+        "Character": "Judge",
+        "Tone": "(probing, stern)",
+        "Dialogue": "\"Counselor, do you realize how absurd this looks? You're bankrupting a citizen over spring cleaning.\"",
+        "Dịch": "\"Luật sư, anh có nhận ra chuyện này nực cười đến mức nào không? Anh đang làm phá sản một công dân chỉ vì việc dọn dẹp nhà cửa mùa xuân.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cau mày, nhìn xoáy vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 7,
+        "Context": "build",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cau mày, nhìn xoáy vào bị đơn. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"Counselor, do you realize how absurd this looks? You're bankrupting a citizen over spring cleaning.\"",
+        "Translate": "\"Luật sư, anh có nhận ra chuyện này nực cười đến mức nào không? Anh đang làm phá sản một công dân chỉ vì việc dọn dẹp nhà cửa mùa xuân.\"",
+        "Tone_of_Voice": "(probing, stern)",
+        "Word_count": 15,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_7",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_8",
+      "expected": {
+        "Context": "build",
+        "Character": "Defendant",
+        "Tone": "(defensive, firm)",
+        "Dialogue": "\"We don't make the rules, Your Honor. The retail sale of goods to the public requires a trader's license. Plain and simple.\"",
+        "Dịch": "\"Chúng tôi không đặt ra luật lệ, thưa Tòa. Việc bán lẻ hàng hóa cho công chúng đòi hỏi phải có giấy phép kinh doanh. Rất rõ ràng và đơn giản.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cứng nhắc, nhún vai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 8,
+        "Context": "build",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cứng nhắc, nhún vai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"We don't make the rules, Your Honor. The retail sale of goods to the public requires a trader's license. Plain and simple.\"",
+        "Translate": "\"Chúng tôi không đặt ra luật lệ, thưa Tòa. Việc bán lẻ hàng hóa cho công chúng đòi hỏi phải có giấy phép kinh doanh. Rất rõ ràng và đơn giản.\"",
+        "Tone_of_Voice": "(defensive, firm)",
+        "Word_count": 22,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_8",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_9",
+      "expected": {
+        "Context": "build",
+        "Character": "Plaintiff",
+        "Tone": "(desperate, genuine)",
+        "Dialogue": "\"I'm not a trader! I do this once a year with my neighbors. We trade old gardening tools!\"",
+        "Dịch": "\"Tôi không phải là dân buôn! Tôi làm việc này mỗi năm một lần với những người hàng xóm. Chúng tôi trao đổi dụng cụ làm vườn cũ!\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tuyệt vọng, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 9,
+        "Context": "build",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tuyệt vọng, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Plaintiff",
+        "Dialogue": "\"I'm not a trader! I do this once a year with my neighbors. We trade old gardening tools!\"",
+        "Translate": "\"Tôi không phải là dân buôn! Tôi làm việc này mỗi năm một lần với những người hàng xóm. Chúng tôi trao đổi dụng cụ làm vườn cũ!\"",
+        "Tone_of_Voice": "(desperate, genuine)",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_9",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_10",
+      "expected": {
+        "Context": "build",
+        "Character": "Defendant",
+        "Tone": "(smug, unyielding)",
+        "Dialogue": "\"Ignorance of the law doesn't exempt him from the eighteen-hundred dollar penalty.\"",
+        "Dịch": "\"Việc thiếu hiểu biết về pháp luật không miễn trừ cho ông ta khỏi khoản phạt một ngàn tám trăm đô la.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười đắc thắng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 10,
+        "Context": "build",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười đắc thắng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Ignorance of the law doesn't exempt him from the eighteen-hundred dollar penalty.\"",
+        "Translate": "\"Việc thiếu hiểu biết về pháp luật không miễn trừ cho ông ta khỏi khoản phạt một ngàn tám trăm đô la.\"",
+        "Tone_of_Voice": "(smug, unyielding)",
+        "Word_count": 12,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_10",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_11",
+      "expected": {
+        "Context": "climax",
+        "Character": "Judge",
+        "Tone": "(challenged, aggressive)",
+        "Dialogue": "\"You want to talk about the law? Let's open the state commercial code right now.\"",
+        "Dịch": "\"Anh muốn nói về luật pháp sao? Hãy mở bộ luật thương mại của bang ra ngay bây giờ.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tức giận, lật mạnh cuốn sách luật. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 11,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tức giận, lật mạnh cuốn sách luật. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"You want to talk about the law? Let's open the state commercial code right now.\"",
+        "Translate": "\"Anh muốn nói về luật pháp sao? Hãy mở bộ luật thương mại của bang ra ngay bây giờ.\"",
+        "Tone_of_Voice": "(challenged, aggressive)",
+        "Word_count": 15,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_11",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_12",
+      "expected": {
+        "Context": "climax",
+        "Character": "Defendant",
+        "Tone": "(confident, quick)",
+        "Dialogue": "\"Section four, Your Honor. Unlicensed retail sales.\"",
+        "Dịch": "\"Mục bốn, thưa Tòa. Bán lẻ không có giấy phép.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự tin, khoanh tay. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 12,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Tự tin, khoanh tay. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Section four, Your Honor. Unlicensed retail sales.\"",
+        "Translate": "\"Mục bốn, thưa Tòa. Bán lẻ không có giấy phép.\"",
+        "Tone_of_Voice": "(confident, quick)",
+        "Word_count": 7,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_12",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_13",
+      "expected": {
+        "Context": "climax",
+        "Character": "Judge",
+        "Tone": "(reading, mocking)",
+        "Dialogue": "\"Let's read the exact definition of a retail trader, shall we? 'Systematic commercial activity... for the purpose of generating profit.'\"",
+        "Dịch": "\"Hãy đọc chính xác định nghĩa về thương nhân bán lẻ nhé? 'Hoạt động thương mại có tính hệ thống... nhằm mục đích tạo ra lợi nhuận.'\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Đọc to, nhấn mạnh từng từ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 13,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Đọc to, nhấn mạnh từng từ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"Let's read the exact definition of a retail trader, shall we? 'Systematic commercial activity... for the purpose of generating profit.'\"",
+        "Translate": "\"Hãy đọc chính xác định nghĩa về thương nhân bán lẻ nhé? 'Hoạt động thương mại có tính hệ thống... nhằm mục đích tạo ra lợi nhuận.'\"",
+        "Tone_of_Voice": "(reading, mocking)",
+        "Word_count": 20,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_13",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_14",
+      "expected": {
+        "Context": "climax",
+        "Character": "Defendant",
+        "Tone": "(interrupting, eager)",
+        "Dialogue": "\"Exactly, and he generated two hundred dollars of—\"",
+        "Dịch": "\"Chính xác, và ông ta đã tạo ra hai trăm đô la từ—\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chồm lên, vội vã cướp lời. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 14,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chồm lên, vội vã cướp lời. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Exactly, and he generated two hundred dollars of—\"",
+        "Translate": "\"Chính xác, và ông ta đã tạo ra hai trăm đô la từ—\"",
+        "Tone_of_Voice": "(interrupting, eager)",
+        "Word_count": 8,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_14",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_15",
+      "expected": {
+        "Context": "climax",
+        "Character": "Judge",
+        "Tone": "(loud, shutting down)",
+        "Dialogue": "\"A once-a-year garage sale is not 'systematic commercial activity'! It's a guy getting rid of junk!\"",
+        "Dịch": "\"Một buổi bán đồ cũ mỗi năm một lần không phải là 'hoạt động thương mại có tính hệ thống'! Đó chỉ là một người đàn ông dọn dẹp đồ bỏ đi!\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cắt ngang, gắt gỏng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 15,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cắt ngang, gắt gỏng. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"A once-a-year garage sale is not 'systematic commercial activity'! It's a guy getting rid of junk!\"",
+        "Translate": "\"Một buổi bán đồ cũ mỗi năm một lần không phải là 'hoạt động thương mại có tính hệ thống'! Đó chỉ là một người đàn ông dọn dẹp đồ bỏ đi!\"",
+        "Tone_of_Voice": "(loud, shutting down)",
+        "Word_count": 16,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_15",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_16",
+      "expected": {
+        "Context": "climax",
+        "Character": "Plaintiff",
+        "Tone": "(validated, sarcastic)",
+        "Dialogue": "\"Exactly! Are my neighbors supposed to incorporate a business just to sell a lawnmower?\"",
+        "Dịch": "\"Chính xác! Chẳng lẽ hàng xóm của tôi phải thành lập công ty chỉ để bán một cái máy cắt cỏ sao?\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Gật đầu mạnh, mỉa mai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 16,
+        "Context": "climax",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Gật đầu mạnh, mỉa mai. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Plaintiff",
+        "Dialogue": "\"Exactly! Are my neighbors supposed to incorporate a business just to sell a lawnmower?\"",
+        "Translate": "\"Chính xác! Chẳng lẽ hàng xóm của tôi phải thành lập công ty chỉ để bán một cái máy cắt cỏ sao?\"",
+        "Tone_of_Voice": "(validated, sarcastic)",
+        "Word_count": 14,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_16",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_17",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Judge",
+        "Tone": "(demanding, fan-service)",
+        "Dialogue": "\"Show me the exact statute that strictly prohibits selling your own used couch. Show it to me.\"",
+        "Dịch": "\"Chỉ cho tôi xem điều luật chính xác nào nghiêm cấm việc bán chiếc ghế dài cũ của chính mình. Chỉ cho tôi xem.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chỉ tay về phía bị đơn, ánh mắt sắc lẹm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 17,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Chỉ tay về phía bị đơn, ánh mắt sắc lẹm. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"Show me the exact statute that strictly prohibits selling your own used couch. Show it to me.\"",
+        "Translate": "\"Chỉ cho tôi xem điều luật chính xác nào nghiêm cấm việc bán chiếc ghế dài cũ của chính mình. Chỉ cho tôi xem.\"",
+        "Tone_of_Voice": "(demanding, fan-service)",
+        "Word_count": 17,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_17",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_18",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Defendant",
+        "Tone": "(stammering, nervous)",
+        "Dialogue": "\"Well... the- the broad interpretation of the code implies—\"",
+        "Dịch": "\"Chà... việc- việc diễn giải mở rộng của bộ luật ngụ ý rằng—\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lúng túng, đổ mồ hôi hột. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 18,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Lúng túng, đổ mồ hôi hột. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Well... the- the broad interpretation of the code implies—\"",
+        "Translate": "\"Chà... việc- việc diễn giải mở rộng của bộ luật ngụ ý rằng—\"",
+        "Tone_of_Voice": "(stammering, nervous)",
+        "Word_count": 9,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_18",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_19",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Judge",
+        "Tone": "(disgusted, harsh)",
+        "Dialogue": "\"There is no such law! You slapped a lien on this man's home because some overzealous inspector wanted to hit a quota!\"",
+        "Dịch": "\"Làm gì có đạo luật nào như thế! Anh đã siết nợ ngôi nhà của người đàn ông này chỉ vì gã thanh tra quá khích nào đó muốn chạy đủ chỉ tiêu!\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nhếch mép khinh bỉ, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 19,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Nhếch mép khinh bỉ, lắc đầu. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"There is no such law! You slapped a lien on this man's home because some overzealous inspector wanted to hit a quota!\"",
+        "Translate": "\"Làm gì có đạo luật nào như thế! Anh đã siết nợ ngôi nhà của người đàn ông này chỉ vì gã thanh tra quá khích nào đó muốn chạy đủ chỉ tiêu!\"",
+        "Tone_of_Voice": "(disgusted, harsh)",
+        "Word_count": 22,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_19",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_20",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Defendant",
+        "Tone": "(weak, pleading)",
+        "Dialogue": "\"Your Honor, the state must regulate unrecorded transactions to protect—\"",
+        "Dịch": "\"Thưa Tòa, bang phải quản lý các giao dịch không được ghi chép để bảo vệ—\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Yếu ớt, cố gắng bào chữa. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 20,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Yếu ớt, cố gắng bào chữa. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Defendant",
+        "Dialogue": "\"Your Honor, the state must regulate unrecorded transactions to protect—\"",
+        "Translate": "\"Thưa Tòa, bang phải quản lý các giao dịch không được ghi chép để bảo vệ—\"",
+        "Tone_of_Voice": "(weak, pleading)",
+        "Word_count": 10,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_20",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_21",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Judge",
+        "Tone": "(final, commanding)",
+        "Dialogue": "\"The only thing I'm protecting today is this citizen from your department. The eighteen-hundred dollar fine is dismissed.\"",
+        "Dịch": "\"Thứ duy nhất tôi đang bảo vệ hôm nay là người công dân này khỏi cái sở ban ngành của anh. Khoản tiền phạt một ngàn tám trăm đô la bị bác bỏ.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Quyền uy, giọng đanh thép. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 21,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Quyền uy, giọng đanh thép. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"The only thing I'm protecting today is this citizen from your department. The eighteen-hundred dollar fine is dismissed.\"",
+        "Translate": "\"Thứ duy nhất tôi đang bảo vệ hôm nay là người công dân này khỏi cái sở ban ngành của anh. Khoản tiền phạt một ngàn tám trăm đô la bị bác bỏ.\"",
+        "Tone_of_Voice": "(final, commanding)",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_21",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_22",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Plaintiff",
+        "Tone": "(relieved, breathless)",
+        "Dialogue": "\"Oh, thank God. What about my house?\"",
+        "Dịch": "\"Ôi, tạ ơn Chúa. Vậy còn ngôi nhà của tôi thì sao?\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật."
+      },
+      "actual": {
+        "scene_n": 22,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Thở phào nhẹ nhõm, rơm rớm nước mắt. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật.",
+        "Character": "Plaintiff",
+        "Dialogue": "\"Oh, thank God. What about my house?\"",
+        "Translate": "\"Ôi, tạ ơn Chúa. Vậy còn ngôi nhà của tôi thì sao?\"",
+        "Tone_of_Voice": "(relieved, breathless)",
+        "Word_count": 7,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_22",
+        "metadata": {}
+      },
+      "status": "PASS"
+    },
+    {
+      "scene_id": "scene_23",
+      "expected": {
+        "Context": "resolution",
+        "Character": "Judge",
+        "Tone": "(mic-drop, satisfied)",
+        "Dialogue": "\"The lien is removed immediately. And congratulations, Counselor, the state is paying all court costs. We're done here.\"",
+        "Dịch": "\"Lệnh siết nợ phải được gỡ bỏ ngay lập tức. Và xin chúc mừng luật sư, bang sẽ phải chi trả toàn bộ án phí. Chúng ta kết thúc tại đây.\"",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười nửa miệng, dứt khoát đóng hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa."
+      },
+      "actual": {
+        "scene_n": 23,
+        "Context": "resolution",
+        "Camera": "Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền",
+        "Action": "Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Mỉm cười nửa miệng, dứt khoát đóng hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa.",
+        "Character": "Judge",
+        "Dialogue": "\"The lien is removed immediately. And congratulations, Counselor, the state is paying all court costs. We're done here.\"",
+        "Translate": "\"Lệnh siết nợ phải được gỡ bỏ ngay lập tức. Và xin chúc mừng luật sư, bang sẽ phải chi trả toàn bộ án phí. Chúng ta kết thúc tại đây.\"",
+        "Tone_of_Voice": "(mic-drop, satisfied)",
+        "Word_count": 18,
+        "status": "pending"
+      },
+      "source_metadata": {
+        "scene_id": "scene_23",
+        "metadata": {}
+      },
+      "status": "PASS"
+    }
+  ],
+  "gateway_health_http": 503,
+  "gateway_health": {
+    "status": "unavailable",
+    "model": {
+      "name": "Qwen/Qwen3-VL-8B-Instruct",
+      "precision": "nf4",
+      "compute_dtype": "bfloat16",
+      "attention": "sdpa_chunked",
+      "gpu_mode": "shared"
+    },
+    "model_ready": false,
+    "busy": false,
+    "worker_state": "disabled",
+    "queue_depth": 0,
+    "queue_capacity": 4,
+    "model_load_count": 0,
+    "model_load_seconds": null,
+    "error": null,
+    "cpu_workflows": {
+      "ready": true,
+      "state": "ready",
+      "busy": false,
+      "queue_depth": 0,
+      "queue_capacity": 4,
+      "max_workers": 1
+    },
+    "retained_jobs": 0,
+    "job_limit": 64
+  },
+  "real_qwen_inference": "NOT RUN"
+}

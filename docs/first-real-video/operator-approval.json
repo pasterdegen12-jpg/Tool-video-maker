@@ -1,0 +1,18 @@
+{
+  "recorded_at": "2026-10-16T14:12:30.158Z",
+  "operator_message": "Đồng ý tạo đúng một video Scene 3 với ảnh, prompt và thông số trên, chấp nhận chi phí dự kiến 0,144 USD. Chuẩn bị để tôi bấm Generate.",
+  "project": "proj_1789061618441",
+  "scene": 3,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "prompt_sha256": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+  "settings": {
+    "duration": 6,
+    "resolution": "480p",
+    "aspect_ratio": "16:9",
+    "generate_audio": true,
+    "camera_fixed": true,
+    "seed": -1
+  },
+  "estimated_usd": "0.1440",
+  "operator_must_click_generate": true
+}

@@ -4,6 +4,8 @@ import { fetchFile } from '@ffmpeg/util';
 import { useNavigate } from 'react-router-dom';
 
 import { autoSaveToFirebase } from './firebase.js';
+import LocalParserPanel from './LocalParserPanel.jsx';
+import { localParserVisible } from './lib/localParserClient.js';
 
 // ─── Reusable style helpers ────────────────────────────────────────────────
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -13,6 +15,10 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMo
 
   const [script, setScript] = useState('');
   const [videoFile, setVideoFile] = useState(null);
+  const [localProjectType, setLocalProjectType] = useState('full-ai');
+  const [localLanguage, setLocalLanguage] = useState('en');
+  const localParserEnabled = import.meta.env.DEV && import.meta.env.VITE_ENABLE_LOCAL_PARSER === 'true' &&
+    localParserVisible({ DEV: import.meta.env.DEV, VITE_ENABLE_LOCAL_PARSER: import.meta.env.VITE_ENABLE_LOCAL_PARSER }, window.location);
 
   const [isLocked, setIsLocked] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState('');
@@ -40,7 +46,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMo
       const parsedData = await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
 Quy tắc xử lý kịch bản:
 1. Trong kịch bản, phần "Character" thường chứa cả Tên và Mô tả. Hãy tách riêng: Đưa mô tả (VD: 30s Hispanic female...) vào mảng "characters", còn ở mảng "scenes", trường "Character" chỉ ghi ngắn gọn Tên nhân vật (VD: Plaintiff).
-2. Dữ liệu từ "Dialogue" phải được chuyển thành "Voiceover". Dữ liệu từ "Tone" chuyển thành "Tone_of_Voice".
+2. Giữ nguyên văn lời thoại trong "Dialogue". Không xuất field "Voiceover" cho Full AI. Dữ liệu từ "Tone" chuyển thành "Tone_of_Voice".
 3. Tự tính số từ của lời thoại điền vào "Word_count".
 
 Cấu trúc JSON BẮT BUỘC:
@@ -49,7 +55,7 @@ Cấu trúc JSON BẮT BUỘC:
     { "id": "char_1", "name": "Plaintiff", "description": "30s Hispanic female, looking devastated and exhausted...", "voiceTone": "emotional, fast-paced" }
   ],
   "scenes": [
-    { "scene_n": 1, "Context": "Nguyên đơn uất nghẹn...", "Camera": "tight eye-level close-up", "Action": "serious, keeping head still...", "Character": "Plaintiff", "Voiceover": "We were just walking...", "Translate": "Chúng tôi chỉ đang đi...", "Tone_of_Voice": "emotional, fast-paced", "Word_count": 25, "status": "pending" }
+    { "scene_n": 1, "Context": "Nguyên đơn uất nghẹn...", "Camera": "tight eye-level close-up", "Action": "serious, keeping head still...", "Character": "Plaintiff", "Dialogue": "We were just walking...", "Translate": "Chúng tôi chỉ đang đi...", "Tone_of_Voice": "emotional, fast-paced", "Word_count": 25, "status": "pending" }
   ]
 }
 
@@ -323,7 +329,8 @@ Kịch bản: ${script}`);
   return (
     <div
       className={cn(
-        'flex h-full w-full font-sans p-4 sm:p-8 gap-8 overflow-auto items-center justify-center relative transition-colors duration-300',
+        'flex h-full w-full font-sans p-4 sm:p-8 gap-8 overflow-auto justify-center relative transition-colors duration-300',
+        localParserEnabled ? 'items-start' : 'items-center',
         darkMode ? 'bg-slate-950 text-white' : 'bg-slate-100 text-zinc-900'
       )}
     >
@@ -511,6 +518,11 @@ Kịch bản: ${script}`);
             </div>
           </div>
         </div>
+        {localParserEnabled && (
+          <LocalParserPanel script={script} projectType={localProjectType} language={localLanguage}
+            onProjectTypeChange={setLocalProjectType} onLanguageChange={setLocalLanguage}
+            darkMode={darkMode} blocked={isLocked} />
+        )}
       </div>
 
       {/* ── Processing overlay ────────────────────────────────────────────── */}

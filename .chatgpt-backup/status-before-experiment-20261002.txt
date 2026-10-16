@@ -1,0 +1,23 @@
+## main...origin/main
+ M .gitignore
+ M api/get-upload-url.js
+ M api/proxy-audio.js
+ M api/proxy-media.js
+ M extension/content.js
+ M extension/injected.js
+ M extension/popup.js
+ M extension/stealth-core.js
+ M extension/worker-bridge.js
+ M src/App.jsx
+ M src/Workspace/StoryboardTab.jsx
+ M src/firebase.js
+ M vercel.json
+ M vite.config.js
+?? .chatgpt-backup/
+?? api/gemini-test/
+?? api/lib/
+?? docs/
+?? gemini-extension/
+?? scripts/
+?? src/GeminiRequestTest.jsx
+?? tests/

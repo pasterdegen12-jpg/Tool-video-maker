@@ -1,0 +1,132 @@
+﻿{
+    "captured_at":  "2026-10-12T06:52:13.0436246Z",
+    "processes":  [
+                      {
+                          "pid":  1228,
+                          "nvidia_name":  "[Insufficient Permissions]",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  6080,
+                          "nvidia_name":  "C:\\Windows\\explorer.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  9624,
+                          "nvidia_name":  "C:\\Windows\\SystemApps\\Microsoft.Windows.Search_cw5n1h2txyewy\\SearchApp.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  10836,
+                          "nvidia_name":  "C:\\Windows\\SystemApps\\Microsoft.LockApp_cw5n1h2txyewy\\LockApp.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  10448,
+                          "nvidia_name":  "C:\\Windows\\SystemApps\\MicrosoftWindows.Client.CBS_cw5n1h2txyewy\\TextInputHost.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  1496,
+                          "nvidia_name":  "C:\\Program Files\\Riot Vanguard\\vgtray.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  6908,
+                          "nvidia_name":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.1007.2314.0_x64__2p2nqsd0c76g0\\app\\ChatGPT.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  6376,
+                          "nvidia_name":  "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\Zalo.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  12904,
+                          "nvidia_name":  "C:\\Users\\Admin\\AppData\\Local\\Programs\\Zalo\\Zalo-26.10.10\\plugins\\capture\\ZaloCall.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  9920,
+                          "nvidia_name":  "C:\\Users\\Admin\\AppData\\Local\\OpenAI\\Codex\\runtimes\\cua_node\\cfb32733c877621e\\bin\\node_modules\\@oai\\sky\\bin\\windows\\swift\\x64\\codex-computer-use-swift.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  2592,
+                          "nvidia_name":  "C:\\Program Files\\WindowsApps\\Microsoft.ZuneVideo_10.26061.10051.0_x64__8wekyb3d8bbwe\\Video.UI.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  13300,
+                          "nvidia_name":  "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  1544,
+                          "nvidia_name":  "C:\\Program Files\\WindowsApps\\Microsoft.549981C3F5F10_4.2308.1005.0_x64__8wekyb3d8bbwe\\Cortana.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      },
+                      {
+                          "pid":  14960,
+                          "nvidia_name":  "C:\\Users\\Admin\\AppData\\Roaming\\Telegram Desktop\\Telegram.exe",
+                          "nvidia_memory":  "[N/A]",
+                          "name":  null,
+                          "owner":  null,
+                          "owner_status":  "QUERY UNAVAILABLE",
+                          "session_id":  null
+                      }
+                  ],
+    "note":  "Read-only CIM query; command lines and environment not collected; no processes changed."
+}

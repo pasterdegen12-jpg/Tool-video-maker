@@ -1,0 +1,110 @@
+[
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\.env.example",
+    "sha256": "38aeb0fa1dbf55963f6518e25fa2d1deacc7f0cb207123928b2c723134a983d0"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\config.py",
+    "sha256": "b5c1f7b7faceb72edd002355a37469ea8de011ca7b81301f658e2238e75e907a"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\gpu.py",
+    "sha256": "c289c6d73fa12e15755dd0864829e6d86bde9b455f4227db0af00232d1035f31"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\gpu_policy.py",
+    "sha256": "d03e0d2c32e563f290b17cf4bcef49c046bd253b35069a733e649558e4cc6403"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\inference.py",
+    "sha256": "c45e83741402a6f390fb2e7169e553edf6a8eccd34ac2f17a51805766cec430b"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\jobs.py",
+    "sha256": "a8dacd2c29274adeda2ffe56a3d049ead05012764e3810f4a32d87e0f37213c3"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\process.py",
+    "sha256": "9b83f2412d817976430c4642dadd88904fbfd4e3dbb86646b6aa185591fa6b43"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\qwen_runtime.py",
+    "sha256": "44273283b381dda4f2dcb98bc1c82af1d49269c4e27eaf6e61678eecc1d42251"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\windows_worker.py",
+    "sha256": "24b83a9722961ba80edf23d53d3d066d3039551635ac3278a7d047138d7abbbe"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\worker.py",
+    "sha256": "803f6b0dc302e0d37c007f156e879328a11946c249e8428b1805d9231035d292"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\ai_gateway\\worker_bootstrap.py",
+    "sha256": "d76d0969530643ef8df52996b2a657b38ecc1f0164c66a7738cc1971b9336c47"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\HTTP_WORKFLOWS.md",
+    "sha256": "58aa266c262e6610a4df108fc8098afa763ce32c8831bc28da94db3dec0802dc"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\README.md",
+    "sha256": "d9ec3f31eb4c9134b30ae13059decb6d90d38e58ee842952f74469a272d3a7e1"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\requirements-inference-torch.txt",
+    "sha256": "73f125d3c8b1d6c9ecfcaa1ff82c8a2bded940a1968a3c731a249309db3c1edc"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\requirements-inference.lock.txt",
+    "sha256": "ff8475d8beb2677cb587c8547a84e2d672ef91f69aae62999a93cc0dbc536e54"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\requirements-inference.txt",
+    "sha256": "4e2ab38070a9541f0d073159b72ccf136e46c62b9eb5bfece0816e8d12d8bab6"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\scripts\\inspect_runtime.py",
+    "sha256": "95852c934fa54e97f43ba35be2e9a8421ecadd31c6c243daa8f5a219b2146d2a"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\setup.cmd",
+    "sha256": "210f5c39d07dbfcf8faec68faf8a646bc690ea9ee9fa240749dfc27772cb3e98"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\conftest.py",
+    "sha256": "f70eb6bf4e45a76b18fb2f89e8d9e581da966a337ce82358286dc2010ebe606e"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_analysis.py",
+    "sha256": "3b20665cc37b4f9db75089d211c210f522f1e5a04f126519c116a532af3154f6"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_gpu_policy.py",
+    "sha256": "bed1bb8d4e23af7fd80d6064fc7d9dc932c70f03b2e3a4a5103e1da91472697a"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_gpu_safety.py",
+    "sha256": "8a181e68e999206f55ef656ed408994ad7ab68c8432545844272ea932271616c"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_http_workflows.py",
+    "sha256": "b1d844dea1f0371196f029d18e64b3060867abdbb4e3f391a766d4164dc5196e"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_process.py",
+    "sha256": "9aa5285de23589ddb6a462f6bd2d230cc77e1395986dbd3fd50622f44d0b7d1c"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_standalone_runtime.py",
+    "sha256": "6b866d6df76350bc12865f2198bc5ad1b80ef5f8f80e74d87018add329d3edb0"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_visual.py",
+    "sha256": "1be1be20cef2361438f6294d208a8dd9d00883d7f1de64a3163e1c6ef4721632"
+  },
+  {
+    "path": "F:\\tool-ai-dh\\local-ai-gateway\\tests\\test_worker_containment.py",
+    "sha256": "a5331d33352bd0e78dd6cf47de0ecb671eefae48fb61db02c6d8f815c69a73df"
+  }
+]

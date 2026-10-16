@@ -1,0 +1,47 @@
+[
+  {
+    "id": "453784079c656769af51a6b6effc04bc6e91163f80b4e722",
+    "stage": "FAILED",
+    "state": "failed",
+    "upstreamId": null,
+    "url": null,
+    "events": [
+      {
+        "stage": "QUOTED",
+        "at": 1792077217788
+      },
+      {
+        "at": 1792077232353,
+        "stage": "UPLOADING"
+      },
+      {
+        "at": 1792077232863,
+        "stage": "FAILED"
+      }
+    ],
+    "retry": null,
+    "expiresAt": 1794669232353
+  },
+  {
+    "id": "f12b1457255001feaef6681d4eb5888a8315b162d0191cb4",
+    "stage": "QUOTED",
+    "state": "quoted",
+    "upstreamId": null,
+    "url": null,
+    "events": [
+      {
+        "stage": "QUOTED",
+        "at": 1792159977101
+      },
+      {
+        "at": 1792159996343,
+        "stage": "QUOTED"
+      }
+    ],
+    "retry": {
+      "predecessorId": "453784079c656769af51a6b6effc04bc6e91163f80b4e722",
+      "consumedAt": null
+    },
+    "expiresAt": 1792160097101
+  }
+]

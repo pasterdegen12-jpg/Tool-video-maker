@@ -1,0 +1,26 @@
+{
+  "source": "SYNTHETIC duplicate Dialogue negative test",
+  "transport": "real Web and gateway HTTP",
+  "response": {
+    "job_id": "0bafc8ca5a6fb49f492cc43146665b6d49893e73cdcc9686",
+    "state": "failed",
+    "result": null,
+    "error": {
+      "code": "DUPLICATE_FIELD",
+      "projectType": "full-ai",
+      "message": "The source script failed validation. Correct the indicated scene/field and submit explicitly.",
+      "details": {
+        "scene_id": "scene_1",
+        "field": "Dialogue",
+        "line": 4
+      }
+    },
+    "metrics": {
+      "queue_wait_seconds": 0,
+      "request_latency_seconds": 0,
+      "execution": "deterministic_cpu"
+    },
+    "expires_at": "2026-10-11T12:41:40.404Z",
+    "polls_remaining": 119
+  }
+}

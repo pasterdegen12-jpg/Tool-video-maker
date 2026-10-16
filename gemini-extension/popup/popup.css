@@ -1,0 +1,333 @@
+/* =========================================================
+   Gemini Bridge – Popup Styles
+   ========================================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #1e1e2e;
+  --surface: #2a2a3e;
+  --surface2: #343450;
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --success: #22c55e;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #3f3f5a;
+  --radius: 8px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  min-width: 380px;
+  max-width: 420px;
+}
+
+.container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---- Header ---- */
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+}
+
+header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Status bar ---- */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-idle    .dot { background: var(--text-muted); }
+.status-running .dot { background: var(--accent); animation: pulse 1s infinite; }
+.status-success .dot { background: var(--success); }
+.status-error   .dot { background: var(--error); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ---- Form ---- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.optional { font-weight: 400; opacity: 0.7; }
+
+textarea, input[type="file"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color .2s;
+  width: 100%;
+}
+
+textarea:focus, input[type="file"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.file-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 0;
+}
+
+/* ---- Buttons ---- */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .2s, opacity .2s;
+  flex: 1;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+}
+.btn-secondary:hover { background: var(--border); }
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background .15s;
+}
+.btn-icon:hover { background: var(--surface2); }
+
+/* ---- Response ---- */
+#responseSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.response-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.response-output {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- Log ---- */
+#logDetails {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+}
+
+#logDetails summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.log-output {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: "Courier New", monospace;
+  max-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.log-entry { padding: 1px 0; }
+.log-entry.info  { color: #94a3b8; }
+.log-entry.ok    { color: var(--success); }
+.log-entry.warn  { color: var(--warning); }
+.log-entry.error { color: var(--error); }
+
+/* ---- Version badge ---- */
+.version {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 4px;
+  align-self: center;
+}
+
+/* ---- Strict badge ---- */
+.badge-strict {
+  font-size: 9px;
+  background: #7c3aed33;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---- File list (multi-file) ---- */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.file-icon { flex-shrink: 0; }
+
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.file-size {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ---- Cancel button ---- */
+.btn-warning {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: #dc2626;
+  color: #fff;
+  flex: 1;
+  transition: background .2s;
+}
+.btn-warning:hover { background: #b91c1c; }
+
+/* ---- Response header actions ---- */
+.response-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* ---- Log count badge ---- */
+.log-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* ---- Utility ---- */
+.hidden { display: none !important; }

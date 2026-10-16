@@ -1,0 +1,23 @@
+{
+  "recorded_at": "2026-10-15T15:10:00.609Z",
+  "operator_reply": "Đồng ý",
+  "scope": "Exactly one new paid prediction; operator clicks Generate Video",
+  "previous_attempt": "UNKNOWN",
+  "project": "proj_1789061618441",
+  "scene": 3,
+  "image_sha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b",
+  "prompt_sha256": "63fc5272ee91a5587ebc504626cabdf05690c082f556463bfaa7102dd0febec4",
+  "settings": {
+    "duration": 6,
+    "resolution": "480p",
+    "aspect_ratio": "16:9",
+    "generate_audio": true,
+    "camera_fixed": true,
+    "seed": -1
+  },
+  "reference_usd": 0.144,
+  "assistant_click_approval": {
+    "at": "2026-10-15T15:13:26.138Z",
+    "reply": "Cho phép bấm thay đúng một lần"
+  }
+}

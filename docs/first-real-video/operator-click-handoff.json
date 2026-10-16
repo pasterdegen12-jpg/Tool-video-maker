@@ -1,0 +1,17 @@
+{
+  "recorded_at": "2026-10-16T14:13:29.309Z",
+  "backend_pid": 14700,
+  "paid_enabled": true,
+  "attempts": [
+    {
+      "id": "f12b1457255001feaef6681d4eb5888a8315b162d0191cb4",
+      "stage": "QUOTED",
+      "predecessor": "453784079c656769af51a6b6effc04bc6e91163f80b4e722",
+      "authorization_recorded": true,
+      "authorization_consumed": false,
+      "expires_at": "2026-10-16T14:14:57.101Z",
+      "provider_id": null
+    }
+  ],
+  "agent_clicked_generate": false
+}

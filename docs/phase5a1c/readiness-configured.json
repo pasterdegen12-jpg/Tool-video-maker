@@ -1,0 +1,88 @@
+{
+  "checked_at": "2026-10-13T07:16:31.146Z",
+  "files": [
+    {
+      "file": ".env",
+      "sha256": "3b56365786d16c9356f60fbd12407fe1573a8320f81a1cf045988e81174357b6",
+      "variables": {
+        "NODE_ENV": "MISSING",
+        "LOCAL_VIDEO_ENABLED": "MISSING",
+        "LOCAL_VIDEO_PAID_ENABLED": "MISSING",
+        "CLERK_ISSUER": "MISSING",
+        "CLERK_JWT_KEY": "MISSING",
+        "LOCAL_AI_WEB_ORIGIN": "MISSING",
+        "VITE_CLERK_PUBLISHABLE_KEY": "PRESENT",
+        "WAVESPEED_API_KEY": "MISSING",
+        "VITE_WAVESPEED_API_KEY": "PRESENT"
+      }
+    },
+    {
+      "file": ".env.local",
+      "sha256": "a9ed3466807c8e9588022d3188a74dc3c0b4ff3ff7b611bd377be144764b43a1",
+      "variables": {
+        "NODE_ENV": "MISSING",
+        "LOCAL_VIDEO_ENABLED": "MISSING",
+        "LOCAL_VIDEO_PAID_ENABLED": "MISSING",
+        "CLERK_ISSUER": "MISSING",
+        "CLERK_JWT_KEY": "MISSING",
+        "LOCAL_AI_WEB_ORIGIN": "MISSING",
+        "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+        "WAVESPEED_API_KEY": "MISSING",
+        "VITE_WAVESPEED_API_KEY": "MISSING"
+      }
+    },
+    {
+      "file": ".env.video.local",
+      "sha256": "e96aa3d2f813833a118ea5246cba86bfa9b01735bc2f304a8babde3ad5fa305a",
+      "variables": {
+        "NODE_ENV": "PRESENT",
+        "LOCAL_VIDEO_ENABLED": "PRESENT",
+        "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+        "CLERK_ISSUER": "PRESENT",
+        "CLERK_JWT_KEY": "PRESENT",
+        "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+        "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+        "WAVESPEED_API_KEY": "EMPTY",
+        "VITE_WAVESPEED_API_KEY": "EMPTY"
+      }
+    }
+  ],
+  "processVariables": {
+    "NODE_ENV": "MISSING",
+    "LOCAL_VIDEO_ENABLED": "MISSING",
+    "LOCAL_VIDEO_PAID_ENABLED": "MISSING",
+    "CLERK_ISSUER": "MISSING",
+    "CLERK_JWT_KEY": "MISSING",
+    "LOCAL_AI_WEB_ORIGIN": "MISSING",
+    "VITE_CLERK_PUBLISHABLE_KEY": "MISSING",
+    "WAVESPEED_API_KEY": "MISSING",
+    "VITE_WAVESPEED_API_KEY": "MISSING"
+  },
+  "effectivePresence": {
+    "NODE_ENV": "PRESENT",
+    "LOCAL_VIDEO_ENABLED": "PRESENT",
+    "LOCAL_VIDEO_PAID_ENABLED": "PRESENT",
+    "CLERK_ISSUER": "PRESENT",
+    "CLERK_JWT_KEY": "PRESENT",
+    "LOCAL_AI_WEB_ORIGIN": "PRESENT",
+    "VITE_CLERK_PUBLISHABLE_KEY": "PRESENT",
+    "WAVESPEED_API_KEY": "EMPTY",
+    "VITE_WAVESPEED_API_KEY": "EMPTY"
+  },
+  "issuerValid": true,
+  "jwtKeyValid": true,
+  "publishableKeyValid": true,
+  "frontendInstanceMatchesIssuer": true,
+  "configuredPaidFlag": "false",
+  "paidDefaultInCode": false,
+  "readConfigError": null,
+  "readConfigWithSafeDevelopmentFlagsError": null,
+  "frontendWaveSpeedKeyNonempty": false,
+  "frontendWaveSpeedValueLooksPlaceholder": false,
+  "listening": {
+    "5173": "NOT_LISTENING",
+    "8790": "NOT_LISTENING"
+  },
+  "servicesStarted": false,
+  "providerRequests": 0
+}

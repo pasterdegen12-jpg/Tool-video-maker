@@ -1,0 +1,1665 @@
+--- before/.env.example
++++ after/.env.example
+@@ -1,13 +1,16 @@
+ # Documentation only: startup reads process environment, not .env files.
+ # Generate your own token. Never put it in React/VITE_* variables.
+ GATEWAY_SERVICE_TOKEN=
+-GATEWAY_COOKING_ROOT=F:/Cooking-AI-review
+-GATEWAY_MODEL_PATH=F:/Cooking-AI-review/models/qwen3-vl-8b
+-GATEWAY_INFERENCE_PYTHON=F:/Cooking-AI-review/.venv/Scripts/python.exe
+-GATEWAY_GPU_LOCK_PATH=F:/Cooking-AI-review/jobs/.speech_gpu.lock
+-# shared requires an EXISTING lock, opened read-only. It never creates a Cooking file.
+-# dedicated is an explicit operator declaration: no Cooking/other GPU workloads may start.
+-GATEWAY_GPU_MODE=shared
++# Gateway-owned inference environment is NOT installed by CPU setup.
++GATEWAY_INFERENCE_PYTHON=F:/tool-ai-dh/local-ai-gateway/.venv-inference/Scripts/python.exe
++GATEWAY_GPU_MODE=standalone
++GATEWAY_GPU_TASK=visual_profile
++GATEWAY_VISUAL_MODEL_SIZE=4b
++# The only authorized external asset, read-only.
++GATEWAY_VISUAL_MODEL_PATH=F:/Cooking-AI-review/models/qwen3-vl-4b
++# Keep disabled until separate environment-installation and GPU acceptance approvals.
++GATEWAY_START_GPU_WORKER=false
++# Obsolete Cooking root/shared-lock/model settings and shared/dedicated modes are rejected.
+ GATEWAY_PORT=8765
+ GATEWAY_QUEUE_CAPACITY=4
+ GATEWAY_JOB_LIMIT=64
+@@ -19,7 +22,3 @@
+ GATEWAY_MAX_INPUT_TOKENS=8192
+ GATEWAY_MAX_OUTPUT_TOKENS=4096
+ GATEWAY_MIN_FREE_VRAM_MB=10500
+-
+-# Phase 2B CPU-only startup: set false to avoid starting any GPU subprocess.
+-# Default true preserves legacy startup. This is not a GPU safety-gate override.
+-GATEWAY_START_GPU_WORKER=true
+--- before/ai_gateway/config.py
++++ after/ai_gateway/config.py
+@@ -7,17 +7,14 @@
+ class Settings(BaseModel):
+     model_config = ConfigDict(extra='forbid')
+     service_token: SecretStr
+-    cooking_root: Path = Path('F:/Cooking-AI-review')
+-    model_path: Path = Path('F:/Cooking-AI-review/models/qwen3-vl-8b')
+-    inference_python: Path = Path('F:/Cooking-AI-review/.venv/Scripts/python.exe')
+-    gpu_lock_path: Path = Path('F:/Cooking-AI-review/jobs/.speech_gpu.lock')
+-    gpu_mode: str = 'shared'
++    inference_python: Path = ROOT / '.venv-inference/Scripts/python.exe'
++    gpu_mode: str = 'standalone'
+     # Explicit worker purpose: never load two models or silently switch an existing worker.
+-    gpu_task: str = 'legacy_script'
++    gpu_task: str = 'visual_profile'
+     visual_model_size: str = '4b'
+-    visual_model_path: Path | None = None
++    visual_model_path: Path = Path('F:/Cooking-AI-review/models/qwen3-vl-4b')
+     # Disable worker startup explicitly for CPU-only service operation; GPU gates are unchanged.
+-    start_gpu_worker: bool = True
++    start_gpu_worker: bool = False
+     data_dir: Path = ROOT / 'runtime'
+     queue_capacity: int = Field(4, ge=1, le=32)
+     job_limit: int = Field(64, ge=2, le=1024)
+@@ -29,25 +26,33 @@
+     max_script_chars: int = Field(40000, ge=100, le=100000)
+     max_input_tokens: int = Field(8192, ge=256, le=32768)
+     max_output_tokens: int = Field(4096, ge=256, le=8192)
+-    min_free_vram_mb: int = Field(10500, ge=3000, le=32000)
++    min_free_vram_mb: int = Field(10500, ge=10500, le=32000)
+ 
+     @model_validator(mode='after')
+     def valid(self):
+         if len(self.service_token.get_secret_value()) < 32:
+             raise ValueError('Service token must contain at least 32 characters')
+-        if self.gpu_mode not in ('shared', 'dedicated'):
+-            raise ValueError('GPU mode must be shared or dedicated')
++        if self.gpu_mode != 'standalone':
++            raise ValueError('Use standalone mode; old shared/dedicated configuration is unsupported')
+         if self.job_limit < self.queue_capacity + 1:
+             raise ValueError('Job limit must exceed queue capacity')
+-        if self.gpu_task not in ('legacy_script', 'visual_profile') or self.visual_model_size not in ('4b', '8b'):
++        if self.gpu_task not in ('legacy_script', 'visual_profile') or self.visual_model_size != '4b':
+             raise ValueError('Unsupported GPU purpose or vision model')
+-        root = self.cooking_root.resolve()
+-        if self.data_dir.resolve().is_relative_to(root):
+-            raise ValueError('Gateway runtime directory cannot be inside Cooking')
++        if self.start_gpu_worker and self.gpu_task != 'visual_profile':
++            raise ValueError('Standalone GPU runtime supports visual_profile 4b only')
++        # CPU operation does not probe or require the checkpoint/interpreter to exist.
++        if not self.inference_python.absolute().is_relative_to(ROOT):
++            raise ValueError('Inference interpreter must be Gateway-owned')
++        import tempfile
++        if not any(self.data_dir.absolute().is_relative_to(p) for p in (ROOT, Path(tempfile.gettempdir()))):
++            raise ValueError('Runtime storage must be Gateway-owned or isolated temporary storage')
+         return self
+ 
+     @classmethod
+     def from_env(cls):
++        obsolete = ('GATEWAY_COOKING_ROOT', 'GATEWAY_GPU_LOCK_PATH', 'GATEWAY_MODEL_PATH')
++        if any(key in os.environ for key in obsolete):
++            raise ValueError('Remove obsolete application-root/shared-lock/model configuration')
+         values = {}
+         for name in cls.model_fields:
+             key = 'GATEWAY_' + name.upper()
+@@ -58,13 +63,9 @@
+         return cls(**values)
+ 
+     def worker_config(self):
+-        keys = ('cooking_root', 'model_path', 'gpu_lock_path', 'gpu_mode',
+-                'data_dir', 'max_input_tokens', 'max_output_tokens', 'min_free_vram_mb')
++        keys = ('gpu_mode', 'data_dir', 'max_input_tokens', 'max_output_tokens', 'min_free_vram_mb')
+         result = {key: str(getattr(self, key)) if isinstance(getattr(self, key), Path)
+                   else getattr(self, key) for key in keys}
+-        result['gpu_task'] = self.gpu_task
+-        size = self.visual_model_size if self.gpu_task == 'visual_profile' else '8b'
+-        result['model_size'] = size
+-        if self.gpu_task == 'visual_profile':
+-            result['model_path'] = str(self.visual_model_path or self.cooking_root / 'models' / ('qwen3-vl-' + size))
++        result.update(gpu_task=self.gpu_task, model_size=self.visual_model_size,
++                      model_path=str(self.visual_model_path))
+         return result
+--- before/ai_gateway/gpu.py
++++ after/ai_gateway/gpu.py
+@@ -1,75 +1,50 @@
++"""Gateway-only exclusion. This mutex does not reserve the physical GPU."""
+ import ctypes
+ import os
+-from pathlib import Path
+ import subprocess
++import threading
+ from .errors import GatewayError
++PRODUCTION_MUTEX = 'Global\\LocalQwenGateway_GPU0_Phase1'
+ 
+ class GPUReservation:
+-    """Own the gateway GPU mutex, plus Cooking's existing byte lock without writes."""
+-    def __init__(self, path, mode='shared'):
+-        self.path, self.mode = Path(path), mode
+-        self.handle = None
+-        self.file = None
++    def __init__(self, *, name=PRODUCTION_MUTEX):
++        self.name, self.handle, self.owner_thread = name, None, None
+ 
+     def acquire(self):
+         if os.name != 'nt':
+-            raise GatewayError('UNSUPPORTED_PLATFORM', 'Phase 1 GPU worker requires Windows.')
+-        from ctypes import wintypes
++            raise GatewayError('UNSUPPORTED_PLATFORM', 'GPU workers require Windows containment.')
++        if self.handle is not None:
++            raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Reservation already acquired.')
++        from ctypes import wintypes as w
+         self.kernel = ctypes.WinDLL('kernel32', use_last_error=True)
+-        self.kernel.CreateMutexW.argtypes = [ctypes.c_void_p, wintypes.BOOL, wintypes.LPCWSTR]
+-        self.kernel.CreateMutexW.restype = wintypes.HANDLE
+-        self.kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+-        self.kernel.WaitForSingleObject.restype = wintypes.DWORD
+-        self.kernel.ReleaseMutex.argtypes = [wintypes.HANDLE]
+-        self.kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+-        self.handle = self.kernel.CreateMutexW(None, False, 'Global\\LocalQwenGateway_GPU0_Phase1')
+-        if not self.handle:
+-            raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Cannot acquire the machine GPU reservation.')
+-        status = self.kernel.WaitForSingleObject(self.handle, 0)
++        self.kernel.CreateMutexW.argtypes = [ctypes.c_void_p, w.BOOL, w.LPCWSTR]
++        self.kernel.CreateMutexW.restype = w.HANDLE
++        self.kernel.WaitForSingleObject.argtypes = [w.HANDLE, w.DWORD]
++        self.kernel.WaitForSingleObject.restype = w.DWORD
++        self.kernel.ReleaseMutex.argtypes = [w.HANDLE]
++        self.kernel.CloseHandle.argtypes = [w.HANDLE]
++        handle = self.kernel.CreateMutexW(None, False, self.name)
++        if not handle:
++            raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Cannot open the Gateway worker mutex.')
++        status = self.kernel.WaitForSingleObject(handle, 0)
+         if status not in (0, 0x80):
++            self.kernel.CloseHandle(handle)
++            code = 'GPU_BUSY' if status == 0x102 else 'GPU_LOCK_UNAVAILABLE'
++            raise GatewayError(code, 'Gateway worker mutex is busy or unavailable.')
++        self.handle, self.owner_thread = handle, threading.get_ident()
++        if status == 0x80:
++            self.close()
++            raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Abandoned worker mutex; revalidation and operator restart required.')
++        return self
++
++    def close(self):
++        if self.handle is not None:
++            if self.owner_thread != threading.get_ident():
++                raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Mutex must be released by its owning thread.')
++            if not self.kernel.ReleaseMutex(self.handle):
++                raise GatewayError('GPU_LOCK_UNAVAILABLE', 'Could not release the worker mutex.')
+             self.kernel.CloseHandle(self.handle)
+             self.handle = None
+-            raise GatewayError('GPU_BUSY', 'Another gateway owns GPU 0.')
+-        try:
+-            if not self.path.is_file():
+-                if self.mode == 'shared':
+-                    raise GatewayError('GPU_LOCK_MISSING',
+-                        'Cooking shared lock is absent; no files were created. Use a provisioned shared lock or an explicitly dedicated GPU.')
+-                return self
+-            # Open existing file read-only. LockFileEx and Cooking/filelock both
+-            # exclusively lock byte 0. Holding this handle also prevents deletion.
+-            import msvcrt
+-            class Overlapped(ctypes.Structure):
+-                _fields_ = [('Internal', ctypes.c_void_p), ('InternalHigh', ctypes.c_void_p),
+-                            ('Offset', wintypes.DWORD), ('OffsetHigh', wintypes.DWORD),
+-                            ('hEvent', wintypes.HANDLE)]
+-            self.overlap = Overlapped()
+-            self.kernel.LockFileEx.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD,
+-                                               wintypes.DWORD, wintypes.DWORD, ctypes.POINTER(Overlapped)]
+-            self.kernel.LockFileEx.restype = wintypes.BOOL
+-            self.kernel.UnlockFileEx.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD,
+-                                                 wintypes.DWORD, ctypes.POINTER(Overlapped)]
+-            self.file = self.path.open('rb')
+-            self.file_handle = msvcrt.get_osfhandle(self.file.fileno())
+-            if not self.kernel.LockFileEx(self.file_handle, 3, 0, 1, 0, ctypes.byref(self.overlap)):
+-                raise GatewayError('GPU_BUSY', 'Cooking GPU lock is held or unavailable.')
+-            self.file_locked = True
+-            return self
+-        except BaseException:
+-            self.close()
+-            raise
+-
+-    def close(self):
+-        if self.file:
+-            if getattr(self, 'file_locked', False):
+-                self.kernel.UnlockFileEx(self.file_handle, 0, 1, 0, ctypes.byref(self.overlap))
+-            self.file.close()
+-            self.file = None
+-        if self.handle:
+-            self.kernel.ReleaseMutex(self.handle)
+-            self.kernel.CloseHandle(self.handle)
+-            self.handle = None
+-
+ 
+ def gpu_snapshot():
+     def query(args):
+@@ -82,7 +57,7 @@
+     memory = query(['--id=0', '--query-gpu=name,memory.total,memory.used,memory.free', '--format=csv,noheader,nounits'])
+     try:
+         name, total, used, free = [x.strip() for x in memory.split(',')]
+-        # NVIDIA reports MiB; existing Cooking gates use decimal MB.
++        # NVIDIA reports MiB; policy thresholds use decimal MB.
+         factor = 1048576 / 1000000
+         snapshot = dict(name=name, total_mb=float(total)*factor,
+                         used_mb=float(used)*factor, free_mb=float(free)*factor)
+--- before/ai_gateway/inference.py
++++ after/ai_gateway/inference.py
+@@ -1,134 +1,78 @@
+-from dataclasses import dataclass, field
++"""Gateway-owned model lifecycle; no external application code or environment."""
+ from pathlib import Path
+-import importlib.metadata
+-import os
+-import sys
++import json
+ import time
+ from .errors import GatewayError
+ from .gpu import GPUReservation, gpu_snapshot
++from .gpu_policy import require_preload, require_postload, require_resident
++from .qwen_runtime import QwenRuntime
++from .analysis import strict_parse
+ 
+-@dataclass
+-class TextFrames:
+-    # generate_profiled uses only .frames when custom messages/schema are supplied.
+-    # This is intentionally independent from Cooking's image-required VisionRequest.
+-    frames: list = field(default_factory=list)
++CHECKPOINT = Path('F:/Cooking-AI-review/models/qwen3-vl-4b')
+ 
+ class QwenAdapter:
++    parse = staticmethod(strict_parse)
++
+     def __init__(self, config):
+         self.config = config
+-        self.backend = None
+-        self.reservation = None
++        self.backend = self.reservation = None
+         self.stats = {'model_load_count': 0}
+ 
+     def start(self):
+         config = self.config
+-        self.reservation = GPUReservation(config['gpu_lock_path'], config['gpu_mode'])
+-        self.reservation.acquire()
++        if config.get('gpu_mode') != 'standalone' or config.get('gpu_task') != 'visual_profile' or config.get('model_size') != '4b':
++            raise GatewayError('VISION_UNAVAILABLE', 'Standalone runtime supports explicitly selected 4B visual profiles only.')
++        model = Path(config['model_path']).resolve()
++        authorized = CHECKPOINT
++        # The checkpoint is the only external asset. Resolve and compare against its lexical location
++        # to reject redirection to an unrelated source through a junction/symlink.
++        if model != authorized.absolute():
++            raise GatewayError('LOCAL_MODEL_MISMATCH', 'Only the approved local 4B checkpoint is supported.')
+         try:
+-            root = Path(config['cooking_root']).resolve()
+-            model = Path(config['model_path']).resolve()
+-            if not (root/'app/services/vision_backend_registry.py').is_file() or not (model/'config.json').is_file():
+-                raise GatewayError('LOCAL_MODEL_MISSING', 'Existing Cooking backend or local model files are missing.')
+-            sys.path.insert(0, str(root))
+-            expected = {'torch': '2.5.1+cu121', 'transformers': '4.57.1', 'bitsandbytes': '0.50.2'}
+-            if any(importlib.metadata.version(k) != v for k, v in expected.items()):
+-                raise GatewayError('RUNTIME_MISMATCH', 'Inference dependency versions differ from the audited runtime.')
++            if not (model/'config.json').resolve().is_relative_to(model):
++                raise ValueError()
++            metadata = json.loads((model/'config.json').read_text('utf-8'))
++            if metadata.get('model_type') != 'qwen3_vl' or metadata.get('text_config', {}).get('hidden_size') != 2560:
++                raise ValueError()
++        except (OSError, ValueError):
++            raise GatewayError('LOCAL_MODEL_MISMATCH', 'The local checkpoint is missing or does not match Qwen3-VL-4B.') from None
++        self.reservation = GPUReservation()
++        try:
++            self.reservation.acquire()
+             before = gpu_snapshot()
+-            if before['other_compute_pids']:
+-                raise GatewayError('GPU_BUSY', 'Other GPU compute processes are present.')
+-            from app.services.dedicated_worker import baseline_gate, postload_gate
+-            if not baseline_gate(before['used_mb'])['proceed'] or before['free_mb'] < config['min_free_vram_mb']:
+-                raise GatewayError('INSUFFICIENT_VRAM', 'Free VRAM does not satisfy the pre-load safety gate.')
+-            import torch
+-            if not torch.cuda.is_available():
+-                raise GatewayError('CUDA_UNAVAILABLE', 'CUDA is unavailable in the inference environment.')
+-            free, total = torch.cuda.mem_get_info(0)
+-            if free / 1e6 < config['min_free_vram_mb']:
+-                raise GatewayError('INSUFFICIENT_VRAM', 'CUDA free memory is below the configured minimum.')
+-            from app.services.vision_backend_registry import create_backend
+-            from app.services.vision_optimization import parse
+-            self.parse = parse
+-            size = config.get('model_size', '8b')
+-            if size not in ('4b', '8b'):
+-                raise GatewayError('LOCAL_MODEL_MISMATCH', 'Unsupported local model selection.')
+-            import json
+-            local_config = json.loads((model/'config.json').read_text('utf-8'))
+-            # Check the dimensions observed in the existing local checkpoint configurations.
+-            expected_hidden = {'4b': 2560, '8b': 4096}
+-            if local_config.get('text_config', {}).get('hidden_size') != expected_hidden[size]:
+-                raise GatewayError('LOCAL_MODEL_MISMATCH', 'Configured model size does not match the local checkpoint.')
+-            settings = dict(vision_backend='qwen3_vl_' + size + '_nf4', model='Qwen/Qwen3-VL-' + size.upper() + '-Instruct',
+-                            model_path=str(model), precision='nf4', compute_dtype='bfloat16',
+-                            double_quant=True, attention_mode='sdpa_chunked', query_chunk_size=256)
++            require_preload(before, config['min_free_vram_mb'])
++            self.backend = QwenRuntime(model)
+             started = time.perf_counter()
+-            self.backend = create_backend(root, settings)
++            self.backend.load(config['min_free_vram_mb'])
++            after = gpu_snapshot()
++            require_postload(after, self.backend.model.hf_device_map,
++                             [str(p.device) for p in self.backend.model.parameters()])
+             self.stats.update(model_load_count=1, model_load_seconds=time.perf_counter()-started,
+-                              gpu_before=before)
+-            after = gpu_snapshot()
+-            gate = postload_gate(after['total_mb'], after['used_mb'], self.backend.model.hf_device_map,
+-                                 sorted({str(p.device) for p in self.backend.model.parameters()}))
+-            if not gate['proceed']:
+-                raise GatewayError('INSUFFICIENT_VRAM', 'Post-load CUDA placement or free VRAM gate failed.')
+-            probe = [{'role': 'user', 'content': [{'type': 'text', 'text': 'Reply OK.'}]}]
+-            prompt = self.backend.processor.apply_chat_template(probe, tokenize=False, add_generation_prompt=True)
+-            tensors = self.backend.processor(text=[prompt], images=None, return_tensors='pt')
+-            if 'input_ids' not in tensors or 'pixel_values' in tensors:
+-                raise GatewayError('TEXT_PROCESSOR_UNSUPPORTED', 'Text-only processor compatibility check failed.')
+-            self.stats.update(text_only_processor=True, gpu_after_load=after)
++                              gpu_before=before, gpu_after_load=after, attention='sdpa')
+             return self.stats
+         except BaseException:
+             self.close()
+             raise
+ 
++    def check_resident(self):
++        require_resident(gpu_snapshot())
++
+     def generate(self, messages, output_schema):
+-        processor = self.backend.processor
+-        prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+-        encoded = processor(text=[prompt], images=None, return_tensors='pt')
+-        if encoded['input_ids'].shape[-1] > self.config['max_input_tokens']:
+-            raise GatewayError('INPUT_TOKEN_LIMIT', 'Prompt exceeds the configured input token budget.')
+-        del encoded
+-        raw, metrics, _, _ = self.backend.generate_profiled(TextFrames(), {
+-            'messages': messages, 'output_schema': output_schema, 'constrained_json': True,
+-            'max_new_tokens': self.config['max_output_tokens'], 'repetition_penalty': 1.0})
+-        metrics = {k: metrics.get(k) for k in ('input_tokens', 'generated_token_count',
+-                   'inference_seconds', 'peak_allocated_mb', 'peak_reserved_mb', 'finish_reason')}
+-        seconds = metrics.get('inference_seconds') or 0
+-        metrics['tokens_per_second'] = (metrics.get('generated_token_count') or 0) / seconds if seconds else None
+-        metrics['model_load_count'] = self.stats['model_load_count']
+-        return raw, metrics
++        raise GatewayError('WORKER_UNAVAILABLE', 'Legacy GPU script generation is unsupported in the standalone 4B visual runtime.')
+ 
+     def generate_visual(self, request):
+-        if self.config.get('gpu_task') != 'visual_profile':
+-            raise GatewayError('VISION_UNAVAILABLE', 'Worker is not configured for visual profiles.')
++        if self.config.get('gpu_task') != 'visual_profile' or self.backend is None:
++            raise GatewayError('VISION_UNAVAILABLE', 'Visual runtime is unavailable.')
++        self.check_resident()
+         from .visual import decode_image, PROMPT, VisualResult
+-        from io import BytesIO
+-        from types import SimpleNamespace
+         image, _ = decode_image(request)
+         try:
+-            # Bound visual token load and retain only a metadata-free normalized frame during execution.
+             image.thumbnail((896, 896))
+             messages = [{'role': 'user', 'content': [{'type': 'image'}, {'type': 'text', 'text': PROMPT}]}]
+-            processor = self.backend.processor
+-            prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+-            encoded = processor(text=[prompt], images=[image], return_tensors='pt')
+-            if encoded['input_ids'].shape[-1] > self.config['max_input_tokens']:
+-                raise GatewayError('INPUT_TOKEN_LIMIT', 'Image prompt exceeds the input token budget.')
+-            del encoded
+-            with BytesIO() as frame_bytes:
+-                image.save(frame_bytes, format='PNG')
+-                frame_bytes.seek(0)
+-                # Cooking opens frame.path with PIL; an in-memory file avoids residual private images on timeout.
+-                frames = SimpleNamespace(frames=[SimpleNamespace(path=frame_bytes, width=image.width, height=image.height)])
+-                raw, metrics, _, _ = self.backend.generate_profiled(frames, {
+-                    'messages': messages, 'output_schema': VisualResult.model_json_schema(),
+-                    'constrained_json': True, 'max_new_tokens': min(384, self.config['max_output_tokens']),
+-                    'repetition_penalty': 1.0})
+-            safe = {k: metrics.get(k) for k in ('input_tokens', 'generated_token_count', 'inference_seconds',
+-                                               'peak_allocated_mb', 'peak_reserved_mb', 'finish_reason')}
+-            seconds = safe.get('inference_seconds') or 0
+-            safe['tokens_per_second'] = (safe.get('generated_token_count') or 0) / seconds if seconds else None
+-            safe['model_load_count'] = self.stats['model_load_count']
+-            return raw, safe
++            raw, metrics = self.backend.generate(messages, [image], VisualResult.model_json_schema(),
++                max_input_tokens=self.config['max_input_tokens'], max_new_tokens=min(384, self.config['max_output_tokens']))
++            self.check_resident()
++            return raw, {**metrics, 'model_load_count': self.stats['model_load_count']}
+         finally:
+             image.close()
+ 
+@@ -138,15 +82,6 @@
+                 self.backend.close()
+                 self.backend = None
+         finally:
+-            import gc
+-            gc.collect()
+-            torch = sys.modules.get('torch')
+-            if torch is not None and torch.cuda.is_initialized():
+-                try:
+-                    torch.cuda.empty_cache()
+-                    torch.cuda.synchronize()
+-                except Exception:
+-                    pass
+             if self.reservation is not None:
+                 self.reservation.close()
+                 self.reservation = None
+--- before/ai_gateway/jobs.py
++++ after/ai_gateway/jobs.py
+@@ -269,9 +269,9 @@
+     def health(self):
+         self._prune()
+         return dict(status='ok' if self.state in ('ready', 'busy') else 'unavailable',
+-                    model={'name': 'Qwen/Qwen3-VL-' + (self.settings.visual_model_size.upper() if self.settings.gpu_task == 'visual_profile' else '8B') + '-Instruct', 'precision': 'nf4',
++                    model={'name': 'Qwen/Qwen3-VL-4B-Instruct' if self.settings.gpu_task == 'visual_profile' else None, 'precision': 'nf4',
+                            'purpose': self.settings.gpu_task,
+-                           'compute_dtype': 'bfloat16', 'attention': 'sdpa_chunked', 'gpu_mode': self.settings.gpu_mode},
++                           'compute_dtype': 'bfloat16', 'attention': 'sdpa', 'gpu_mode': self.settings.gpu_mode},
+                     model_ready=self.state in ('ready', 'busy'), busy=self.state == 'busy',
+                     worker_state=self.state, queue_depth=self.queue.qsize(),
+                     queue_capacity=self.settings.queue_capacity,
+--- before/ai_gateway/process.py
++++ after/ai_gateway/process.py
+@@ -2,7 +2,7 @@
+ import json
+ import os
+ from pathlib import Path
+-import subprocess
++from .windows_worker import spawn_contained, finish_contained
+ from .config import ROOT
+ from .errors import GatewayError
+ 
+@@ -13,6 +13,7 @@
+     def __init__(self, settings):
+         self.settings = settings
+         self.process = None
++        self.job = None
+         self.stats = {}
+ 
+     async def _send(self, data):
+@@ -34,31 +35,42 @@
+         except (ValueError, KeyError):
+             raise WorkerFailure('WORKER_PROTOCOL_ERROR', 'Invalid inference worker response.') from None
+ 
++    def _command(self):
++        return [str(self.settings.inference_python), '-I', '-B', str(ROOT/'ai_gateway/worker_bootstrap.py')]
++
+     async def start(self):
++        if not self.settings.start_gpu_worker or self.settings.gpu_task != 'visual_profile' or self.settings.visual_model_size != '4b':
++            raise WorkerFailure('WORKER_UNAVAILABLE', 'Standalone visual GPU startup must be explicitly enabled.')
++        interpreter = self.settings.inference_python.resolve()
++        if not interpreter.is_relative_to(ROOT) or not interpreter.is_file():
++            raise WorkerFailure('WORKER_START_FAILED', 'Gateway-owned inference environment is not installed.')
+         data = self.settings.data_dir.resolve()
++        if not data.is_relative_to(ROOT) and not data.is_relative_to(Path(__import__('tempfile').gettempdir()).resolve()):
++            raise WorkerFailure('WORKER_START_FAILED', 'Unsafe runtime storage location.')
+         data.mkdir(parents=True, exist_ok=True)
+         for name in ('cache', 'temp'):
+             (data/name).mkdir(exist_ok=True)
+-        env = {k: v for k, v in os.environ.items() if not k.startswith('GATEWAY_')}
+-        env.update(PYTHONPATH=str(ROOT), PYTHONDONTWRITEBYTECODE='1', PYTHONUTF8='1',
+-                   HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', HF_HUB_DISABLE_TELEMETRY='1',
+-                   CUDA_VISIBLE_DEVICES='0', CUDA_DEVICE_ORDER='PCI_BUS_ID',
+-                   HF_HOME=str(data/'cache'), TORCH_HOME=str(data/'cache'),
+-                   TEMP=str(data/'temp'), TMP=str(data/'temp'))
++        # No inherited application/Python/CUDA/credential variables; system DLLs plus owned interpreter only.
++        system = os.environ.get('SystemRoot', r'C:\Windows')
++        env = dict(SystemRoot=system, WINDIR=system, PATH=str(interpreter.parent)+os.pathsep+str(Path(system)/'System32'),
++            PYTHONDONTWRITEBYTECODE='1', PYTHONUTF8='1', HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1',
++            HF_HUB_DISABLE_TELEMETRY='1', CUDA_VISIBLE_DEVICES='0', CUDA_DEVICE_ORDER='PCI_BUS_ID',
++            HF_HOME=str(data/'cache'), TORCH_HOME=str(data/'cache'), TEMP=str(data/'temp'), TMP=str(data/'temp'))
+         try:
+-            self.process = await asyncio.create_subprocess_exec(
+-                str(self.settings.inference_python), '-B', '-m', 'ai_gateway.worker',
+-                cwd=str(ROOT), env=env, stdin=asyncio.subprocess.PIPE,
+-                stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL,
+-                limit=2097152, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
++            self.process, self.job = await spawn_contained(self._command(), cwd=str(ROOT), env=env,
++                                                          timeout=min(10, self.settings.model_load_timeout_seconds))
+             await self._send({'op': 'start', 'config': self.settings.worker_config()})
+-            response = await self._receive()
++            response = await asyncio.wait_for(self._receive(), self.settings.model_load_timeout_seconds)
+             if response.get('type') != 'ready':
+                 raise WorkerFailure('WORKER_PROTOCOL_ERROR', 'Expected worker ready response.')
+             self.stats = response['metrics']
+             return self.stats
+-        except OSError:
+-            raise WorkerFailure('WORKER_START_FAILED', 'Cannot start configured inference Python.') from None
++        except (OSError, ValueError, asyncio.TimeoutError):
++            await self.close(force=True)
++            raise WorkerFailure('WORKER_START_FAILED', 'Contained worker startup failed.') from None
++        except BaseException:
++            await self.close(force=True)
++            raise
+ 
+     async def analyze(self, request):
+         await self._send({'op': 'analyze', 'request': request.model_dump()})
+@@ -81,16 +93,13 @@
+         process = self.process
+         if process is None:
+             return
+-        if process.returncode is None:
+-            if not force:
+-                try:
+-                    await self._send({'op': 'shutdown'})
+-                    await asyncio.wait_for(process.wait(), self.settings.shutdown_timeout_seconds)
+-                except (GatewayError, OSError, asyncio.TimeoutError):
+-                    force = True
+-            if force and process.returncode is None:
+-                process.kill()
+-                await process.wait()  # Reap before another worker can be admitted.
+-        if process.stdin:
+-            process.stdin.close()
+-        self.process = None
++        if process.returncode is None and not force:
++            try:
++                await self._send({'op': 'shutdown'})
++                await asyncio.wait_for(process.wait(), self.settings.shutdown_timeout_seconds)
++            except (GatewayError, OSError, asyncio.TimeoutError):
++                pass
++        try:
++            await finish_contained(process, self.job, timeout=max(1, self.settings.shutdown_timeout_seconds))
++        finally:
++            self.process = self.job = None
+--- before/ai_gateway/windows_worker.py
++++ after/ai_gateway/windows_worker.py
+@@ -57,6 +57,16 @@
+             raise GatewayError('WORKER_FAILED', 'Cannot verify worker containment state.')
+         return info.active_processes
+ 
++    def pids(self):
++        class ProcessList(ctypes.Structure):
++            _fields_ = [('assigned', w.DWORD), ('count', w.DWORD), ('ids', ctypes.c_size_t * 256)]
++        info = ProcessList()
++        if not self.k.QueryInformationJobObject(self.handle, 3, ctypes.byref(info), ctypes.sizeof(info), None):
++            raise GatewayError('WORKER_START_FAILED', 'Cannot verify worker membership.')
++        if info.count > 256:
++            raise GatewayError('WORKER_START_FAILED', 'Unexpected worker group size.')
++        return list(info.ids[:info.count])
++
+     def terminate(self):
+         if self.handle and not self.k.TerminateJobObject(self.handle, 1):
+             raise GatewayError('WORKER_FAILED', 'Could not stop the owned worker group.')
+@@ -80,17 +90,26 @@
+             raise
+         job.attach_owned(process)
+         line = await asyncio.wait_for(process.stdout.readline(), timeout)
+-        if json.loads(line) != {'type': 'bootstrap', 'protocol': 1}:
+-            raise ValueError()
++        hello = json.loads(line)
++        if (not isinstance(hello, dict) or set(hello) != {'type', 'protocol', 'pid'} or
++            hello['type'] != 'bootstrap' or hello['protocol'] != 1 or type(hello['pid']) is not int or
++            hello['pid'] not in job.pids()):
++            raise ValueError('Bootstrap is not a verified member of the owned Job Object')
++        process.worker_pid = hello['pid']
+         return process, job
+     except BaseException:
+         job.close()  # kills contained children, if any
+         if process is not None:
+-            if process.returncode is None:
+-                process.kill()  # only the retained child, including pre-assignment failures
+-            await process.wait()
++            # Close input first: a pre-assignment Windows venv redirector child may
++            # still be waiting in the CPU-only bootstrap. EOF prevents a stranded reader.
+             if process.stdin:
+                 process.stdin.close()
++            if process.returncode is None:
++                try:
++                    process.kill()  # retained child only; never reopen an arbitrary PID
++                except ProcessLookupError:
++                    pass
++            await asyncio.wait_for(process.wait(), max(1, min(timeout, 10)))
+         raise
+ 
+ async def finish_contained(process, job, *, timeout=10):
+--- before/ai_gateway/worker.py
++++ after/ai_gateway/worker.py
+@@ -1,15 +1,34 @@
+ """Private JSON-lines protocol. No server token, model text or tracebacks in logs."""
+ import json
+ import sys
++import os
++import threading
+ from .errors import GatewayError
+ 
+ 
+-def main():
++def watch_resident(backend, stop, send, exit_process=os._exit):
++    while not stop.wait(1):
++        try:
++            backend.check_resident()
++        except BaseException:
++            if stop.is_set():
++                return
++            try:
++                send({'type': 'error', 'code': 'GPU_BUSY', 'message': 'GPU safety changed; worker stopped.', 'fatal': True})
++            finally:
++                exit_process(70)  # This owned worker only, even if the parent pipe has closed.
++            return
++
++
++def main(initial_command=None):
++    stop = threading.Event()
++    output_lock = threading.Lock()
+     protocol = sys.stdout
+-    sys.stdout = sys.stderr  # Cooking diagnostic prints cannot corrupt the protocol.
++    sys.stdout = sys.stderr  # Backend diagnostics cannot corrupt the private protocol.
+     def send(value):
+-        protocol.write(json.dumps(value, ensure_ascii=True) + '\n')
+-        protocol.flush()
++        with output_lock:
++            protocol.write(json.dumps(value, ensure_ascii=True) + '\n')
++            protocol.flush()
+     def read():
+         line = sys.stdin.buffer.readline(2097153)
+         if len(line) > 2097152:
+@@ -17,7 +36,7 @@
+         return json.loads(line) if line else None
+     backend = None
+     try:
+-        command = read()
++        command = initial_command if initial_command is not None else read()
+         if not command or command.get('op') != 'start':
+             raise GatewayError('WORKER_PROTOCOL_ERROR', 'Expected worker startup configuration.')
+         from .inference import QwenAdapter
+@@ -26,6 +45,7 @@
+         from .visual import VisualRequest, analyze_visual
+         backend = QwenAdapter(command['config'])
+         send({'type': 'ready', 'metrics': backend.start()})
++        threading.Thread(target=watch_resident, args=(backend, stop, send), daemon=True, name='gateway-gpu-safety').start()
+         while True:
+             command = read()
+             if not command or command.get('op') == 'shutdown':
+@@ -40,7 +60,10 @@
+                     request = AnalyzeRequest.model_validate(command['request'])
+                     send({'type': 'result', **analyze(backend, request)})
+             except GatewayError as error:
+-                send({'type': 'error', 'code': error.code, 'message': error.public_message, 'fatal': False})
++                fatal = error.code in ('GPU_BUSY', 'GPU_STATUS_UNAVAILABLE', 'INSUFFICIENT_VRAM', 'CUDA_UNAVAILABLE')
++                send({'type': 'error', 'code': error.code, 'message': error.public_message, 'fatal': fatal})
++                if fatal:
++                    break
+             except Exception as error:
+                 oom = 'outofmemory' in type(error).__name__.lower() or 'out of memory' in str(error).lower()
+                 send({'type': 'error', 'code': 'CUDA_OOM' if oom else 'INFERENCE_FAILED',
+@@ -56,6 +79,7 @@
+         send({'type': 'error', 'code': 'CUDA_OOM' if oom else 'MODEL_LOAD_FAILED',
+               'message': 'GPU memory exhausted.' if oom else 'Model worker could not initialize.', 'fatal': True})
+     finally:
++        stop.set()
+         if backend is not None:
+             try:
+                 backend.close()
+--- before/ai_gateway/worker_bootstrap.py
++++ after/ai_gateway/worker_bootstrap.py
+@@ -1,12 +1,13 @@
+ """CPU bootstrap. No inference import occurs before the contained-parent handshake."""
+ from pathlib import Path
+ import json
++import os
+ import sys
+ 
+ def main():
+     root = Path(__file__).resolve().parents[1]
+     sys.path.insert(0, str(root))  # only this trusted Gateway package; -I ignores ambient PYTHONPATH
+-    print(json.dumps({'type': 'bootstrap', 'protocol': 1}), flush=True)
++    print(json.dumps({'type': 'bootstrap', 'protocol': 1, 'pid': os.getpid()}), flush=True)
+     line = sys.stdin.buffer.readline(2097153)
+     if len(line) > 2097152:
+         return 2
+--- before/HTTP_WORKFLOWS.md
++++ after/HTTP_WORKFLOWS.md
+@@ -1,6 +1,6 @@
+-# Phase 2B HTTP workflow contract
++# HTTP workflow contract — Phase 4B.2 runtime update
+ 
+-CPU workflow parsing is deterministic extraction, not Qwen inference or AI enrichment. The React frontend is not connected in this phase. All routes still require `Authorization: Bearer <service token>`.
++CPU workflow parsing is deterministic extraction, not Qwen inference or AI enrichment. The local Web bridge and review-only UI use these deterministic contracts. All routes still require `Authorization: Bearer <service token>`.
+ 
+ ## Request and dispatch
+ 
+@@ -11,7 +11,7 @@
+ ~~~
+ 
+ - Explicit `projectType`: exactly `full-ai` or `semi`. Unknown values, null, wrong casing/types are HTTP 422 `UNSUPPORTED_PROJECT_TYPE`; extra fields remain forbidden. No workflow inference from script content.
+-- Omitted `projectType`: existing legacy speaker extraction and guarded Qwen job path. Legacy request serialization and result shape are unchanged.
++- Omitted `projectType`: legacy speaker extraction/schema remain, but GPU legacy generation is unavailable in this standalone 4B visual deployment (503 WORKER_UNAVAILABLE); there is no model fallback.
+ - `script`: nonblank string, Pydantic max 100000 characters and configured max (default 40000). `language`: existing pattern/default `en`, validated but not used to translate deterministic source fields.
+ - Global authenticated body limit remains 262144 bytes by default, including streamed/chunked bodies. Body read deadline remains 15 seconds.
+ - Source grammar errors for an explicit workflow occur **inside the asynchronous job**, after admission; they do not go through the legacy speaker extractor.
+@@ -28,7 +28,7 @@
+ 
+ `GET /v1/jobs/{job_id}` retains exactly the outer fields `job_id, state, result, error, metrics`. Queued/running jobs have result=null and error=null. Polling may miss short-lived states.
+ 
+-For **legacy requests**, result is still the existing `{"characters":[...],"scenes":[...]}` analysis object, and existing worker metrics remain unchanged.
++For historical **legacy requests**, the retained schema is the existing `{"characters":[...],"scenes":[...]}` analysis object, and schema-validation tests remain. Real legacy generation is unsupported here.
+ 
+ For **explicit workflows**, the new result envelope is:
+ 
+@@ -113,7 +113,7 @@
+ 
+ There are two independent execution lanes:
+ 
+-- Original GPU queue/worker, readiness checks, startup deadline, timeout/cleanup and safety gates.
++- Standalone 4B visual GPU queue/worker, disabled by default; readiness, deadlines, independent policy and owned process containment.
+ - One CPU worker coroutine, one dedicated thread, and its own waiting queue bounded by the existing `queue_capacity` setting (default 4).
+ 
+ `queue_capacity` applies **per lane**. Maximum accepted work before retained-storage limits is one running + queue_capacity waiting in each lane. Both share the same `job_limit` (default 64) across queued/running/terminal jobs and the same TTL (default 1800 seconds). Capacity/TTL checks occur on admission/get/health as before. A full shared job store backpressures either lane; it is not bypassed by CPU jobs. Already accepted GPU jobs execute independently of a blocked CPU parser.
+@@ -143,9 +143,9 @@
+ 
+ ## CPU-only startup
+ 
+-The existing default remains `GATEWAY_START_GPU_WORKER=true` to preserve legacy startup. Merely submitting a CPU request does **not** disable automatic GPU startup in a default deployment.
++The standalone default is `GATEWAY_START_GPU_WORKER=false`. CPU parsing does not require an inference environment. Explicit GPU opt-in is a separate operational approval.
+ 
+-To intentionally run only CPU workflows, set the startup option before launching (do not change gpu_mode):
++For CPU workflows, keep the startup option disabled:
+ 
+ ~~~bat
+ set GATEWAY_START_GPU_WORKER=false
+@@ -154,10 +154,10 @@
+ 
+ The service token must already be configured. This switch is not a GPU-gate override; legacy jobs are unavailable in this mode. worker_state=disabled, model_ready=false and model_load_count=0. CPU readiness can be true while /health is 503. No machine environment or existing service was changed during implementation.
+ 
+-Setting this flag is not necessary when an already-running API has a failed GPU worker and ready CPU lane; explicit workflow requests are accepted independently. GPU worker/process/gates were not modified.
++Setting this flag is not necessary when an already-running API has a failed GPU worker and ready CPU lane; explicit workflow requests are accepted independently. Phase 4B.2 replaces the GPU application dependencies with Gateway-owned code while preserving the numerical safety thresholds; see README.md.
+ 
+ ## Verification and limits
+ 
+ Run the gateway's existing `test.cmd` or pytest suite. `tests/test_http_workflows.py` adds CPU workflow tests, including actual TCP loopback HTTP requests using the two hash-verified original scripts. Set PHASE2B_EVIDENCE_DIR to retain actual HTTP payloads and per-scene comparisons.
+ 
+-CPU results are exact deterministic extraction for the supported grammar; unsupported structures fail. No Qwen descriptions, Voice Profiles, semantic AI quality, inference latency, tokens/second or GPU performance are claimed. React integration, real inference, remote deployment, Firebase persistence, media generation and provider fallback remain out of scope.
++CPU results are exact deterministic extraction for the supported grammar; unsupported structures fail. No Qwen descriptions, Voice Profiles, semantic AI quality, inference latency, tokens/second or GPU performance are claimed. Fresh Web/live Clerk acceptance, real inference, remote deployment, Firebase persistence, media generation and provider fallback remain out of this CPU-only phase.
+--- before/README.md
++++ after/README.md
+@@ -1,207 +1,76 @@
+-# Local Qwen AI Gateway
++# Local Qwen AI Gateway — standalone Phase 4B.2
+ 
+-Phase 2B adds authenticated deterministic Full AI / Semi jobs on a separate bounded CPU lane.
+-See [HTTP_WORKFLOWS.md](HTTP_WORKFLOWS.md) for projectType, exact result envelopes, and CPU-only startup (`GATEWAY_START_GPU_WORKER=false`). GPU startup remains enabled by default for legacy compatibility. `/health` retains its GPU-based status code and exposes independent `cpu_workflows` readiness.
++The authenticated FastAPI service has two lanes: deterministic Full AI / Semi parsing on CPU and an opt-in standalone Qwen3-VL-4B visual-profile worker. GPU startup is **disabled by default**. This implementation has CPU/fake and Windows process-containment tests; real GPU readiness and model quality remain NOT RUN.
+ 
+-## Original Phase 1 architecture and legacy inference contract
++## Ownership and boundaries
+ 
+-Independent authenticated script-analysis API for Windows/Python 3.12. No React,
+-Firestore, audio, video generation, WaveSpeed or tunnel changes.
++FastAPI in the Gateway CPU environment → bounded job queue → Gateway-owned contained worker → local Qwen runtime → strict JSON/schema validation.
+ 
+-## Architecture and isolation
++The inference interpreter defaults to .venv-inference/Scripts/python.exe inside this project. No Cooking interpreter, application import, service, pipeline, job directory, lock or lifecycle is used. The only authorized external asset is the read-only checkpoint F:/Cooking-AI-review/models/qwen3-vl-4b. The worker must not use another model as fallback.
+ 
+-FastAPI (gateway .venv) -> bounded in-memory queue -> one persistent subprocess
+-(existing Cooking inference Python) -> existing Qwen3-VL-8B NF4 backend ->
+-strict Pydantic/source validation -> asynchronous job result.
++The loader uses public Transformers/PyTorch/bitsandbytes APIs, NF4 double quantization, BF16 computation, explicit CUDA device 0, upstream SDPA, local_files_only=True and trust_remote_code=False. Processor/model imports are lazy. It applies the existing 896-pixel image edge, input budget and 384-token visual output cap. JSON token constraints and existing strict output validation remain required. Upstream SDPA memory use and performance require later GPU acceptance; CPU tests cannot establish them.
+ 
+-The HTTP service has its own .venv. Its GPU child deliberately uses the already
+-working Cooking interpreter **read-only**, configurable via GATEWAY_INFERENCE_PYTHON.
+-This avoids reinstalling CUDA/PyTorch, duplicating model loaders or changing the
+-Cooking environment. You can point it to a separately provisioned environment with
+-the same pinned inference dependencies. No package is installed into Cooking.
++## Current CPU-only startup
+ 
+-Imports only app.services modules, never Cooking CLI/application entry points.
+-PYTHONDONTWRITEBYTECODE, -B, offline Hugging Face settings and gateway-owned
+-cache/temp directories prevent writes to Cooking or model downloads. The new
+-Python package is ai_gateway, so it does not shadow Cooking's app package.
+-
+-Reused unchanged:
+-- app.services.vision_backend_registry.create_backend
+-- app.services.qwen8b_nf4_backend.Qwen8BNF4Backend
+-- app.services.qwen4b_nf4_backend.Qwen4BNF4Backend.generate_profiled / close
+-- app.services.vision_optimization.parse
+-- app.services.dedicated_worker.baseline_gate / postload_gate
+-
+-Adapter sends a new TextFrames(frames=[]) object plus custom messages/output_schema.
+-It does not construct or weaken Cooking's image-required VisionRequest. The existing
+-backend supplies the chat template, images=None processing, CUDA inference_mode,
+-NF4 double quantization/BF16, chunked SDPA (256), generation and output decoding.
+-
+-## Setup and startup on Windows
+-
+-From Command Prompt:
++Use the existing Gateway .venv and a server-only service token of at least 32 characters. No package installation is needed to rerun the existing CPU suite.
+ 
+ ~~~bat
+-cd /d F:\tool-ai-dh\local-ai-gateway
+-setup.cmd
+-test.cmd
+-set GATEWAY_SERVICE_TOKEN=YOUR_RANDOM_SECRET_OF_AT_LEAST_32_CHARACTERS
+-start.cmd
+-~~~
+-
+-Generate a token without displaying it in a PowerShell session, if preferred:
+-
+-~~~powershell
+-$env:GATEWAY_SERVICE_TOKEN = & .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(48))"
+-.\start.cmd
+-~~~
+-
+-Keep that token only in the server/client environment, never React or VITE_*.
+-Startup binds only 127.0.0.1:8765. The service can report unavailable health while
+-loading or after a safe preflight rejection. Stop with Ctrl+C.
+-
+-Equivalent environment setup:
+-
+-~~~bat
+-F:\Cooking-AI-review\.venv\Scripts\python.exe -B -m venv .venv
+-.venv\Scripts\python.exe -m pip install -r requirements.lock.txt
++set GATEWAY_START_GPU_WORKER=false
+ .venv\Scripts\python.exe -B -m ai_gateway
+ ~~~
+ 
+-.env.example documents variable names; the service deliberately does not load .env
+-files automatically. The configuration validates ranges and refuses gateway data
+-storage inside Cooking. The default model path points to the existing 8B directory.
++The default listener is 127.0.0.1:8765. Configure GATEWAY_SERVICE_TOKEN in the server environment; never expose it to React/VITE variables. Settings are read from process environment, not automatically from .env files. .env.example documents the independent configuration.
+ 
+-## GPU safety and model lifecycle
++setup.cmd is a CPU-environment setup helper using the independent system Python 3.12 launcher. It was edited but **not executed** in Phase 4B.2. It no longer bootstraps from an inference interpreter. No inference environment was created and no packages were installed in this phase.
+ 
+-One Uvicorn process and one GPU subprocess; no autoreload/multiple GPU instances.
+-The worker owns a machine-wide Windows GPU-0 mutex. In shared mode (default), it
+-also locks byte 0 of the **existing** Cooking jobs/.speech_gpu.lock using a read-only
+-handle, compatible with Cooking's filelock. It never creates/removes that file.
+-A missing shared lock fails with GPU_LOCK_MISSING. A held lock fails GPU_BUSY.
++## Future inference environment — approval required
+ 
+-Because Cooking removes its lock after a task, default shared mode may intentionally
+-remain unavailable. Do not start a Cooking task merely to manufacture this lock.
+-An operator must provision an agreed persistent shared-lock arrangement separately,
+-or reserve a dedicated machine/GPU and explicitly set GATEWAY_GPU_MODE=dedicated.
+-Dedicated mode is a scheduling commitment: no Cooking/other GPU workloads may start
+-while the service is alive. If a Cooking lock already exists, it is still respected.
+-The gateway cannot coordinate an unrelated application that ignores these locks.
++Three manifests are prepared: requirements-inference-torch.txt (official CUDA 12.1 Torch wheels), requirements-inference.txt (direct inference pins), and requirements-inference.lock.txt. The last file is explicitly a **pre-install constraint manifest**, not a resolved or hash-verified transitive environment lock. It must be resolved/verified in a separately approved installation phase.
+ 
+-Before any model load, check NVIDIA compute processes, existing baseline gate
+-(<=1500 decimal MB used), configured free memory (default >=10500 MB), exact
+-inference package versions and torch CUDA availability/free memory. NVIDIA queries
+-must succeed; unknown/other compute workloads fail closed, including ambiguous WDDM
+-reporting. No process is killed to make room and no automatic model fallback occurs.
+-After load, require CUDA-only placement and >=3000 MB remaining via Cooking's gate.
++Worker opt-in requires all of: Gateway-owned installed interpreter, GATEWAY_GPU_MODE=standalone, GATEWAY_GPU_TASK=visual_profile, GATEWAY_VISUAL_MODEL_SIZE=4b, GATEWAY_START_GPU_WORKER=true, approved checkpoint and passing GPU checks. Do not enable it as part of CPU-only verification.
+ 
+-A successful worker loads once and stays resident across requests. Graceful shutdown
+-calls close() and clears CUDA memory. Hard request/load timeouts terminate and reap
+-only this service's child; the OS releases its GPU locks/memory. Fatal load/OOM/crash
+-fails waiting jobs and requires an operator restart, avoiding automatic reload loops.
++Remove obsolete GATEWAY_COOKING_ROOT, GATEWAY_GPU_LOCK_PATH and GATEWAY_MODEL_PATH from the Gateway launch configuration: their presence now fails configuration explicitly. Old shared/dedicated modes, an external interpreter and 8B selection are rejected. GPU legacy script generation is unsupported in this 4B visual deployment; it never silently switches model. Full AI/Semi requests must specify projectType and continue to use CPU extraction.
+ 
+-## API contract
++## GPU safety and process lifetime
+ 
+-ALL endpoints require Authorization: Bearer <service token>, including health/jobs.
+-There are no public docs, permissive CORS, public binds or frontend-held credentials.
++A Gateway-only Windows named mutex coordinates Gateway workers. It does **not** establish physical GPU exclusivity or coordinate unrelated applications. No Cooking lock is opened, created, changed or deleted.
+ 
+-- GET /health: 200 when ready/busy, otherwise 503; safe model config, readiness,
+-  busy/worker state, queue depth, model load count/time and sanitized error.
+-- POST /v1/script/analyze: always 202 + queued job reference after admission.
+-  It NEVER waits for model generation on the HTTP connection.
+-- GET /v1/jobs/{job_id}: 200 with queued/running/completed/failed. Completed result
+-  contains characters/scenes. Failed result is null and error has code/message.
+-- 401: invalid token. 413: body/script limit. 422: malformed input/unsupported
+-  screenplay format. 429: waiting queue or retained-job capacity full (Retry-After).
+-  503: worker unavailable. 404: unknown/expired job.
++Fail-closed policy retains these decimal-MB requirements:
+ 
+-Input: examples/courtroom.request.json. Validated result shape:
+-examples/courtroom.expected.json (**authored fixture, not a real model response**).
+-Generated contracts: schemas/analyze-request.schema.json and
+-schemas/script-analysis.schema.json.
++- Before loading: at least 10,500 MB free, at most 1,500 MB baseline used, no competing compute PID, valid GPU/process inventory.
++- After loading and while resident: at least 3,000 MB free, no competing compute PID; initial placement requires all parameters on CUDA device 0 with no CPU/disk offload.
++- Unknown/ambiguous process ownership or malformed/unavailable NVIDIA information causes refusal. No PID allowlist, process termination to make room, driver adjustment or threshold reduction is provided.
+ 
+-Example client (PowerShell, with the same token as the running server):
++Checks occur before loading, after loading, before/after generation and through a resident monitor. An unsafe resident state exits only the owned worker. Snapshot checks have a race window: this service cannot prevent a different application from allocating GPU memory between observations. No exclusive-physical-GPU claim is made.
+ 
+-~~~powershell
+-$headers = @{ Authorization = "Bearer $env:GATEWAY_SERVICE_TOKEN" }
+-$body = Get-Content -Raw .\examples\courtroom.request.json
+-$job = Invoke-RestMethod http://127.0.0.1:8765/v1/script/analyze -Method Post -Headers $headers -ContentType 'application/json' -Body $body
+-Invoke-RestMethod ("http://127.0.0.1:8765" + $job.status_url) -Headers $headers
++A CPU-only isolated bootstrap waits for the start command until the supervisor has assigned its retained process handle to a Windows Job Object and verified the actual interpreter PID belongs to it. This handles Windows virtualenv redirectors without attaching arbitrary external PIDs. The noninheritable Job handle has KILL_ON_JOB_CLOSE and no breakaway. Shutdown, load/request timeouts, startup errors and supervisor crash clean up the owned process tree. Containment failure refuses startup before model imports. A failed or abandoned mutex requires revalidation/operator restart; no automatic reload loop occurs. The retained-handle adapter uses CPython Windows subprocess internals and must be revalidated when Python changes.
++
++## HTTP compatibility and integrity
++
++Every endpoint, including health and job polling, requires the existing bearer token. Body/image limits, source validators, strict JSON parsing, job envelopes, in-memory retention and queue/deadline behavior are retained.
++
++- POST /v1/script/analyze with projectType full-ai or semi: deterministic CPU job; see [HTTP_WORKFLOWS.md](HTTP_WORKFLOWS.md).
++- POST /v1/visual/profile: same image-only asynchronous visual contract; unavailable until the approved real worker is ready.
++- GET /v1/jobs/{job_id}: existing queued/running/completed/failed result envelope.
++- GET /health: GPU-based HTTP status retained; CPU readiness is separate. With GPU disabled, 503 plus cpu_workflows.ready=true is expected. Health reports standalone / 4B visual / sdpa configuration, not proof that a model has loaded.
++
++Full AI uses canonical Dialogue; Semi uses canonical Voiceover. Exact source preservation, source metadata and character mapping remain in the deterministic parsers. No Firestore migration, Web UI/media/audio change or live authentication acceptance is part of this phase.
++
++Legacy schemas/examples and scripts/smoke_real.py are historical artifacts. The courtroom expected JSON is an authored fixture, not inference evidence. The old 8B script smoke is **not applicable** to the standalone 4B visual worker and must not be used to claim current model acceptance.
++
++## CPU verification
++
++~~~bat
++.venv\Scripts\python.exe -B -m pytest tests -q -p no:cacheprovider
++.venv\Scripts\python.exe -B scripts\inspect_runtime.py
+ ~~~
+ 
+-Admission response (job ID varies):
+-~~~json
+-{"job_id":"...","state":"queued","status_url":"/v1/jobs/..."}
+-~~~
++Tests install hard guards against GPU imports/loading, CUDA libraries, Cooking access, production mutex acquisition and real GPU child startup. Multiprocess tests use unique Local test mutexes and CPU-only child programs. Parser tests require the two exact original user scripts; no substitute inputs are created. Set PHASE2B_EVIDENCE_DIR to retain real-script HTTP payloads and per-scene checks.
+ 
+-On completion, GET returns job_id, state="completed", result (the validated
+-characters/scenes object), error=null and metrics. Exact HTTP request/response
+-recordings using the fake model are in runtime/http-contract-report.json.
++The inspector reads package metadata from the **current** interpreter and checks owned inference-environment presence. It does not import Torch, probe CUDA/NVIDIA, read the checkpoint or acquire any GPU reservation. Missing credential configuration is reported as a boolean without printing credentials. Its output is not a GPU-readiness certificate.
+ 
+-## Intermediate screenplay schema and integrity
++Fresh evidence and remaining limits: F:/tool-ai-dh/web-ai/PHASE_4B2_STANDALONE_IMPLEMENTATION_REPORT.md.
+ 
+-characters: id, name, short description, voice_profile {delivery, emotion, evidence}.
+-scenes: consecutive scene_number, source_reference, context, camera, action,
+-character_ids, dialogue [{speaker_id, text, voice_instruction}], voice_instruction.
+-No duration/cost fields in the legacy result. Explicit projectType workflows use the separate
+-Phase 2A.1 Web contract: Full AI Dialogue, Semi Voiceover. Their CPU job results and metadata
+-are documented in HTTP_WORKFLOWS.md; the React frontend is not connected to this gateway.
++## Migration and rollback
+ 
+-Phase 1 accepts explicit 'speaker: exact dialogue' lines or uppercase speaker blocks
+-separated by blank lines. An initial parenthesized direction in a speaker block is
+-not spoken text. Multiline block line endings are preserved, including Windows CRLF.
+-Use separate labelled lines for multiline speech with interleaved action/directions.
+-Unlabelled prose, implicit speakers and scripts without identifiable dialogue are
+-rejected, rather than claiming guaranteed dialogue coverage. Non-English colon
+-speaker labels are supported; standalone uppercase blocks use Latin labels.
+-
+-Explicit CHARACTER id | Name | Description declarations must all be retained, including silent characters. Explicit IDs such as judge_1 are preserved. Named speakers use deterministic snake_case
+-IDs (JUDGE -> judge). Every expected utterance must occur exactly once in source order,
+-with unchanged text and the right character reference. Every explicit SCENE/INT./EXT.
+-heading must be represented in order and dialogue cannot move to another source scene.
+-Unknown/duplicate characters, unsupported references, extra fields, empty scenes,
+-missing utterances or unsupported voice evidence fail validation. Voice profiles must
+-cite exact source evidence; semantic quality of inferences still needs human review.
+-One bounded correction attempt covers malformed or invalid model JSON. If still invalid,
+-the job fails; there is no partial-success fallback or silent dropping of dialogue.
+-
+-## Bounded work and storage
+-
+-Defaults: one running inference, four waiting jobs, 64 retained jobs, 30-minute
+-completed/failed retention (pruned on access), 180-second end-to-end job deadline
+-including waiting and correction, 240-second model load deadline. Maximum HTTP body
+-256 KiB, script 40000 characters, total prompt 8192 input tokens, 4096 output tokens.
+-Body reading has a separate 15-second deadline. Change env limits deliberately.
+-Jobs/results are memory-only and disappear on restart. Request scripts are released
+-from gateway job storage on completion/failure; outputs contain dialogue until TTL.
+-No private script or token is logged. The real worker's diagnostic stdout is separated
+-from its private JSON protocol; stderr is discarded to avoid accidental data logging.
+-Each accepted job runs at most once in this process. Cross-restart durability, per-user
+-ownership, cancellation API and idempotency belong to later phases.
+-
+-## Verification commands
+-
+-~~~bat
+-test.cmd
+-.venv\Scripts\python.exe -B scripts\verify_http.py
+-F:\Cooking-AI-review\.venv\Scripts\python.exe -B scripts\inspect_runtime.py
+-~~~
+-
+-inspect_runtime loads only the local processor/tokenizer on CPU, not model weights;
+-it reads CUDA/NVIDIA availability and does not change a Cooking lock. CPU tests use
+-fake inference. verify_http opens an ephemeral loopback server with fake inference,
+-records actual HTTP exchange and shuts down automatically. It is not a production mode.
+-
+-Optional real-model test, only after resolving GPU reservation and availability:
+-
+-~~~bat
+-.venv\Scripts\python.exe -B scripts\smoke_real.py --run
+-~~~
+-
+-The smoke invokes the actual guarded worker through the API, submits the public courtroom
+-fixture twice, checks exact speakers/dialogue/IDs and grounded nonempty voice profiles,
+-and verifies one model load. It records load time, request latency, generated tokens/s,
+-peak Torch VRAM and correctness in runtime/real-smoke-report.json. It has no automatic
+-model download, GPU-gate override or model switch. A safe refusal is not an inference pass.
+-
+-See VERIFICATION.md for results actually obtained in this session.
++Keep GPU startup false during migration. Update only Gateway launch configuration; keep the checkpoint external/read-only. Review independent environment provisioning and fresh GPU readiness separately before opt-in. For rollback, stop only the Gateway through its normal shutdown, restore its prior code/config snapshot if needed, and **leave GPU startup false**. Do not reactivate the removed Cooking dependency as an automatic fallback. CPU endpoints can remain available with the standalone worker disabled.
+--- before/scripts/inspect_runtime.py
++++ after/scripts/inspect_runtime.py
+@@ -1,65 +1,27 @@
+-"""Read-only diagnostics: processor/tokenizer only, never model weights/inference."""
+-import contextlib
+-import hashlib
++"""CPU-only metadata inspector: no reservation, CUDA, model import, or checkpoint reads."""
+ import importlib.metadata
+-import io
+ import json
+-import os
+ from pathlib import Path
+ import sys
+-
+-ROOT = Path(__file__).resolve().parents[1]
+-sys.path.insert(0, str(ROOT))
+-os.environ.update(HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1', HF_HUB_DISABLE_TELEMETRY='1',
+-                  PYTHONDONTWRITEBYTECODE='1', HF_HOME=str(ROOT/'runtime/cache'))
+-from ai_gateway.gpu import GPUReservation, gpu_snapshot
+-from ai_gateway.errors import GatewayError
++ROOT=Path(__file__).resolve().parents[1]
++sys.path.insert(0,str(ROOT))
+ 
+ def main():
+-    report = {'model_loaded': False, 'inference_executed': False}
+-    cooking = Path(os.environ.get('GATEWAY_COOKING_ROOT', 'F:/Cooking-AI-review'))
+-    model = Path(os.environ.get('GATEWAY_MODEL_PATH', str(cooking/'models/qwen3-vl-8b')))
+-    for key in ('torch', 'transformers', 'bitsandbytes', 'pydantic'):
+-        try: report.setdefault('versions', {})[key] = importlib.metadata.version(key)
+-        except importlib.metadata.PackageNotFoundError: report.setdefault('versions', {})[key] = 'missing'
++    from ai_gateway.config import Settings
++    from ai_gateway.qwen_runtime import PINNED
++    report={'model_loaded':False,'cuda_initialized':False,'reservation_acquired':False,
++            'inference_environment_installed':(ROOT/'.venv-inference/Scripts/python.exe').is_file(),
++            'metadata_environment':sys.executable,'packages':{}}
++    for name,expected in PINNED.items():
++        try:version=importlib.metadata.version(name)
++        except importlib.metadata.PackageNotFoundError:version=None
++        report['packages'][name]={'installed':version,'expected':expected,'match':version==expected}
++    # Credential presence only; never print Settings or environment values.
+     try:
+-        report['gpu'] = gpu_snapshot()
+-    except GatewayError as error:
+-        report['gpu_error'] = error.code
+-    lease = GPUReservation(Path(os.environ.get('GATEWAY_GPU_LOCK_PATH', str(cooking/'jobs/.speech_gpu.lock'))), 'shared')
+-    try:
+-        lease.acquire()
+-        report['shared_gpu_lock'] = 'available'
+-    except GatewayError as error:
+-        report['shared_gpu_lock'] = error.code
+-    finally:
+-        lease.close()
+-    try:
+-        # CPU processor probe: no Qwen model class is instantiated.
+-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+-            import torch
+-            from transformers import AutoProcessor
+-            report['cuda_available'] = torch.cuda.is_available()
+-            processor = AutoProcessor.from_pretrained(str(model), local_files_only=True, use_fast=True)
+-            messages = [{'role': 'user', 'content': [{'type': 'text', 'text': 'Reply with OK.'}]}]
+-            prompt = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+-            encoded = processor(text=[prompt], images=None, return_tensors='pt')
+-            keys = sorted(encoded.keys())
+-            assert 'input_ids' in encoded and 'pixel_values' not in encoded
+-            report['text_processor'] = {'status': 'passed', 'keys': keys,
+-                                        'input_tokens': int(encoded['input_ids'].shape[-1]),
+-                                        'device': str(encoded['input_ids'].device), 'images': None}
+-    except Exception as error:
+-        report['text_processor'] = {'status': 'failed', 'exception_type': type(error).__name__}
+-    sources = ['app/services/vision_backend_registry.py', 'app/services/qwen4b_nf4_backend.py',
+-               'app/services/qwen8b_nf4_backend.py', 'app/services/vision_optimization.py',
+-               'app/services/dedicated_worker.py', 'requirements-worker.txt', 'requirements-worker-torch.txt']
+-    report['cooking_source_sha256'] = {name: hashlib.sha256((cooking/name).read_bytes()).hexdigest() for name in sources}
+-    destination = ROOT/'runtime/runtime-inspection.json'
+-    destination.parent.mkdir(exist_ok=True)
+-    destination.write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
+-    print(json.dumps(report, indent=2))
+-    return 0 if report.get('text_processor', {}).get('status') == 'passed' else 1
+-
+-if __name__ == '__main__':
+-    raise SystemExit(main())
++        settings=Settings.from_env()
++        report.update(configuration_valid=True,gpu_start_enabled=settings.start_gpu_worker,
++                      gpu_mode=settings.gpu_mode,model_size=settings.visual_model_size)
++    except ValueError:report['configuration_valid']=False
++    print(json.dumps(report,indent=2))
++    return 0
++if __name__=='__main__':raise SystemExit(main())
+--- before/setup.cmd
++++ after/setup.cmd
+@@ -2,13 +2,12 @@
+ setlocal
+ cd /d "%~dp0"
+ set "PYTHONDONTWRITEBYTECODE=1"
+-if not defined GATEWAY_INFERENCE_PYTHON set "GATEWAY_INFERENCE_PYTHON=F:\Cooking-AI-review\.venv\Scripts\python.exe"
+-if not exist "%GATEWAY_INFERENCE_PYTHON%" (
+-  echo Set GATEWAY_INFERENCE_PYTHON to the audited inference Python.
+-  exit /b 1
++rem CPU Gateway setup only. Never use Cooking or the inference environment as a bootstrap.
++rem Phase 4B.2 edits this helper but does not execute installation.
++if not exist ".venv\Scripts\python.exe" (
++  py -3.12 -B -m venv .venv
++  if errorlevel 1 exit /b 1
+ )
+-if not exist ".venv\Scripts\python.exe" "%GATEWAY_INFERENCE_PYTHON%" -B -m venv .venv
+-if errorlevel 1 exit /b 1
+ if exist requirements.lock.txt (
+   .venv\Scripts\python.exe -m pip install --disable-pip-version-check -r requirements.lock.txt
+ ) else (
+--- before/tests/conftest.py
++++ after/tests/conftest.py
+@@ -1,3 +1,50 @@
++"""CPU-only test harness. Imported by every test-owned Python child as well."""
++import importlib.abc
++import os
++from pathlib import Path
++import sys
++
++class CpuOnlyImports(importlib.abc.MetaPathFinder):
++    def find_spec(self, fullname, path=None, target=None):
++        if fullname.split('.')[0] in {'torch','transformers','bitsandbytes','app','ctranslate2','faster_whisper','cupy'}:
++            raise RuntimeError('CPU_ONLY_GUARD: forbidden inference/application import')
++
++sys.meta_path.insert(0, CpuOnlyImports())
++
++def cpu_audit(event, args):
++    if event in ('open','os.listdir','os.scandir') and args and isinstance(args[0], (str, bytes, os.PathLike)):
++        path = os.fsdecode(args[0]).replace('\\','/').lower()
++        if 'cooking-ai-review' in path:
++            raise RuntimeError('CPU_ONLY_GUARD: external application/checkpoint access forbidden')
++    if event == 'subprocess.Popen':
++        command = str(args[:2]).replace('\\','/').lower()
++        if any(v in command for v in ('cooking-ai-review','ai_gateway.worker','worker_bootstrap.py','nvidia-smi')):
++            raise RuntimeError('CPU_ONLY_GUARD: real GPU/app subprocess forbidden')
++    if event == 'ctypes.dlopen' and args:
++        name = str(args[0]).lower()
++        if any(v in name for v in ('nvcuda','cudart','cublas','torch_cuda')):
++            raise RuntimeError('CPU_ONLY_GUARD: CUDA library forbidden')
++
++sys.addaudithook(cpu_audit)
++from ai_gateway.gpu import GPUReservation
++_acquire = GPUReservation.acquire
++
++def isolated_acquire(self):
++    if not self.name.startswith('Local\\LocalQwenGateway_TEST_'):
++        raise RuntimeError('CPU_ONLY_GUARD: production mutex forbidden')
++    return _acquire(self)
++GPUReservation.acquire = isolated_acquire
++
++from ai_gateway.qwen_runtime import QwenRuntime
++_load = QwenRuntime.load
++
++def fake_only_load(self, *args, **kwargs):
++    if self.dependencies is None:
++        raise RuntimeError('CPU_ONLY_GUARD: real model loading forbidden')
++    return _load(self, *args, **kwargs)
++QwenRuntime.load = fake_only_load
++
++
+ from copy import deepcopy
+ import json
+ from pathlib import Path
+@@ -17,5 +64,8 @@
+ 
+ @pytest.fixture
+ def settings(tmp_path):
+-    return Settings(service_token=TOKEN, data_dir=tmp_path/'runtime', queue_capacity=1,
+-                    request_timeout_seconds=3, shutdown_timeout_seconds=.1)
++    result = Settings(service_token=TOKEN, data_dir=tmp_path/'runtime', queue_capacity=1,
++                      gpu_task='legacy_script', request_timeout_seconds=3, shutdown_timeout_seconds=.1)
++    # Only fake-backend contract tests enable this fixture's lane. Real ProcessBackend rejects legacy mode.
++    result.start_gpu_worker = True
++    return result
+--- before/tests/test_analysis.py
++++ after/tests/test_analysis.py
+@@ -64,28 +64,15 @@
+     assert 'torch' not in sys.modules
+     assert 'transformers' not in sys.modules
+ 
+-def test_adapter_uses_empty_frames_and_existing_inference():
+-    from types import SimpleNamespace
++def test_adapter_rejects_legacy_generation_without_backend_fallback():
+     from ai_gateway.inference import QwenAdapter
+-    class Processor:
+-        def apply_chat_template(self, messages, **kwargs):
+-            assert kwargs == dict(tokenize=False, add_generation_prompt=True)
+-            return 'prompt'
+-        def __call__(self, **kwargs):
+-            assert kwargs['images'] is None
+-            return {'input_ids': SimpleNamespace(shape=(1, 4))}
+-    class Existing:
+-        processor = Processor()
+-        def generate_profiled(self, request, experiment):
+-            assert request.frames == []
+-            assert experiment['messages'] == [{'role': 'user'}]
+-            assert experiment['constrained_json'] is True
+-            return '{}', {'inference_seconds': 2, 'generated_token_count': 10}, [], {}
++    class ForbiddenBackend:
++        def generate(self, *args, **kwargs):
++            raise AssertionError('Unsupported legacy work must not reach a model')
+     adapter = QwenAdapter({'max_input_tokens': 100, 'max_output_tokens': 256})
+-    adapter.backend = Existing()
+-    adapter.stats = {'model_load_count': 1}
+-    raw, metrics = adapter.generate([{'role': 'user'}], {})
+-    assert raw == '{}' and metrics['tokens_per_second'] == 5
++    adapter.backend = ForbiddenBackend()
++    with pytest.raises(GatewayError, match='WORKER_UNAVAILABLE'):
++        adapter.generate([{'role': 'user'}], {})
+ 
+ 
+ def test_windows_multiline_dialogue_keeps_line_endings():
+--- before/tests/test_gpu_safety.py
++++ after/tests/test_gpu_safety.py
+@@ -1,35 +1,72 @@
++import asyncio
++import json
+ import os
++from pathlib import Path
++import subprocess
+ import sys
+-import subprocess
+-from pathlib import Path
++import uuid
+ import pytest
+-from ai_gateway.gpu import GPUReservation
++from ai_gateway.gpu import GPUReservation, PRODUCTION_MUTEX
+ from ai_gateway.errors import GatewayError
+ 
+-@pytest.mark.skipif(os.name != 'nt', reason='Windows shared GPU lock')
+-def test_missing_lock_never_creates_file(tmp_path):
+-    path = tmp_path/'missing.lock'
+-    with pytest.raises(GatewayError, match='GPU_LOCK_MISSING'):
+-        GPUReservation(path).acquire()
+-    assert not path.exists()
++ROOT = Path(__file__).resolve().parents[1]
+ 
+-@pytest.mark.skipif(os.name != 'nt', reason='Windows shared GPU lock')
+-def test_read_only_lock_interoperates_with_cooking_filelock(tmp_path):
+-    from filelock import FileLock, Timeout
+-    path = tmp_path/'gpu.lock'; path.write_bytes(b'unchanged')
+-    original = path.stat().st_mtime_ns
+-    lease = GPUReservation(path).acquire()
++def script(tmp_path, body):
++    p=tmp_path/'mutex_child.py'
++    p.write_text('import sys\n' + 'sys.path[:0]='+repr([str(ROOT),str(ROOT/'tests')])+'\nimport conftest\n'+body,encoding='utf-8')
++    return p
++
++def test_production_mutex_hard_guard():
++    with pytest.raises(RuntimeError,match='production mutex'):
++        GPUReservation().acquire()
++
++@pytest.mark.skipif(os.name!='nt',reason='Windows mutex')
++def test_cross_process_contention_and_release(tmp_path):
++    name='Local\\LocalQwenGateway_TEST_'+uuid.uuid4().hex
++    child=script(tmp_path, 'from ai_gateway.gpu import GPUReservation\nfrom ai_gateway.errors import GatewayError\n'
++        'try:\n lease=GPUReservation(name=sys.argv[1]).acquire();lease.close();print("ACQUIRED",flush=True)\n'
++        'except GatewayError as e: print(e.code,flush=True)\n')
++    lease=GPUReservation(name=name).acquire()
+     try:
+-        with pytest.raises(Timeout):
+-            FileLock(path, timeout=0).acquire()
++        out=subprocess.run([sys.executable,'-I','-B',str(child),name],capture_output=True,text=True,timeout=10)
++        assert out.returncode==0 and out.stdout.strip()=='GPU_BUSY', out.stderr
++    finally: lease.close()
++    out=subprocess.run([sys.executable,'-I','-B',str(child),name],capture_output=True,text=True,timeout=10)
++    assert out.returncode==0 and out.stdout.strip()=='ACQUIRED', out.stderr
++
++@pytest.mark.skipif(os.name!='nt',reason='Windows mutex')
++def test_abandoned_owner_fails_closed_then_explicit_retry(tmp_path):
++    import ctypes
++    from ctypes import wintypes as w
++    name='Local\\LocalQwenGateway_TEST_'+uuid.uuid4().hex
++    child=script(tmp_path,'import os\nfrom ai_gateway.gpu import GPUReservation\n'
++        'lease=GPUReservation(name=sys.argv[1]).acquire()\nprint("HELD",flush=True)\nsys.stdin.readline()\nos._exit(17)\n')
++    process=subprocess.Popen([sys.executable,'-I','-B',str(child),name],stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True)
++    handle=None
++    try:
++        assert process.stdout.readline().strip()=='HELD'
++        k=ctypes.WinDLL('kernel32',use_last_error=True)
++        k.OpenMutexW.argtypes=[w.DWORD,w.BOOL,w.LPCWSTR];k.OpenMutexW.restype=w.HANDLE
++        k.CloseHandle.argtypes=[w.HANDLE]
++        handle=k.OpenMutexW(0x100000,False,name)  # keep object alive so abandonment is observable
++        assert handle
++        process.stdin.write('exit\n');process.stdin.flush();process.wait(timeout=10)
++        with pytest.raises(GatewayError,match='GPU_LOCK_UNAVAILABLE'):
++            GPUReservation(name=name).acquire()
++        lease=GPUReservation(name=name).acquire();lease.close()
+     finally:
+-        lease.close()
+-    assert path.read_bytes() == b'unchanged' and path.stat().st_mtime_ns == original
++        if process.poll() is None: process.kill();process.wait(timeout=10)
++        if handle:k.CloseHandle(handle)
++        process.stdin.close();process.stdout.close()
+ 
+-@pytest.mark.skipif(os.name != 'nt', reason='Windows shared GPU lock')
+-def test_active_cooking_lock_blocks_gateway(tmp_path):
+-    from filelock import FileLock
+-    path = tmp_path/'gpu.lock'
+-    with FileLock(path):
+-        with pytest.raises(GatewayError, match='GPU_BUSY'):
+-            GPUReservation(path).acquire()
++def test_mutex_wrong_thread_cannot_release():
++    import threading
++    lease=GPUReservation(name='Local\\LocalQwenGateway_TEST_'+uuid.uuid4().hex).acquire()
++    errors=[]
++    def run():
++        try:lease.close()
++        except GatewayError as e:errors.append(e.code)
++    try:
++        t=threading.Thread(target=run);t.start();t.join(2)
++        assert errors==['GPU_LOCK_UNAVAILABLE']
++    finally:lease.close()
+--- before/tests/test_http_workflows.py
++++ after/tests/test_http_workflows.py
+@@ -52,7 +52,6 @@
+ @pytest.fixture
+ def cpu_settings(settings):
+     settings.start_gpu_worker = False
+-    settings.gpu_lock_path = settings.data_dir.parent/'never-created-gpu.lock'
+     return settings
+ 
+ 
+@@ -127,7 +126,7 @@
+     assert health.json()['cpu_workflows']['ready']
+     assert health.json()['worker_state'] == 'disabled'
+     assert not health.json()['model_ready'] and health.json()['model_load_count'] == 0
+-    assert not cpu_settings.gpu_lock_path.exists()
++    assert not cpu_settings.start_gpu_worker
+     response = submit(client, source, workflow)
+     assert response.status_code == 202
+     admitted = response.json()
+@@ -177,7 +176,7 @@
+     assert set(job['metrics']) == {'execution','queue_wait_seconds','request_latency_seconds','scene_count','character_count'}
+     assert job['metrics']['request_latency_seconds'] >= 0
+     assert app.state.manager.get(admitted['job_id']).request is None
+-    assert path.read_bytes() == raw and not cpu_settings.gpu_lock_path.exists()
++    assert path.read_bytes() == raw and not cpu_settings.start_gpu_worker
+     target = Path(os.environ.get('PHASE2B_EVIDENCE_DIR', str(tmp_path)))
+     target.mkdir(parents=True, exist_ok=True)
+     evidence = {'transport':'TCP loopback','input':str(path),'sha256':sidecar['source_sha256'],
+@@ -433,7 +432,7 @@
+     monkeypatch.setenv('GATEWAY_SERVICE_TOKEN',TOKEN)
+     monkeypatch.setenv('GATEWAY_START_GPU_WORKER','false')
+     settings=Settings.from_env()
+-    assert settings.start_gpu_worker is False and settings.gpu_mode=='shared'
++    assert settings.start_gpu_worker is False and settings.gpu_mode=='standalone'
+     assert 'start_gpu_worker' not in settings.worker_config()
+ 
+ 
+--- before/tests/test_process.py
++++ after/tests/test_process.py
+@@ -1,54 +1,84 @@
+ import asyncio
+-import json
+-import os
+ from pathlib import Path
+ import sys
+ import pytest
+ from ai_gateway.process import ProcessBackend
++from ai_gateway.errors import GatewayError
+ from ai_gateway.jobs import JobManager
+-from ai_gateway.schemas import AnalyzeRequest
++from ai_gateway.visual import VisualRequest
+ from test_jobs import until
++from test_visual import payload as image_payload
++from test_worker_containment import make_child
+ 
++def test_disabled_worker_does_not_spawn(settings,monkeypatch):
++    settings.start_gpu_worker=False
++    async def forbidden(*args,**kwargs):raise AssertionError('must not spawn')
++    monkeypatch.setattr('ai_gateway.process.spawn_contained',forbidden)
++    with pytest.raises(GatewayError,match='WORKER_UNAVAILABLE'):asyncio.run(ProcessBackend(settings).start())
+ 
+-def test_real_child_load_failure_is_safe(settings):
++def test_missing_owned_environment_fails_before_spawn(settings,monkeypatch):
++    settings.gpu_task='visual_profile'
++    async def forbidden(*args,**kwargs):raise AssertionError('must not spawn')
++    monkeypatch.setattr('ai_gateway.process.spawn_contained',forbidden)
++    with pytest.raises(GatewayError,match='WORKER_START_FAILED'):asyncio.run(ProcessBackend(settings).start())
++
++@pytest.mark.parametrize('force',[False,True])
++def test_contained_backend_start_and_shutdown(settings,tmp_path,monkeypatch,force):
++    child=make_child(tmp_path)
++    settings.inference_python=Path(sys.executable);settings.gpu_task='visual_profile'
++    monkeypatch.setattr(ProcessBackend,'_command',lambda self:[sys.executable,'-I','-B',str(child)])
++    for k in ['GATEWAY_SERVICE_TOKEN','LOCAL_AI_GATEWAY_TOKEN','CLERK_JWT_KEY']:
++        monkeypatch.setenv(k,'test-only-must-not-reach-child')
+     async def run():
+-        settings.inference_python = Path(sys.executable)
+-        settings.gpu_lock_path = settings.data_dir/'nonexistent-cooking.lock'
+-        backend = ProcessBackend(settings)
+-        manager = JobManager(settings, backend); manager.start()
+-        await until(lambda: manager.state == 'failed')
++        backend=ProcessBackend(settings)
++        metrics=await backend.start();proc=backend.process
++        try:
++            assert metrics['model_load_count']==0 and proc.worker_pid in backend.job.pids()
++        finally:
++            await backend.close(force=force)
++        assert backend.process is None and proc.returncode is not None
++    asyncio.run(run())
++
++def test_timeout_reaps_owned_child_and_manager_fails(settings,tmp_path,monkeypatch):
++    child=make_child(tmp_path)
++    settings.inference_python=Path(sys.executable);settings.gpu_task='visual_profile';settings.request_timeout_seconds=.1
++    monkeypatch.setattr(ProcessBackend,'_command',lambda self:[sys.executable,'-I','-B',str(child)])
++    async def run():
++        backend=ProcessBackend(settings);manager=JobManager(settings,backend);manager.start()
++        await until(lambda:manager.state=='ready');proc=backend.process
++        job=manager.submit(VisualRequest(**image_payload()))
++        await until(lambda:manager.state=='failed' and backend.process is None)
++        assert job.state=='failed' and job.error['code']=='REQUEST_TIMEOUT' and proc.returncode is not None
+         await manager.close()
+-        assert backend.process is None
+-        assert manager.error['code'] in ('GPU_LOCK_MISSING', 'UNSUPPORTED_PLATFORM')
+-        assert not settings.gpu_lock_path.exists()
+     asyncio.run(run())
+ 
+ 
+-def test_timeout_reaps_real_child_and_strips_token(settings, payload, tmp_path, monkeypatch):
+-    child = tmp_path/'fake_child.py'
+-    child.write_text('import sys,json,time,os\n'
+-        'start=json.loads(sys.stdin.readline())\n'
+-        'assert "GATEWAY_SERVICE_TOKEN" not in os.environ\n'
+-        'assert "service_token" not in start["config"]\n'
+-        'print(json.dumps({"type":"ready","metrics":{"model_load_count":1}}),flush=True)\n'
+-        'json.loads(sys.stdin.readline())\n'
+-        'time.sleep(60)\n', encoding='utf-8')
+-    actual_spawn = asyncio.create_subprocess_exec
+-    spawned = []
+-    async def spawn(*args, **kwargs):
+-        process = await actual_spawn(sys.executable, '-B', str(child), **kwargs)
+-        spawned.append(process)
+-        return process
+-    monkeypatch.setattr(asyncio, 'create_subprocess_exec', spawn)
+-    monkeypatch.setenv('GATEWAY_SERVICE_TOKEN', 'must-never-reach-child')
++@pytest.mark.parametrize('response,code',[
++    ({'type':'unexpected'},'WORKER_PROTOCOL_ERROR'),
++    ({'type':'error','fatal':True,'code':'GPU_BUSY','message':'test refusal'},'GPU_BUSY'),
++    (None,'WORKER_START_FAILED'),
++])
++def test_start_failure_reaps_owned_bootstrap(settings,tmp_path,monkeypatch,response,code):
++    import json
++    from ai_gateway.windows_worker import spawn_contained as real_spawn
++    child=make_child(tmp_path)
++    text=child.read_text('utf-8')
++    ready="print(json.dumps({'type':'ready','metrics':{'model_load_count':0}}),flush=True)"
++    replacement='time.sleep(30)' if response is None else 'print('+repr(json.dumps(response))+',flush=True)'
++    assert ready in text
++    child.write_text(text.replace(ready,replacement),encoding='utf-8')
++    settings.inference_python=Path(sys.executable);settings.gpu_task='visual_profile'
++    settings.model_load_timeout_seconds=.2
++    monkeypatch.setattr(ProcessBackend,'_command',lambda self:[sys.executable,'-I','-B',str(child)])
++    owned=[]
++    async def capture(*args,**kwargs):
++        # Give CPU process bootstrap its normal bound; test the separate model-ready bound.
++        kwargs['timeout']=5
++        result=await real_spawn(*args,**kwargs);owned.append(result);return result
++    monkeypatch.setattr('ai_gateway.process.spawn_contained',capture)
+     async def run():
+-        settings.request_timeout_seconds = .1
+-        backend = ProcessBackend(settings)
+-        manager = JobManager(settings, backend); manager.start()
+-        await until(lambda: manager.state == 'ready')
+-        job = manager.submit(AnalyzeRequest(**payload))
+-        await until(lambda: manager.state == 'failed' and backend.process is None)
+-        await manager.close()
+-        assert job.state == 'failed' and job.error['code'] == 'REQUEST_TIMEOUT'
+-        assert spawned[0].returncode is not None
++        backend=ProcessBackend(settings)
++        with pytest.raises(GatewayError,match=code):await backend.start()
++        assert backend.process is None and backend.job is None
++        assert len(owned)==1 and owned[0][0].returncode is not None and owned[0][1].handle is None
+     asyncio.run(run())
+--- before/tests/test_standalone_runtime.py
++++ after/tests/test_standalone_runtime.py
+@@ -108,3 +108,39 @@
+     text=(ROOT/'ai_gateway/inference.py').read_text('utf-8')
+     assert 'sys.path' not in text and 'generate_profiled' not in text
+     assert '.speech_gpu.lock' not in (ROOT/'ai_gateway/gpu.py').read_text('utf-8')
++
++
++@pytest.mark.parametrize('competing',[False,True])
++def test_adapter_owned_lifecycle_with_mock_device_and_runtime(tmp_path,monkeypatch,competing):
++    import uuid
++    import ai_gateway.inference as module
++    from ai_gateway.gpu import GPUReservation
++    model=tmp_path/'checkpoint';model.mkdir()
++    (model/'config.json').write_text(json.dumps({'model_type':'qwen3_vl','text_config':{'hidden_size':2560}}),encoding='utf-8')
++    seen=[]
++    class Runtime:
++        model=NS(hf_device_map={'':'cuda:0'},parameters=lambda:[NS(device='cuda:0')])
++        def __init__(self,path):seen.append('constructed')
++        def load(self,minimum):assert minimum==10500;seen.append('loaded-fake')
++        def close(self):seen.append('closed-fake')
++    name='Local\\LocalQwenGateway_TEST_'+uuid.uuid4().hex
++    monkeypatch.setattr(module,'CHECKPOINT',model)
++    monkeypatch.setattr(module,'QwenRuntime',Runtime)
++    monkeypatch.setattr(module,'GPUReservation',lambda:GPUReservation(name=name))
++    monkeypatch.setattr(module,'gpu_snapshot',lambda:dict(total_mb=13000,used_mb=1000,free_mb=12000,other_compute_pids=[22] if competing else []))
++    adapter=module.QwenAdapter(dict(gpu_task='visual_profile',gpu_mode='standalone',model_size='4b',model_path=str(model),min_free_vram_mb=10500))
++    if competing:
++        with pytest.raises(GatewayError,match='GPU_BUSY'):adapter.start()
++        assert seen==[]
++    else:
++        assert adapter.start()['model_load_count']==1
++        adapter.close();assert seen==['constructed','loaded-fake','closed-fake']
++    lease=GPUReservation(name=name).acquire();lease.close()
++
++def test_residence_monitor_stops_only_its_injected_worker():
++    from ai_gateway.worker import watch_resident
++    calls=[]
++    stop=NS(wait=lambda seconds:False,is_set=lambda:False)
++    def fail():raise GatewayError('GPU_BUSY','unsafe')
++    watch_resident(NS(check_resident=fail),stop,calls.append,lambda code:calls.append(code))
++    assert calls[0]['fatal'] is True and calls[0]['code']=='GPU_BUSY' and calls[1]==70
+--- before/tests/test_visual.py
++++ after/tests/test_visual.py
+@@ -87,43 +87,32 @@
+     assert analyze_visual(adapter,VisualRequest(**payload()))['result']['profile']==proposal
+     with pytest.raises(ValueError): VisualResult(**{**proposal,'visual_id':'fake_success'})
+ 
+-def test_configuration_is_opt_in_4b_8b_explicit_and_reservation_unchanged(settings):
+-    assert settings.gpu_task=='legacy_script' and settings.gpu_mode=='shared'
+-    settings.gpu_task='visual_profile'
+-    config=settings.worker_config()
++def test_configuration_is_opt_in_4b_only_and_policy_preserved(settings):
++    fresh=Settings(service_token=TOKEN)
++    assert not fresh.start_gpu_worker and fresh.gpu_mode=='standalone'
++    config=fresh.worker_config()
+     assert config['model_size']=='4b' and config['model_path'].endswith('qwen3-vl-4b')
+-    assert config['gpu_lock_path']==str(settings.gpu_lock_path)
+-    assert config['min_free_vram_mb']==10500 and config['gpu_mode']=='shared'
++    assert config['min_free_vram_mb']==10500 and 'gpu_lock_path' not in config
+     assert 'service_token' not in config
+-    settings.visual_model_size='8b'
+-    assert settings.worker_config()['model_path'].endswith('qwen3-vl-8b')
+-    with pytest.raises(ValueError): Settings(service_token=TOKEN,gpu_task='anything')
+-
+-def test_profile_generation_uses_image_only_prompt_and_in_memory_frame(settings):
++    with pytest.raises(ValueError):Settings(service_token=TOKEN,visual_model_size='8b')
++    with pytest.raises(ValueError):Settings(service_token=TOKEN,gpu_task='anything')
++
++def test_profile_generation_uses_image_only_prompt_and_memory_image(settings,monkeypatch):
+     settings.gpu_task='visual_profile'
+     seen={}
+-    class Processor:
+-        def apply_chat_template(self,messages,**kwargs): seen['messages']=messages; return 'prompt'
+-        def __call__(self,**kwargs):
+-            assert len(kwargs['images'])==1
+-            return {'input_ids':SimpleNamespace(shape=(1,300))}
+     class Backend:
+-        processor=Processor()
+-        def generate_profiled(self,frames,experiment):
+-            assert len(frames.frames)==1
+-            frame=frames.frames[0]
+-            assert isinstance(frame.path,io.BytesIO)
+-            with Image.open(frame.path) as img: assert max(img.size)<=896
+-            assert experiment['max_new_tokens']==384 and experiment['constrained_json'] is True
+-            seen['experiment']=experiment
+-            return json.dumps(PROPOSAL),{'inference_seconds':2,'generated_token_count':10},None,None
++        def generate(self,messages,images,schema,**limits):
++            assert len(images)==1 and max(images[0].size)<=896
++            assert limits['max_new_tokens']==384
++            seen['messages']=messages
++            return json.dumps(PROPOSAL),{'inference_seconds':2,'generated_token_count':10,'tokens_per_second':5}
+     adapter=QwenAdapter(settings.worker_config());adapter.backend=Backend();adapter.stats={'model_load_count':1}
++    monkeypatch.setattr(adapter,'check_resident',lambda:None)
+     raw,metrics=adapter.generate_visual(VisualRequest(**payload(size=(1200,900))))
+     assert json.loads(raw)==PROPOSAL and metrics['tokens_per_second']==5
+     assert seen['messages']==[{'role':'user','content':[{'type':'image'},{'type':'text','text':PROMPT}]}]
+     assert 'Plaintiff' not in json.dumps(seen) and 'scene_' not in json.dumps(seen)
+-    assert not settings.data_dir.exists()
+-    assert 'torch' not in sys.modules
++    assert not settings.data_dir.exists() and 'torch' not in sys.modules
+ 
+ def ready(client):
+     for _ in range(200):
+--- before/tests/test_worker_containment.py
++++ after/tests/test_worker_containment.py
+@@ -19,7 +19,7 @@
+ if len(sys.argv)>1 and sys.argv[1]=='leaf':
+     time.sleep(30)
+     raise SystemExit()
+-print(json.dumps({'type':'bootstrap','protocol':1}),flush=True)
++print(json.dumps({'type':'bootstrap','protocol':1,'pid':os.getpid()}),flush=True)
+ command=json.loads(sys.stdin.readline())
+ assert 'GATEWAY_SERVICE_TOKEN' not in os.environ
+ assert 'LOCAL_AI_GATEWAY_TOKEN' not in os.environ
+@@ -53,11 +53,11 @@
+         proc,job=await spawn_contained([sys.executable,'-I','-B',str(child)],cwd=str(tmp_path),env={},timeout=5)
+         k=h=None
+         try:
+-            assert job.active()==1
++            assert proc.pid in job.pids() and proc.worker_pid in job.pids()
+             proc.stdin.write(b'{"op":"children"}\n');await proc.stdin.drain()
+             leaf=json.loads(await asyncio.wait_for(proc.stdout.readline(),5))['leaf']
+             k,h=process_handle(leaf)
+-            assert job.active()==2
++            assert leaf in job.pids()
+             await finish_contained(proc,job,timeout=5)
+             assert proc.returncode is not None and k.WaitForSingleObject(h,5000)==0
+         finally:
+@@ -105,3 +105,42 @@
+         if proc.poll() is None:proc.kill();proc.wait(timeout=10)
+         for k,h in handles:k.CloseHandle(h)
+         proc.stdin.close();proc.stdout.close()
++
++
++def test_foreign_bootstrap_pid_never_attached(tmp_path):
++    child=tmp_path/'wrong_pid_cpu.py'
++    child.write_text(PREFIX+'import os,json\nprint(json.dumps({"type":"bootstrap","protocol":1,"pid":'+str(os.getpid())+'}),flush=True)\nsys.stdin.readline()\n',encoding='utf-8')
++    async def run():
++        with pytest.raises(ValueError,match='not a verified member'):
++            await spawn_contained([sys.executable,'-I','-B',str(child)],cwd=str(tmp_path),env={},timeout=5)
++    asyncio.run(run())
++
++def test_containment_failure_never_sends_start(tmp_path,monkeypatch):
++    child=make_child(tmp_path)
++    def reject(self,process):raise RuntimeError('test containment denied')
++    monkeypatch.setattr(WorkerJob,'attach_owned',reject)
++    async def run():
++        with pytest.raises(RuntimeError,match='containment denied'):
++            await spawn_contained([sys.executable,'-I','-B',str(child)],cwd=str(tmp_path),env={},timeout=5)
++    asyncio.run(run())
++
++
++def test_cancelled_handshake_reaps_owned_child(tmp_path,monkeypatch):
++    child=tmp_path/'cancel_cpu.py';child.write_text(PREFIX+'import time\ntime.sleep(30)\n',encoding='utf-8')
++    retained=[]
++    attach=WorkerJob.attach_owned
++    def capture(self,process):
++        attach(self,process);retained.append((process,self))
++    monkeypatch.setattr(WorkerJob,'attach_owned',capture)
++    async def run():
++        task=asyncio.create_task(spawn_contained([sys.executable,'-I','-B',str(child)],cwd=str(tmp_path),env={},timeout=5))
++        async def attached():
++            while not retained:await asyncio.sleep(.01)
++        try:
++            await asyncio.wait_for(attached(),5)
++        finally:
++            task.cancel()
++            with pytest.raises(asyncio.CancelledError):await task
++        proc,job=retained[0]
++        assert proc.returncode is not None and job.handle is None
++    asyncio.run(run())

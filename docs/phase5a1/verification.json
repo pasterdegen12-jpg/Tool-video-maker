@@ -1,0 +1,44 @@
+{
+  "executed_at": "2026-10-12T17:58:52.089Z",
+  "commands": [
+    {
+      "command": "npm.cmd test",
+      "exitCode": 0,
+      "log": "web-tests.log"
+    },
+    {
+      "command": "npm.cmd run build",
+      "exitCode": 0,
+      "log": "build.log"
+    }
+  ],
+  "lint": {
+    "files": [
+      "api/lib/seedance/provider.js",
+      "tests/seedance-http.test.mjs"
+    ],
+    "errors": 0,
+    "warnings": 0
+  },
+  "buildEnvironment": {
+    "LOCAL_VIDEO_PAID_ENABLED": "false",
+    "WAVESPEED_API_KEY": "EMPTY",
+    "VITE_WAVESPEED_API_KEY": "EMPTY"
+  },
+  "knownFrontendSecretInNewBundle": false,
+  "environmentFilesUnchanged": [
+    {
+      "file": ".env",
+      "unchanged": true
+    },
+    {
+      "file": ".env.local",
+      "unchanged": true
+    }
+  ],
+  "phase5aTrackedSourceDifferences": [],
+  "changedProviderSha256": "ff80707ad211f96b5aa679f7a8c1dc961252995d21b651379bdc41fd70eb359a",
+  "liveClerk": "NOT RUN - missing backend issuer/JWT key",
+  "realProvider": "NOT RUN",
+  "realQwen": "NOT RUN"
+}

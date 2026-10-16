@@ -1,0 +1,296 @@
+{
+  "mode": "React DOM/jsdom replay of recorded real CPU response; MOCKED transport, live Clerk NOT RUN",
+  "input": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+  "sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+  "status": "PASS",
+  "scenes": [
+    {
+      "scene_n": 1,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Seri nấu ăn chăm vợ. Chuyện là bả đang ốm sụt sịt mà đòi ăn tiệc.",
+        "Footage": "Hai tay xé gói nguyên liệu thuốc bắc đổ ra chiếc rây lọc.",
+        "time_origin": "00:00 - 00:04",
+        "Effect": "Tiếng xé nilon sột soạt.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 2,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Tại sao lại thế thì để anh kể. Lôi đống thuốc bắc ra xé xé trông như bà lang băm.",
+        "Footage": "Lôi các gói nilon nhỏ xé tiếp nguyên liệu thuốc bắc.",
+        "time_origin": "00:04 - 00:09",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 3,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Đong tí gạo với diêm mạch nấu cơm. Ốm mà ăn uống lỉnh kỉnh dã man.",
+        "Footage": "Đong gạo và diêm mạch vào trong nồi cơm điện.",
+        "time_origin": "00:30 - 00:35",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 4,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Xong lôi cái kéo ra cắt lạp xưởng xộc xộc. Đúng bài lười chảy thây trốn rửa thớt.",
+        "Footage": "Cầm chiếc kéo xanh cắt lạp xưởng rơi thẳng vào lõi nồi cơm.",
+        "time_origin": "00:50 - 00:55",
+        "Effect": "Tiếng kéo cắt xoạch xoạch.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 5,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Tống thuốc bắc với đùi gà vào nồi hầm. Khúc này anh thấy mùi lười biếng bay mất rồi.",
+        "Footage": "Cho gà đã chần cùng các vị thuốc bắc vào nồi gang trắng đun.",
+        "time_origin": "00:59 - 01:04",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 6,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Quay sang cắt măng tây. Ốm thì ốm chứ kỹ năng múa kéo vẫn cứ là đỉnh chóp.",
+        "Footage": "Tiếp tục dùng kéo cắt các thân măng tây xanh.",
+        "time_origin": "01:10 - 01:15",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 7,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Nhưng hoang mang tột độ là bả lôi mấy cái túi zip trữ rau củ gọt sẵn ra.",
+        "Footage": "Lấy khoai tây và súp lơ xanh từ trong các túi zip nhựa ra.",
+        "time_origin": "01:21 - 01:26",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 8,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Đến đoạn luộc rau. Tưởng luộc nước lọc bình thường nhưng không, phải có tí mẹo cơ.",
+        "Footage": "Bật bếp luộc nồi nước nhỏ có khay lưới vớt bên trong.",
+        "time_origin": "01:54 - 01:59",
+        "Effect": "Tiếng nước sôi.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 9,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Bóp tuýp mỡ lợn vào. Đậu má mỡ lợn giờ đóng tuýp như kem đánh răng à?",
+        "Footage": "Bóp tuýp mỡ lợn vào nồi nước đang sôi.",
+        "time_origin": "01:59 - 02:04",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 10,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Cơ mà luộc rau có tí mỡ lợn nó xanh mướt mườn mượt, nhìn mlem thật sự.",
+        "Footage": "Luộc măng tây xanh mướt trong nồi nước mỡ.",
+        "time_origin": "02:04 - 02:09",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 11,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Vớt ra táng thêm tí muối đường với dầu mè. Đa nhiệm thoăn thoắt chóng cả mặt.",
+        "Footage": "Gắp rau củ luộc ra bát và trộn với muối, đường, dầu mè.",
+        "time_origin": "02:22 - 02:27",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 12,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Nồi canh gà hầm lụp bụp. Mở nắp ra khói bốc lên thơm lộng óc các vợ ạ.",
+        "Footage": "Mở nắp nồi gang, nước hầm gà thuốc bắc đang sôi lụp bụp.",
+        "time_origin": "02:43 - 02:48",
+        "Effect": "Tiếng sôi lụp bụp.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 13,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Tranh thủ pha bát nước chấm. Bày vẽ thế này tí anh rửa bát ốm đòn chứ đùa.",
+        "Footage": "Pha nước chấm xì dầu với gừng tỏi băm.",
+        "time_origin": "02:57 - 03:02",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 14,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Nồi cơm chín bả múc hẳn cái sốt nấm đen xì xì trộn vào. Chơi sang vãi nồi.",
+        "Footage": "Mở nồi cơm lạp xưởng và cho thìa sốt nấm đen (truffle) vào.",
+        "time_origin": "03:10 - 03:15",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 15,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Trộn thẳng trong cái ruột nồi cơm luôn. Làm màu nãy giờ cuối cùng cũng hiện nguyên hình.",
+        "Footage": "Dùng thìa gỗ trộn đều cơm lạp xưởng và măng tây trực tiếp trong lõi nồi cơm.",
+        "time_origin": "03:17 - 03:22",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 16,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Chưa xong đâu, còn nấu chè tráng miệng. Mấy viên khoai tím nổi lềnh phềnh.",
+        "Footage": "Luộc những viên khoai lang tím trong nồi đất nung mini.",
+        "time_origin": "03:29 - 03:34",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 17,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Rắc thêm tí vụn nấm tuyết. Ốm mà vẫn đòi ăn dưỡng nhan, anh cũng quỳ lạy luôn.",
+        "Footage": "Cho thêm vụn nấm tuyết khô vào nồi chè.",
+        "time_origin": "03:34 - 03:39",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 18,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Chốt hạ bằng hộp cốt dừa rót vào chè. Nhìn cái màu nó mỹ mãn tột độ.",
+        "Footage": "Rót nước cốt dừa trắng đục từ hộp giấy vào bát chè tím.",
+        "time_origin": "03:40 - 03:45",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 19,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Lên mâm 4 món hoành tráng. Ăn thì sướng đấy nhưng nghĩ đến đống bát là hoang mang.",
+        "Footage": "Góc rộng quay trọn mâm cơm 4 món đủ màu sắc đặt trên bàn.",
+        "time_origin": "03:45 - 03:50",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 20,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Đang định ngồi thì con báo thủ lông vàng này chiếm mẹ luôn cái ghế. Bất lực.",
+        "Footage": "Chú mèo lông vàng cuộn tròn ngủ trên chiếc ghế ăn.",
+        "time_origin": "03:50 - 03:55",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 21,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Nhai rau giòn sần sật, cắn miếng gà mềm nục ngậm mồm. Ngon đến nỗi quên cả ốm.",
+        "Footage": "Cảnh gắp cắn miếng súp lơ và miếng cánh gà hầm mềm.",
+        "time_origin": "03:55 - 04:00",
+        "Effect": "Tiếng nhai xì xụp.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    },
+    {
+      "scene_n": 22,
+      "status": "PASS",
+      "field_text": {
+        "Voiceover": "Húp bát chè béo ngậy nữa. Thôi em đi rửa bát cho vợ đây, xin vía cả nhà bình an nhé!",
+        "Footage": "Ăn miếng cơm trộn, húp thìa chè nấm tuyết cốt dừa.",
+        "time_origin": "04:00 - 04:06",
+        "Effect": "Không có.",
+        "Translate": "Trống trong kết quả nguồn",
+        "Tone_of_Voice": "Trống trong kết quả nguồn",
+        "Character": "Trống trong kết quả nguồn"
+      }
+    }
+  ],
+  "metadata_unchanged": true,
+  "model_inference": "NOT RUN"
+}

@@ -1,0 +1,30 @@
+{
+  "checked_files": [
+    {
+      "file": ".env",
+      "clerkKeys": [
+        "VITE_CLERK_PUBLISHABLE_KEY"
+      ],
+      "bridgeKeys": [],
+      "origin": "not configured here"
+    },
+    {
+      "file": ".env.local",
+      "clerkKeys": [],
+      "bridgeKeys": [],
+      "origin": "not configured here"
+    }
+  ],
+  "inherited_environment": {
+    "CLERK_JWT_KEY": false,
+    "CLERK_ISSUER": false,
+    "LOCAL_AI_GATEWAY_URL": false,
+    "LOCAL_AI_GATEWAY_TOKEN": false,
+    "LOCAL_AI_WEB_ORIGIN": null,
+    "LOCAL_AI_BRIDGE_ENABLED": false,
+    "VITE_ENABLE_LOCAL_PARSER": false
+  },
+  "expected_origin_default": "http://localhost:5173",
+  "live_acceptance": "NOT RUN",
+  "reason": "No live Clerk backend key/issuer or gateway bridge configuration available; no auth bypass introduced."
+}

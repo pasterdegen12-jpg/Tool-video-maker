@@ -1,0 +1,394 @@
+{
+  "mode": "Real CPU parsed screenplay + SYNTHETIC approved profile; no real Qwen inference",
+  "scenes": {
+    "full-ai": {
+      "source_sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "scene_count": 23,
+      "entire_cpu_result_equals_phase3a": true,
+      "characters": [
+        {
+          "id": "judge",
+          "name": "Judge"
+        },
+        {
+          "id": "defendant",
+          "name": "Defendant"
+        },
+        {
+          "id": "plaintiff",
+          "name": "Plaintiff"
+        }
+      ],
+      "rows": [
+        {
+          "scene_n": 1,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 2,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 3,
+          "character": "Plaintiff",
+          "initial": "mock_black_coat",
+          "updated": "mock_white_jacket",
+          "status": "approved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 4,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 5,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 6,
+          "character": "Plaintiff",
+          "initial": "mock_black_coat",
+          "updated": "mock_white_jacket",
+          "status": "approved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 7,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 8,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 9,
+          "character": "Plaintiff",
+          "initial": "mock_black_coat",
+          "updated": "mock_white_jacket",
+          "status": "approved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 10,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 11,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 12,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 13,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 14,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 15,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 16,
+          "character": "Plaintiff",
+          "initial": "mock_black_coat",
+          "updated": "mock_white_jacket",
+          "status": "approved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 17,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 18,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 19,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 20,
+          "character": "Defendant",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 21,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 22,
+          "character": "Plaintiff",
+          "initial": "mock_black_coat",
+          "updated": "mock_white_jacket",
+          "status": "approved",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 23,
+          "character": "Judge",
+          "initial": null,
+          "updated": null,
+          "status": "unapproved",
+          "source_unchanged": true
+        }
+      ]
+    },
+    "semi": {
+      "source_sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "scene_count": 22,
+      "entire_cpu_result_equals_phase3a": true,
+      "characters": [],
+      "rows": [
+        {
+          "scene_n": 1,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 2,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 3,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 4,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 5,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 6,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 7,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 8,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 9,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 10,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 11,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 12,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 13,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 14,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 15,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 16,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 17,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 18,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 19,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 20,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 21,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        },
+        {
+          "scene_n": 22,
+          "character": "",
+          "initial": null,
+          "updated": null,
+          "status": "not_applicable",
+          "source_unchanged": true
+        }
+      ]
+    }
+  }
+}

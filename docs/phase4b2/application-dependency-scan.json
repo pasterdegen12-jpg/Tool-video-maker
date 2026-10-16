@@ -1,0 +1,22 @@
+[
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+    "line": 15,
+    "text": "    visual_model_path: Path = Path('F:/Cooking-AI-review/models/qwen3-vl-4b')"
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+    "line": 53,
+    "text": "        obsolete = ('GATEWAY_COOKING_ROOT', 'GATEWAY_GPU_LOCK_PATH', 'GATEWAY_MODEL_PATH')"
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py",
+    "line": 11,
+    "text": "CHECKPOINT = Path('F:/Cooking-AI-review/models/qwen3-vl-4b')"
+  },
+  {
+    "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/visual.py",
+    "line": 1,
+    "text": "\"\"\"Image-only contract. Safe to import on CPU; no Cooking/CUDA imports.\"\"\""
+  }
+]

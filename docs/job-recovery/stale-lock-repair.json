@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-15T15:01:19.272Z",
+  "operator_approved": true,
+  "pid_identity": "svchost.exe",
+  "removed": "C:\\Users\\Admin\\AppData\\Local\\WebAI\\VideoAttempts\\writer.lock",
+  "backup": "C:\\Users\\Admin\\AppData\\Local\\WebAI\\LocalServices\\writer-lock-pid2164-stale-2026-10-15.json",
+  "job_hashes": {
+    "394b783a729cbec009e64b0b7c3abbc21b22a4dd3ba71b04.json": "2ef89f46878a6de155defc466490ee72d9d6d555025199c45074514cfce48dfb"
+  },
+  "all_jobs_unchanged": true,
+  "processes_terminated": 0
+}

@@ -1,0 +1,342 @@
+{
+  "checked_at_utc": "2026-10-12T06:58:37.456Z",
+  "phase4a_files": [
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/lib/visualProfile.js",
+      "expected_sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+      "actual_sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/lib/visualProfileClient.js",
+      "expected_sha256": "b4799867e8ceaaa77a879abf95bdef564036953149a7e4b72febabbcb24ab543",
+      "actual_sha256": "b4799867e8ceaaa77a879abf95bdef564036953149a7e4b72febabbcb24ab543",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/Workspace/VisualProfiles.jsx",
+      "expected_sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "actual_sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/Workspace/SetupTab.jsx",
+      "expected_sha256": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+      "actual_sha256": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/Workspace/Workspace.jsx",
+      "expected_sha256": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+      "actual_sha256": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/Workspace/StoryboardTab.jsx",
+      "expected_sha256": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+      "actual_sha256": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/visual.js",
+      "expected_sha256": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+      "actual_sha256": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/bridge.js",
+      "expected_sha256": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee",
+      "actual_sha256": "28c30e1ffc0e28bae4c94bf097c2728fd048cc50749b8ffe95c9f895632922ee",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/client.js",
+      "expected_sha256": "b4d1690c60e35d241c962f9f12e87891591ee1aa783dcd4355f5f7990dfe03a4",
+      "actual_sha256": "b4d1690c60e35d241c962f9f12e87891591ee1aa783dcd4355f5f7990dfe03a4",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/config.js",
+      "expected_sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+      "actual_sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/errors.js",
+      "expected_sha256": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c",
+      "actual_sha256": "02133a457bcdc6c851aab6d4b975a3654ffa406401683e8d1073681f2cb90c0c",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/local-ai/visual-profile.js",
+      "expected_sha256": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+      "actual_sha256": "96bd81eb209d625408983f5147fc238a83b3f5138852ee8f75f08b320d882182",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/scripts/local-ai-loopback.mjs",
+      "expected_sha256": "3af80424f9e158eb20885d32c2ecb5637e7b47a9e84b537b37dda42faadaf953",
+      "actual_sha256": "3af80424f9e158eb20885d32c2ecb5637e7b47a9e84b537b37dda42faadaf953",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/vite.config.js",
+      "expected_sha256": "2d709a45571232797d178bfdc60098d7c636144adaebc9f39c5befd64f357025",
+      "actual_sha256": "2d709a45571232797d178bfdc60098d7c636144adaebc9f39c5befd64f357025",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/spoken-text-contract.test.mjs",
+      "expected_sha256": "a151a9d39995979e0ebb213309ec0523fdeca011b0035d2ead26a71a59e9ab52",
+      "actual_sha256": "a151a9d39995979e0ebb213309ec0523fdeca011b0035d2ead26a71a59e9ab52",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-profile.test.mjs",
+      "expected_sha256": "dc38ae7a58f5b3773aa88cd938d7491433699be3f3c2e44a9d2ea01838c64543",
+      "actual_sha256": "dc38ae7a58f5b3773aa88cd938d7491433699be3f3c2e44a9d2ea01838c64543",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-bridge.test.mjs",
+      "expected_sha256": "de0f2cf5d4cdb78a664b28f33c76f148af4905f4df830332a228f64278313037",
+      "actual_sha256": "de0f2cf5d4cdb78a664b28f33c76f148af4905f4df830332a228f64278313037",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-client.test.mjs",
+      "expected_sha256": "039083b860c5d5239b7cb0b21c781fd0953e44b927d220decbb30e9e59150184",
+      "actual_sha256": "039083b860c5d5239b7cb0b21c781fd0953e44b927d220decbb30e9e59150184",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-ui.test.mjs",
+      "expected_sha256": "108dd1b1c8af2ac59ccd80ab4477f07936c73e87d6e88e8606436a8cf7c4d0bb",
+      "actual_sha256": "108dd1b1c8af2ac59ccd80ab4477f07936c73e87d6e88e8606436a8cf7c4d0bb",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-real-http.test.mjs",
+      "expected_sha256": "34e128893a29c66a66652f1e69412f22abc341f9545a1bb30a9a1a79eb1806e8",
+      "actual_sha256": "34e128893a29c66a66652f1e69412f22abc341f9545a1bb30a9a1a79eb1806e8",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/visual-loopback.test.mjs",
+      "expected_sha256": "b3e7756d8f29e1600e67a39ba2fb40a6851e1fc172e24741b8c6933d4484ba84",
+      "actual_sha256": "b3e7756d8f29e1600e67a39ba2fb40a6851e1fc172e24741b8c6933d4484ba84",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/support/visual-fixture.json",
+      "expected_sha256": "8a624f63be518f06fb7d778b7f77b5c8d1504778b75720576b9649c88e7c1b34",
+      "actual_sha256": "8a624f63be518f06fb7d778b7f77b5c8d1504778b75720576b9649c88e7c1b34",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/tests/support/gateway_visual_mock.py",
+      "expected_sha256": "157fffb109907b38eaa4cdac342837084de9ff24bc17116b1f176acdaa7cded4",
+      "actual_sha256": "157fffb109907b38eaa4cdac342837084de9ff24bc17116b1f176acdaa7cded4",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/docs/local-visual-id.md",
+      "expected_sha256": "871b4d0f46a3402b75c1242f3586ae4042ce1087bf80193816293deaff1abd52",
+      "actual_sha256": "871b4d0f46a3402b75c1242f3586ae4042ce1087bf80193816293deaff1abd52",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/visual.py",
+      "expected_sha256": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+      "actual_sha256": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+      "expected_sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "actual_sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py",
+      "expected_sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "actual_sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/worker.py",
+      "expected_sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "actual_sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/process.py",
+      "expected_sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "actual_sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/jobs.py",
+      "expected_sha256": "fbef47508cdf69b10df0f0889c9f6d5d0fab6f13e5a5e972603bb0dc7625e66c",
+      "actual_sha256": "fbef47508cdf69b10df0f0889c9f6d5d0fab6f13e5a5e972603bb0dc7625e66c",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/api.py",
+      "expected_sha256": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+      "actual_sha256": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/requirements.txt",
+      "expected_sha256": "3e049161ece919d5b6b82eb2a164dac2c8fc77acb080c1df6affb9f6e1b7cb94",
+      "actual_sha256": "3e049161ece919d5b6b82eb2a164dac2c8fc77acb080c1df6affb9f6e1b7cb94",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/requirements.lock.txt",
+      "expected_sha256": "95cb6f1b8879a96b3cc111ea5ed7cb67b9bdc0de14c7746fa77a39dc7af0820c",
+      "actual_sha256": "95cb6f1b8879a96b3cc111ea5ed7cb67b9bdc0de14c7746fa77a39dc7af0820c",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/tests/test_visual.py",
+      "expected_sha256": "978a59f875457175f54a0ad220ea25ed372316eeaf3a7096e0c8ac1969432c76",
+      "actual_sha256": "978a59f875457175f54a0ad220ea25ed372316eeaf3a7096e0c8ac1969432c76",
+      "status": "PASS"
+    }
+  ],
+  "source_read_this_phase": [
+    {
+      "path": "F:/tool-ai-dh/web-ai/docs/local-visual-id.md",
+      "before_sha256": "871b4d0f46a3402b75c1242f3586ae4042ce1087bf80193816293deaff1abd52",
+      "after_sha256": "871b4d0f46a3402b75c1242f3586ae4042ce1087bf80193816293deaff1abd52",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/docs/local-parser-acceptance.md",
+      "before_sha256": "aee10d48635200bf28e0c53bbf28e8f9e74040996ac437cf0d740c55c8ea6d61",
+      "after_sha256": "aee10d48635200bf28e0c53bbf28e8f9e74040996ac437cf0d740c55c8ea6d61",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/config.js",
+      "before_sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+      "after_sha256": "3b370755c7d786210f68d074169c39cb0066567ce71beaa4a849776c607b6a70",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/auth.js",
+      "before_sha256": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+      "after_sha256": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/gpu.py",
+      "before_sha256": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+      "after_sha256": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+      "before_sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "after_sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py",
+      "before_sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "after_sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/visual.py",
+      "before_sha256": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+      "after_sha256": "63625fc1e39b25d1dde6e58dba487f81409218f979b526e6ff45f96f9ab8e5ce",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/worker.py",
+      "before_sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "after_sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/api.py",
+      "before_sha256": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+      "after_sha256": "c80242b924e4bf0ed4ab5de0407aca38d4923e5da5c92c854be16355ea56faa6",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/process.py",
+      "before_sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "after_sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/start.cmd",
+      "before_sha256": "c58771c703737130099e85ca8a47c08161ddc71af05d17bd84ddcc4cf24b0aa4",
+      "after_sha256": "c58771c703737130099e85ca8a47c08161ddc71af05d17bd84ddcc4cf24b0aa4",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/api/lib/local-ai/visual.js",
+      "before_sha256": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+      "after_sha256": "6c4c47d39101c31daa9c9aa4fe94bd00aeead162d9b408eb2e807f6261e9a1fa",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/lib/visualProfile.js",
+      "before_sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+      "after_sha256": "3044d454029b469c02cc4666382eadecb4f38d88c0f2537ae57ed225c8aacae8",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/tool-ai-dh/web-ai/src/Workspace/VisualProfiles.jsx",
+      "before_sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "after_sha256": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/Cooking-AI-review/app/services/speech_service.py",
+      "before_sha256": "3a68cf752fbbeee4b4010cd23f7c76ebd34813f7061baf0974dc181fc243c92a",
+      "after_sha256": "3a68cf752fbbeee4b4010cd23f7c76ebd34813f7061baf0974dc181fc243c92a",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/Cooking-AI-review/scripts/dedicated_worker.py",
+      "before_sha256": "98aa1496485a06b189853f6d9e540e9ceb289709eceb51451919a0c1e76e121e",
+      "after_sha256": "98aa1496485a06b189853f6d9e540e9ceb289709eceb51451919a0c1e76e121e",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/Cooking-AI-review/scripts/run_phase3a2.py",
+      "before_sha256": "bd4f2dc554ab82131f907a798a10bc43be4386084498e6c7322638291525140d",
+      "after_sha256": "bd4f2dc554ab82131f907a798a10bc43be4386084498e6c7322638291525140d",
+      "status": "PASS"
+    },
+    {
+      "path": "F:/Cooking-AI-review/app/services/dedicated_worker.py",
+      "before_sha256": "c97a223f1ed5a454a23cba756d3698681be54a76093f124cd1f254435c85aaf9",
+      "after_sha256": "c97a223f1ed5a454a23cba756d3698681be54a76093f124cd1f254435c85aaf9",
+      "status": "PASS"
+    }
+  ],
+  "real_screenplays": [
+    {
+      "path": "C:/Users/Admin/Downloads/kịch bản gen video AI.txt",
+      "bytes": 17406,
+      "expected_sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "actual_sha256": "e24725a239b5084dfa4dfd57192cf636e2ebf423ee953ada760bce29d15ca74b",
+      "status": "PASS"
+    },
+    {
+      "path": "C:/Users/Admin/Downloads/kịch bản semi-content.txt",
+      "bytes": 13164,
+      "expected_sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "actual_sha256": "600431973c83c7c74603fcc1d347a0231c19a310a2a902669d3d8c99f12f9050",
+      "status": "PASS"
+    }
+  ],
+  "live_set_id_immutability": "NOT RUN"
+}

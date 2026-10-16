@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "transport": "Real Web → FastAPI TCP",
+  "inference": "MOCK ONLY; REAL QWEN NOT RUN",
+  "clerk": "Synthetic signed test session; live Clerk NOT RUN",
+  "image": "Synthetic solid blue PNG, not a human reference",
+  "image_sha256": "e9da449bcc3b10b9b37834ea7add3566c3df058c3bf56f74ef706f49848d0126",
+  "response": {
+    "job_id": "def12481826236afcd6e7e8ddfdae572cbbf39c8c9e0df01",
+    "state": "completed",
+    "result": {
+      "operation": "visual_profile",
+      "image_sha256": "e9da449bcc3b10b9b37834ea7add3566c3df058c3bf56f74ef706f49848d0126",
+      "profile": {
+        "status": "detected",
+        "visual_id": "mock_blue_coat",
+        "visual_description": "Synthetic mock response; not evidence about this image."
+      }
+    },
+    "error": null,
+    "metrics": {
+      "request_latency_seconds": 0
+    },
+    "expires_at": "2026-10-12T18:03:45.963Z",
+    "polls_remaining": 119
+  },
+  "invalid_image_status": 422,
+  "project_selector_rejected": 422,
+  "health": {
+    "status": "ok",
+    "model": {
+      "name": "Qwen/Qwen3-VL-4B-Instruct",
+      "precision": "nf4",
+      "purpose": "visual_profile",
+      "compute_dtype": "bfloat16",
+      "attention": "sdpa",
+      "gpu_mode": "standalone"
+    },
+    "model_ready": true,
+    "busy": false,
+    "worker_state": "ready",
+    "queue_depth": 0,
+    "queue_capacity": 4,
+    "model_load_count": 0,
+    "model_load_seconds": null,
+    "error": null,
+    "cpu_workflows": {
+      "ready": true,
+      "state": "ready",
+      "busy": false,
+      "queue_depth": 0,
+      "queue_capacity": 4,
+      "max_workers": 1
+    },
+    "retained_jobs": 1,
+    "job_limit": 64
+  },
+  "stopped": {
+    "stopped": true,
+    "blocked_import_attempts": [],
+    "model_modules_loaded": [],
+    "gpu_worker_started": false,
+    "mock_vision_worker": true
+  }
+}

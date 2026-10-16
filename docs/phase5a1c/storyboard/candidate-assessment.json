@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-13T14:49:17.414Z",
+  "project": "Dự án Full AI - 12:33:38 AM",
+  "scene": "3",
+  "spokenSource": "Voiceover",
+  "dialogue": "You relocated it directly under your tires. Ms. Harper, please explain the incident.",
+  "plan": {
+    "words": 13,
+    "seconds": 6,
+    "suggested": 6,
+    "fits": true,
+    "wordsPerMinute": 150,
+    "pauseSeconds": 0.8
+  },
+  "settings": {
+    "duration": 6,
+    "resolution": "480p",
+    "aspect_ratio": "16:9",
+    "generate_audio": true,
+    "camera_fixed": true,
+    "seed": -1
+  },
+  "priceReference": {
+    "microUsd": 144000,
+    "usd": "0.1440",
+    "currency": "USD",
+    "version": "seedance-standard-reference-2026-10-12",
+    "source": "https://wavespeed.ai/docs/docs-api/bytedance/bytedance-seedance-v1.5-pro-image-to-video",
+    "verifiedDate": "2026-10-12",
+    "kind": "reference_estimate"
+  },
+  "promptMatchesVisiblePanel": true,
+  "promptReadOnly": true,
+  "visibleAlerts": [],
+  "unsupportedNonemptyFields": false,
+  "legacyVoiceoverOnly": true,
+  "persistedWordCount": "16",
+  "calculatedWordCount": 13,
+  "localImageSelected": false,
+  "operatorSceneApproval": "APPROVED - user replied Có",
+  "positiveLiveQuote": "NOT RUN",
+  "providerSubmissions": 0,
+  "proofScope": "CPU compose/plan utilities on visible DOM field strings; no Qwen, no provider, no Firestore export or write"
+}

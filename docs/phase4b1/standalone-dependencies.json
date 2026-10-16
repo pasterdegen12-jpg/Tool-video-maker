@@ -1,0 +1,270 @@
+{
+  "checked_at_utc": "2026-10-12T07:25:21.801Z",
+  "scope": "Gateway source reads only; no modules imported or scripts executed",
+  "matches": [
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/config.py",
+      "sha256": "d095aa47e6edc95a6a4cd1213fac7b6d1f723a46bdc7a8c9e3e5f7f0f16de2f3",
+      "lines": [
+        {
+          "line": 10,
+          "text": "    cooking_root: Path = Path('F:/Cooking-AI-review')"
+        },
+        {
+          "line": 11,
+          "text": "    model_path: Path = Path('F:/Cooking-AI-review/models/qwen3-vl-8b')"
+        },
+        {
+          "line": 12,
+          "text": "    inference_python: Path = Path('F:/Cooking-AI-review/.venv/Scripts/python.exe')"
+        },
+        {
+          "line": 13,
+          "text": "    gpu_lock_path: Path = Path('F:/Cooking-AI-review/jobs/.speech_gpu.lock')"
+        },
+        {
+          "line": 44,
+          "text": "        root = self.cooking_root.resolve()"
+        },
+        {
+          "line": 46,
+          "text": "            raise ValueError('Gateway runtime directory cannot be inside Cooking')"
+        },
+        {
+          "line": 61,
+          "text": "        keys = ('cooking_root', 'model_path', 'gpu_lock_path', 'gpu_mode',"
+        },
+        {
+          "line": 69,
+          "text": "            result['model_path'] = str(self.visual_model_path or self.cooking_root / 'models' / ('qwen3-vl-' + size))"
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/gpu.py",
+      "sha256": "1d5ce46f3e0e49c7c78c106f63686d84b1e6612f2dafb683775c070390423102",
+      "lines": [
+        {
+          "line": 8,
+          "text": "    \"\"\"Own the gateway GPU mutex, plus Cooking's existing byte lock without writes.\"\"\""
+        },
+        {
+          "line": 37,
+          "text": "                        'Cooking shared lock is absent; no files were created. Use a provisioned shared lock or an explicitly dedicated GPU.')"
+        },
+        {
+          "line": 39,
+          "text": "            # Open existing file read-only. LockFileEx and Cooking/filelock both"
+        },
+        {
+          "line": 55,
+          "text": "                raise GatewayError('GPU_BUSY', 'Cooking GPU lock is held or unavailable.')"
+        },
+        {
+          "line": 85,
+          "text": "        # NVIDIA reports MiB; existing Cooking gates use decimal MB."
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/inference.py",
+      "sha256": "f9f1ea92d66264b7532930f84b17f173773c64892a2f82146c88cae09b8b8565",
+      "lines": [
+        {
+          "line": 13,
+          "text": "    # This is intentionally independent from Cooking's image-required VisionRequest."
+        },
+        {
+          "line": 28,
+          "text": "            root = Path(config['cooking_root']).resolve()"
+        },
+        {
+          "line": 31,
+          "text": "                raise GatewayError('LOCAL_MODEL_MISSING', 'Existing Cooking backend or local model files are missing.')"
+        },
+        {
+          "line": 32,
+          "text": "            sys.path.insert(0, str(root))"
+        },
+        {
+          "line": 39,
+          "text": "            from app.services.dedicated_worker import baseline_gate, postload_gate"
+        },
+        {
+          "line": 48,
+          "text": "            from app.services.vision_backend_registry import create_backend"
+        },
+        {
+          "line": 49,
+          "text": "            from app.services.vision_optimization import parse"
+        },
+        {
+          "line": 50,
+          "text": "            self.parse = parse"
+        },
+        {
+          "line": 120,
+          "text": "                # Cooking opens frame.path with PIL; an in-memory file avoids residual private images on timeout."
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/process.py",
+      "sha256": "55254574e7c8c9fce26cc4d7052de31c1fa72d2f8b45b129549c96b7ae6ccc22",
+      "lines": [
+        {
+          "line": 50,
+          "text": "                str(self.settings.inference_python), '-B', '-m', 'ai_gateway.worker',"
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/worker.py",
+      "sha256": "59bb4bd730d748e93d36bd179aa3464a01854631fbb24832def398aa65871653",
+      "lines": [
+        {
+          "line": 9,
+          "text": "    sys.stdout = sys.stderr  # Cooking diagnostic prints cannot corrupt the protocol."
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/ai_gateway/analysis.py",
+      "sha256": "61a02e9e061a1818a9ec6a5bc6bd7cef4ba0c88fa992f5069cff89a70d9d2c6c",
+      "lines": [
+        {
+          "line": 46,
+          "text": "            result = ScriptAnalysis.model_validate(backend.parse(raw))"
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/scripts/inspect_runtime.py",
+      "sha256": "e7a75a261bd7b8076d1eb4aa765b365022927710a2719870c4ccacbab078e09c",
+      "lines": [
+        {
+          "line": 12,
+          "text": "sys.path.insert(0, str(ROOT))"
+        },
+        {
+          "line": 20,
+          "text": "    cooking = Path(os.environ.get('GATEWAY_COOKING_ROOT', 'F:/Cooking-AI-review'))"
+        },
+        {
+          "line": 21,
+          "text": "    model = Path(os.environ.get('GATEWAY_MODEL_PATH', str(cooking/'models/qwen3-vl-8b')))"
+        },
+        {
+          "line": 29,
+          "text": "    lease = GPUReservation(Path(os.environ.get('GATEWAY_GPU_LOCK_PATH', str(cooking/'jobs/.speech_gpu.lock'))), 'shared')"
+        },
+        {
+          "line": 57,
+          "text": "    report['cooking_source_sha256'] = {name: hashlib.sha256((cooking/name).read_bytes()).hexdigest() for name in sources}"
+        }
+      ]
+    },
+    {
+      "path": "F:/tool-ai-dh/local-ai-gateway/README.md",
+      "sha256": "a82fd6c09c8a0053ade5beed77b83a41c09e999dde65403d5c361b89817d1a96",
+      "lines": [
+        {
+          "line": 14,
+          "text": "(existing Cooking inference Python) -> existing Qwen3-VL-8B NF4 backend ->"
+        },
+        {
+          "line": 18,
+          "text": "working Cooking interpreter **read-only**, configurable via GATEWAY_INFERENCE_PYTHON."
+        },
+        {
+          "line": 20,
+          "text": "Cooking environment. You can point it to a separately provisioned environment with"
+        },
+        {
+          "line": 21,
+          "text": "the same pinned inference dependencies. No package is installed into Cooking."
+        },
+        {
+          "line": 23,
+          "text": "Imports only app.services modules, never Cooking CLI/application entry points."
+        },
+        {
+          "line": 25,
+          "text": "cache/temp directories prevent writes to Cooking or model downloads. The new"
+        },
+        {
+          "line": 26,
+          "text": "Python package is ai_gateway, so it does not shadow Cooking's app package."
+        },
+        {
+          "line": 29,
+          "text": "- app.services.vision_backend_registry.create_backend"
+        },
+        {
+          "line": 30,
+          "text": "- app.services.qwen8b_nf4_backend.Qwen8BNF4Backend"
+        },
+        {
+          "line": 31,
+          "text": "- app.services.qwen4b_nf4_backend.Qwen4BNF4Backend.generate_profiled / close"
+        },
+        {
+          "line": 32,
+          "text": "- app.services.vision_optimization.parse"
+        },
+        {
+          "line": 33,
+          "text": "- app.services.dedicated_worker.baseline_gate / postload_gate"
+        },
+        {
+          "line": 36,
+          "text": "It does not construct or weaken Cooking's image-required VisionRequest. The existing"
+        },
+        {
+          "line": 66,
+          "text": "F:\\Cooking-AI-review\\.venv\\Scripts\\python.exe -B -m venv .venv"
+        },
+        {
+          "line": 73,
+          "text": "storage inside Cooking. The default model path points to the existing 8B directory."
+        },
+        {
+          "line": 79,
+          "text": "also locks byte 0 of the **existing** Cooking jobs/.speech_gpu.lock using a read-only"
+        },
+        {
+          "line": 80,
+          "text": "handle, compatible with Cooking's filelock. It never creates/removes that file."
+        },
+        {
+          "line": 83,
+          "text": "Because Cooking removes its lock after a task, default shared mode may intentionally"
+        },
+        {
+          "line": 84,
+          "text": "remain unavailable. Do not start a Cooking task merely to manufacture this lock."
+        },
+        {
+          "line": 87,
+          "text": "Dedicated mode is a scheduling commitment: no Cooking/other GPU workloads may start"
+        },
+        {
+          "line": 88,
+          "text": "while the service is alive. If a Cooking lock already exists, it is still respected."
+        },
+        {
+          "line": 96,
+          "text": "After load, require CUDA-only placement and >=3000 MB remaining via Cooking's gate."
+        },
+        {
+          "line": 187,
+          "text": "F:\\Cooking-AI-review\\.venv\\Scripts\\python.exe -B scripts\\inspect_runtime.py"
+        },
+        {
+          "line": 191,
+          "text": "it reads CUDA/NVIDIA availability and does not change a Cooking lock. CPU tests use"
+        }
+      ]
+    }
+  ]
+}

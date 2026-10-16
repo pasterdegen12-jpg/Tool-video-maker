@@ -1,0 +1,18 @@
+{
+  "src/Workspace/StoryboardTab.jsx": "18f855f2ede78192d4e1b3b658263c7066bca684e3156329f4d1ddc4570b100a",
+  "src/Workspace/Workspace.jsx": "cad4f7ec0fe47f0c31cb12fa0cfc1d1e865020bc023d70312e55e7b2660fe43d",
+  "src/Workspace/VisualProfiles.jsx": "6d592f5a16867663a5955964adf25916d282aba22a23b4c40fe0c281ad85f387",
+  "src/Workspace/SetupTab.jsx": "0d6a58beaff2365a24185c5812f942f9da48ce74842ea0f2792b58d2db122935",
+  "src/MainEditor.jsx": "fe2edcd280f933827a190a7d0584f34f117dea28e52f2c35caa693b0abba7793",
+  "src/firebase.js": "5207438340574fbcd460610f18341dd707c2b50d4c12bec27556fec18e5ef289",
+  "src/lib/spokenText.js": "389b75660694007cedf95948f4560e9bec79ea535ce2d9c72d645495912c4575",
+  "api/lib/local-ai/auth.js": "fd4ae233cb48db263cb1eda9996bafd183c1ef5447b5e26fa186265b1048f3e0",
+  "api/get-upload-url.js": "1534ce6ba7513bf1e79909e89a841562fe0b28362c815f2dc6bde193d168e479",
+  "api/proxy-audio.js": "813ae2e9b9b1f9cd3735b462f911f248dd539acc4b8957cf78431677430089cb",
+  "api/proxy-media.js": "3c977eb05805cfbf7feac127475e6e624a508ae6bec0aeb621f9ebc5c630bacd",
+  "scripts/local-ai-loopback.mjs": "3af80424f9e158eb20885d32c2ecb5637e7b47a9e84b537b37dda42faadaf953",
+  "vite.config.js": "2d709a45571232797d178bfdc60098d7c636144adaebc9f39c5befd64f357025",
+  "package.json": "e370384d6ef7b2b148c58d6277b484e4d0998594d8d3d53e0ddc853fa38dbdcd",
+  "package-lock.json": "1db8c4b8f12e6445ddb620bef088bee0bd4f8298b023ae71721e310761a5d85a",
+  "vercel.json": "737644aa3554687582718e8ffce7bb9be379956700ed0cb28607c19f6ec7e386"
+}

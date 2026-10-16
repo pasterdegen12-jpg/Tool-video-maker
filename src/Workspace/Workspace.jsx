@@ -1,3 +1,4 @@
+import { VisualProfilesProvider } from './VisualProfiles.jsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
@@ -7,6 +8,9 @@ import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSqua
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
+import FullDialogueField from './FullDialogueField.jsx';
+import { readSpokenText } from '../lib/spokenText.js';
+import {displayCharacterReference,reconcileCharacterScenes} from '../lib/characterIdentity.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -197,6 +201,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   }, [projectId]);
 
   const isSemi = projectType === 'semi';
+  const editSpokenIssue = activeEditSceneModal ? readSpokenText(activeEditSceneModal, projectType).issue : null;
 
   const handleSaveProjectName = async () => {
     if (!projectName.trim()) return;
@@ -205,6 +210,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   };
 
   const handleSaveSetupData = async (updatedCharacters, updatedParsedData) => {
+    if(updatedParsedData)updatedParsedData=reconcileCharacterScenes(updatedParsedData,updatedCharacters,projectId,projectType);
     setProjectCharacters(updatedCharacters);
     if (updatedParsedData) setParsedData(updatedParsedData);
     try {
@@ -305,6 +311,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   };
 
   const handleSaveSceneEdit = async () => {
+    const spoken = readSpokenText(activeEditSceneModal, projectType);
+    if (spoken.issue) return alert(spoken.message);
     const updatedData = parsedData.map(s => s.scene_n === activeEditSceneModal.scene_n ? activeEditSceneModal : s);
     setParsedData(updatedData);
     try {
@@ -314,6 +322,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   };
 
   const handleGenVideoSingle = async (sceneNo, options, isBatch = false) => {
+    // Phase 5A replaces only the Full AI path; keep the existing Semi handler isolated.
+    if (!isSemi) return alert('Mở Storyboard local và chọn Gen Video AI cho một scene để xem prompt, ảnh và xác nhận phí.');
     const scene = parsedData.find(s => s.scene_n === sceneNo);
     if (!scene) return;
 
@@ -358,7 +368,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     if (!window.confirm("Hệ thống sẽ lấy ảnh Avatar của nhân vật tương ứng đè lên làm Nền (Start Frame) cho TẤT CẢ các Scene. Bạn chắc chắn chứ?")) return;
 
     const newData = parsedData.map(scene => {
-      const charInfo = projectCharacters.find(c => c.name === scene.Character);
+      const charInfo = displayCharacterReference(scene.Character,projectCharacters,projectId);
       if (charInfo && charInfo.imageUrl) {
         return { ...scene, startFrameUrl: charInfo.imageUrl };
       }
@@ -370,6 +380,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   };
 
   const handleBatchGenVideo = async () => {
+    if (!isSemi) return alert("Phase 5A chỉ hỗ trợ một scene từ Storyboard. Gen All Video chưa được hỗ trợ.");
     const scenesToGen = parsedData.filter(s => s.startFrameUrl || videoGenOptions.mode !== 'start_frame_to_video');
     if (scenesToGen.length === 0) return alert("Không có scene nào đủ điều kiện gen video (Hãy kiểm tra lại Start Frame).");
     if (!window.confirm(`Bạn chuẩn bị Gen Video bằng AI cho ${scenesToGen.length} Scene. Quá trình xử lý song song 3 video/lần. Tiếp tục?`)) return;
@@ -716,7 +727,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     }
   };
 
-  const getTextToGen = (scene) => isSemi ? scene.Voiceover : (scene.Dialogue || scene.Voiceover);
+  const getTextToGen = (scene) => readSpokenText(scene, projectType).text;
   const filteredScenesForAudio = parsedData.filter(scene => {
     const text = getTextToGen(scene);
     return text && text.trim() !== '';
@@ -738,6 +749,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
     const scenesToGen = Object.keys(checkedScenes).filter(k => checkedScenes[k]);
     if (scenesToGen.length === 0) return alert("Vui lòng chọn ít nhất 1 scene để gen!");
+    const blockedScene = parsedData.find(scene => scenesToGen.includes(String(scene.scene_n)) && readSpokenText(scene, projectType).issue);
+    if (blockedScene) return alert("Scene " + blockedScene.scene_n + ": " + readSpokenText(blockedScene, projectType).message);
 
     setIsBatchGenerating(true);
     setBatchGenProgress({ current: 0, total: scenesToGen.length });
@@ -911,6 +924,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   );
 
   return (
+    <VisualProfilesProvider projectId={projectId} projectType={projectType} characters={projectCharacters}
+      onConfirmed={saved=>{setProjectCharacters(saved.characters);setParsedData(saved.data);}}>
     <div
       className={cn(
         "h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300",
@@ -1098,6 +1113,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         )}
         {activeTab === 'storyboard' && (
           <StoryboardTab
+            projectId={projectId}
             parsedData={parsedData}
             projectCharacters={projectCharacters}
             generatedAudios={generatedAudios}
@@ -1159,7 +1175,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
           <button
             onClick={handleBatchGenVideo}
-            disabled={isBatchVideoGenerating}
+            disabled={!isSemi || isBatchVideoGenerating}
             className={cn(
               "w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50",
               isBatchVideoGenerating
@@ -1329,7 +1345,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       {/* Start Frame Modal */}
       {activeStartFrameModal && (() => {
         const sceneInfo = parsedData.find(s => s.scene_n === activeStartFrameModal.scene_n) || activeStartFrameModal;
-        const charInfo = projectCharacters.find(c => c.name === sceneInfo.Character);
+        const charInfo = displayCharacterReference(sceneInfo.Character,projectCharacters,projectId);
         const hasAvatar = charInfo && charInfo.imageUrl;
 
         return (
@@ -1557,10 +1573,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                     <label className="text-sm font-bold text-amber-400">Character (Nhân vật)</label>
                     <input type="text" value={activeEditSceneModal.Character || ''} onChange={(e) => setActiveEditSceneModal({ ...activeEditSceneModal, Character: e.target.value })} className={fieldInput(darkMode)} />
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <label className={cn("text-sm font-bold", darkMode ? "text-white" : "text-black")}>Dialogue (Thoại)</label>
-                    <textarea value={activeEditSceneModal.Dialogue || activeEditSceneModal.Voiceover || ''} onChange={(e) => setActiveEditSceneModal({ ...activeEditSceneModal, Dialogue: e.target.value, Voiceover: e.target.value })} className={cn(fieldInput(darkMode), "h-24 resize-none custom-scrollbar")} />
-                  </div>
+                  <FullDialogueField scene={activeEditSceneModal} onChange={setActiveEditSceneModal} inputClassName={cn(fieldInput(darkMode), "h-24 resize-none custom-scrollbar")} />
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-bold text-amber-400">Tone (Giọng điệu)</label>
                     <input type="text" value={activeEditSceneModal.Tone_of_Voice || ''} onChange={(e) => setActiveEditSceneModal({ ...activeEditSceneModal, Tone_of_Voice: e.target.value })} className={fieldInput(darkMode)} />
@@ -1575,7 +1588,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
             <div className={cn("flex justify-end gap-3 mt-6 pt-5 border-t shrink-0", darkMode ? "border-white/[0.07]" : "border-zinc-200")}>
               <button onClick={() => setActiveEditSceneModal(null)} className={cn("h-10 px-6 rounded-xl font-bold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/50", darkMode ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-zinc-600 hover:text-black hover:bg-zinc-100")}>Hủy</button>
-              <button onClick={handleSaveSceneEdit} className="h-10 px-6 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-bold cursor-pointer shadow-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50">Lưu thay đổi</button>
+              <button onClick={handleSaveSceneEdit} disabled={!!editSpokenIssue} className="disabled:opacity-40 disabled:cursor-not-allowed h-10 px-6 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-bold cursor-pointer shadow-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/50">Lưu thay đổi</button>
             </div>
           </div>
         </div>
@@ -1893,5 +1906,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       )}
 
     </div>
+    </VisualProfilesProvider>
   );
 }

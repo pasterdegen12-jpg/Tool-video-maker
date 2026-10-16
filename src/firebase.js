@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { prepareNewProjectScenes, readSpokenText } from "./lib/spokenText.js";
 
 // ==========================================
 // CẤU HÌNH FIREBASE DATABASE
@@ -29,7 +30,7 @@ const withTimeout = (promise, ms, errorMessage) => {
 // ==========================================
 export const autoSaveToFirebase = async (data, projectName, script, characters = [], projectType = 'full-ai') => {
   const projectId = "proj_" + Date.now();
-  let uploadData = JSON.parse(JSON.stringify(data)); 
+  let uploadData = JSON.parse(JSON.stringify(prepareNewProjectScenes(data, projectType)));
 
   console.log(`⏳ [BẮT ĐẦU] Chuẩn bị đẩy ${uploadData.length} video lên mây Cloudflare R2...`);
   
@@ -111,7 +112,7 @@ export const autoSaveToFirebase = async (data, projectName, script, characters =
   console.log("🔥 Hoàn tất upload toàn bộ Video. Đang lưu thông tin vào Firebase...");
 
   // Tính tiền AI
-  const totalVoice = uploadData.filter(s => s.Voiceover && s.Voiceover.trim() !== '').length;
+  const totalVoice = uploadData.filter(s => readSpokenText(s, projectType).text.trim() !== '').length;
   const cost = totalVoice * 0.01;
 
   const projectDoc = {

@@ -1,0 +1,35 @@
+{
+  "production": {
+    "checkedAt": "2026-10-14T14:59:38.163Z",
+    "url": "https://www.aivideomaker.live",
+    "asset": "/assets/index-BvTeWk4S.js",
+    "sha256": "f818b9140161ea408cb3cc0ec40ad316947c9d739617abfd8e019647bd8fcdc5",
+    "localVideoRouteInBundle": false,
+    "knownLegacyProviderKeyPresent": true,
+    "readOnlyQuoteGET": {
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    "authenticatedPicker": "NOT RUN: separate Clerk login required"
+  },
+  "backup": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-ai-image-fix-fijv7p",
+  "buildDir": "C:\\Users\\Admin\\AppData\\Local\\Temp/web-ai-image-build-final-852VYR",
+  "buildFilesScanned": 10,
+  "knownSecretMatches": [],
+  "protectedUnrelatedUnchanged": 73,
+  "editedExisting": [
+    "src/Workspace/SeedanceScenePanel.jsx",
+    "api/lib/seedance/images.js",
+    "api/lib/seedance/errors.js",
+    "api/lib/seedance/config.js",
+    "api/lib/seedance/service.js",
+    "tests/seedance-http.test.mjs",
+    "src/lib/seedanceClient.js"
+  ],
+  "tests": {
+    "total": 248,
+    "pass": 248,
+    "fail": 0
+  },
+  "originalImageSha256": "94304d0e23551917a4e4a9ca44a8f4cc7a59d39f0b22dcca7bf1987be2d0f46b"
+}

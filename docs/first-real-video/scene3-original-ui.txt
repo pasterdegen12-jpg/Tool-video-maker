@@ -1,0 +1,24 @@
+videoUrl
+https://www.w3schools.com/html/mov_bbb.mp4
+Tone_of_Voice
+Nghiêm nghị (Lạnh lùng)
+Context
+opening
+startFrameUrl
+https://pub-a8fcac683b704e1f9d7d1240947dfdcf.r2.dev/project_proj_1789061618441/avatar_1791987357742.jpeg
+Voiceover
+You relocated it directly under your tires. Ms. Harper, please explain the incident.
+status
+pending
+scene_n
+3
+Word_count
+16
+Action
+Giữ nguyên góc nhìn của nhân vật, không thay đổi hướng nhìn. Cảm xúc lạnh lùng, dứt khoát lật mở hồ sơ. Cử chỉ tay của nhân vật theo hội thoại và cảm xúc của nhân vật. Không đập búa, không gõ búa, không cầm búa
+Camera
+Camera cố định, không được di chuyển camera, không được thay đổi góc hay độ zoom của camera. Không có nhạc nền
+Character
+Thẩm phán
+Translate
+Anh đã di dời nó nằm trực tiếp dưới lốp xe của anh. Cô Harper, vui lòng giải thích sự việc.

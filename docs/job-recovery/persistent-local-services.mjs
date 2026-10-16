@@ -1,0 +1,31 @@
+// Operator-assisted local acceptance launcher. No provider calls and no auto-restart.
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import net from 'node:net';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {parseEnv} from 'node:util';
+const root=fileURLToPath(new URL('../../',import.meta.url));
+const kind=process.argv[2];
+if(!['backend','frontend'].includes(kind))throw Error('Specify backend or frontend');
+const local=parseEnv(fs.readFileSync(path.join(root,'.env.video.local'),'utf8'));
+if(local.LOCAL_AI_WEB_ORIGIN!=='http://localhost:5173'||local.VITE_WAVESPEED_API_KEY)throw Error('Unsafe local origin/frontend key configuration');
+if(!['true','false'].includes(local.LOCAL_VIDEO_PAID_ENABLED))throw Error('Explicit paid flag required');
+const port=kind==='backend'?8790:5173;
+await new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',()=>reject(Error('Target port unavailable')));s.listen(port,'127.0.0.1',()=>s.close(resolve));});
+const env={...process.env,...local,NODE_ENV:'development',VITE_WAVESPEED_API_KEY:'',CHOKIDAR_USEPOLLING:'true'};
+if(kind==='frontend'){env.WAVESPEED_API_KEY='';env.LOCAL_VIDEO_PAID_ENABLED='false';delete env.CLERK_SECRET_KEY;}
+if(kind==='backend'&&!env.WAVESPEED_API_KEY)throw Error('Backend key is absent');
+const logRoot=path.join(process.env.LOCALAPPDATA,'WebAI','LocalServices');
+fs.mkdirSync(logRoot,{recursive:true});
+const stamp=Date.now();
+const logPath=path.join(logRoot,kind+'-'+stamp+'.log');
+const fd=fs.openSync(logPath,'ax');
+const args=kind==='backend'?['scripts/local-video-server.mjs']:['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5173','--strictPort'];
+const child=spawn(process.execPath,args,{cwd:root,env,detached:true,windowsHide:true,stdio:['ignore',fd,fd]});
+await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',()=>reject(Error('Detached process launch failed')));});
+child.unref();fs.closeSync(fd);
+const record={kind,pid:child.pid,port,host:'127.0.0.1',started_at:new Date().toISOString(),paid:env.LOCAL_VIDEO_PAID_ENABLED==='true',backend_key_present:!!env.WAVESPEED_API_KEY,frontend_key_empty:env.VITE_WAVESPEED_API_KEY==='',logPath};
+fs.writeFileSync(path.join(logRoot,kind+'-'+stamp+'.json'),JSON.stringify(record,null,2),{flag:'wx'});
+console.log(JSON.stringify(record));

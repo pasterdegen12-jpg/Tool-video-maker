@@ -1,0 +1,44 @@
+[
+  {
+    "capture": "2026-10-12 14:21:30 Asia/Saigon, before project-isolation correction",
+    "command": "nvidia-smi",
+    "result": {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "7aa385",
+        "wall_time_seconds": 0.3381537,
+        "exit_code": 0,
+        "original_token_count": 714,
+        "output": "Mon Oct 12 14:21:30 2026       \r\n+---------------------------------------------------------------------------------------+\r\n| NVIDIA-SMI 536.23                 Driver Version: 536.23       CUDA Version: 12.2     |\r\n|-----------------------------------------+----------------------+----------------------+\r\n| GPU  Name                     TCC/WDDM  | Bus-Id        Disp.A | Volatile Uncorr. ECC |\r\n| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |\r\n|                                         |                      |               MIG M. |\r\n|=========================================+======================+======================|\r\n|   0  NVIDIA GeForce RTX 3060      WDDM  | 00000000:01:00.0  On |                  N/A |\r\n|  0%   49C    P5              15W / 170W |    684MiB / 12288MiB |     22%      Default |\r\n|                                         |                      |                  N/A |\r\n+-----------------------------------------+----------------------+----------------------+\r\n                                                                                         \r\n+---------------------------------------------------------------------------------------+\r\n| Processes:                                                                            |\r\n|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |\r\n|        ID   ID                                                             Usage      |\r\n|=======================================================================================|\r\n|    0   N/A  N/A      1496    C+G   ...gram Files\\Riot Vanguard\\vgtray.exe    N/A      |\r\n|    0   N/A  N/A      1544    C+G   ...05.0_x64__8wekyb3d8bbwe\\Cortana.exe    N/A      |\r\n|    0   N/A  N/A      2592    C+G   ...1.0_x64__8wekyb3d8bbwe\\Video.UI.exe    N/A      |\r\n|    0   N/A  N/A      6080    C+G   C:\\Windows\\explorer.exe                   N/A      |\r\n|    0   N/A  N/A      6376    C+G   ...rograms\\Zalo\\Zalo-26.10.10\\Zalo.exe    N/A      |\r\n|    0   N/A  N/A      6908    C+G   ..._x64__2p2nqsd0c76g0\\app\\ChatGPT.exe    N/A      |\r\n|    0   N/A  N/A      9624    C+G   ....Search_cw5n1h2txyewy\\SearchApp.exe    N/A      |\r\n|    0   N/A  N/A      9920    C+G   ...ft\\x64\\codex-computer-use-swift.exe    N/A      |\r\n|    0   N/A  N/A     10448    C+G   ...CBS_cw5n1h2txyewy\\TextInputHost.exe    N/A      |\r\n|    0   N/A  N/A     10836    C+G   ...t.LockApp_cw5n1h2txyewy\\LockApp.exe    N/A      |\r\n|    0   N/A  N/A     12904    C+G   ....10.10\\plugins\\capture\\ZaloCall.exe    N/A      |\r\n|    0   N/A  N/A     13300    C+G   ...siveControlPanel\\SystemSettings.exe    N/A      |\r\n|    0   N/A  N/A     14960    C+G   ...aming\\Telegram Desktop\\Telegram.exe    N/A      |\r\n+---------------------------------------------------------------------------------------+\r\n"
+      }
+    }
+  },
+  {
+    "capture": "2026-10-12 14:21:30 Asia/Saigon, before project-isolation correction",
+    "command": "nvidia-smi --query-gpu=index,name,driver_version,driver_model.current,memory.total,memory.used,memory.free --format=csv,noheader,nounits",
+    "result": {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "816283",
+        "wall_time_seconds": 0.0000095,
+        "exit_code": 0,
+        "original_token_count": 16,
+        "output": "0, NVIDIA GeForce RTX 3060, 536.23, WDDM, 12288, 683, 11445\r\n"
+      }
+    }
+  },
+  {
+    "capture": "2026-10-12 14:21:30 Asia/Saigon, before project-isolation correction",
+    "command": "nvidia-smi pmon -c 1",
+    "result": {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "d415bf",
+        "wall_time_seconds": 0.0000097,
+        "exit_code": 255,
+        "original_token_count": 17,
+        "output": "Not supported on the device(s)\r\nFailed to process command line \r\n\r\n"
+      }
+    }
+  }
+]

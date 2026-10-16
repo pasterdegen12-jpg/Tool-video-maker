@@ -1,0 +1,20 @@
+{
+  "protected_web_files": {
+    "src/MainEditor.jsx": true,
+    "src/App.jsx": true,
+    "src/main.jsx": true,
+    "src/firebase.js": true,
+    "src/Workspace/Workspace.jsx": true,
+    "src/Workspace/StoryboardTab.jsx": true,
+    "src/lib/spokenText.js": true,
+    "api/get-upload-url.js": true,
+    "api/proxy-audio.js": true,
+    "api/proxy-media.js": true,
+    "vercel.json": true
+  },
+  "gateway_changed_files": [
+    "tests/test_http_workflows.py",
+    "tests/test_jobs.py"
+  ],
+  "client_bundle_bridge_marker_hits": []
+}

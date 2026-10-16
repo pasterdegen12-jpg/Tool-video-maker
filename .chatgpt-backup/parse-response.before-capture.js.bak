@@ -1,0 +1,6 @@
+import { GeminiTestError } from './errors.js';
+
+// Implement only from a sanitized, observed response envelope. Never guess paths.
+export function parseGeminiResponse() {
+  throw new GeminiTestError('GEMINI_RESPONSE_PARSE_FAILED');
+}

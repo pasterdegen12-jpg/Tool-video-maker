@@ -1,0 +1,34 @@
+{
+  "suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "255",
+    "time": "9.761",
+    "timestamp": "2026-10-12T21:21:57.126272+07:00",
+    "hostname": "DESKTOP-OAQCL63"
+  },
+  "evidence": [
+    {
+      "source": "C:\\Users\\Admin\\AppData\\Local\\Temp\\gateway-standalone-5GOYWz\\pytest-regression-3\\test_original_files_through_tc0\\full-ai.http.json",
+      "saved": "F:\\tool-ai-dh\\web-ai\\docs\\phase4b2\\full-ai.http.json",
+      "sha256": "8f6a2d45bdc38e4dd5ab329486e235f162c38a48fad37f3c8085cfda9d07e7ed"
+    },
+    {
+      "source": "C:\\Users\\Admin\\AppData\\Local\\Temp\\gateway-standalone-5GOYWz\\pytest-regression-3\\test_original_files_through_tc1\\semi.http.json",
+      "saved": "F:\\tool-ai-dh\\web-ai\\docs\\phase4b2\\semi.http.json",
+      "sha256": "3deabf681adb859e99a6bc0c259ef658e318ba7cf7bdab659db2992fea0cb40f"
+    },
+    {
+      "source": "C:\\Users\\Admin\\AppData\\Local\\Temp\\gateway-standalone-5GOYWz\\pytest-regression-3\\test_original_scripts_and_adap0\\full-ai.regression.json",
+      "saved": "F:\\tool-ai-dh\\web-ai\\docs\\phase4b2\\full-ai.regression.json",
+      "sha256": "ebae5cd7a22860f05adf23cba006d9a43bfa2b3ffdd41d584967f229dd96812c"
+    },
+    {
+      "source": "C:\\Users\\Admin\\AppData\\Local\\Temp\\gateway-standalone-5GOYWz\\pytest-regression-3\\test_original_scripts_and_adap1\\semi.regression.json",
+      "saved": "F:\\tool-ai-dh\\web-ai\\docs\\phase4b2\\semi.regression.json",
+      "sha256": "233fb80180fb0dc2ece7f5ba9aa25e6bc752c6d93b1e7795dde7790d7844af5b"
+    }
+  ]
+}
