@@ -158,5 +158,43 @@ export function createVideoController({getToken,onChange,fetchImpl=fetch,now=Dat
         emit(run,{status:admitted?'tracking_unknown':'admission_unknown',busy:false,message:'Chưa xác định kết quả gửi/theo dõi. Có thể đã tính phí. Không tự gửi lại; kiểm tra WaveSpeed.'});
       }finally{if(active===run)active=null;}
     },
+    // Single-click generation: internally chains quote → submit automatically.
+    // Mirrors the cloud controller generate() API; no intermediate UI confirmations.
+    async generate(payload){
+      if(active||consumed)return;
+      // Step 1: quote
+      consumed=false;approved=null;
+      const run=new AbortController();active=run;emit(run,{status:'quoting',busy:true,message:'Đang chuẩn bị video...'});
+      try{
+        const snapshot=structuredClone(payload),local=composeScene(snapshot.scene,snapshot.profile,snapshot.projectType);
+        const {response,value}=await request('/api/local-video/quote','POST',snapshot,run);
+        if(!response.ok)throw new Error(value.error?.message||'Đang chuẩn bị video...');
+        const binary=atob(snapshot.image_base64),decoded=new Uint8Array(binary.length);
+        for(let i=0;i<binary.length;i++)decoded[i]=binary.charCodeAt(i);
+        const imageHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',decoded)),x=>x.toString(16).padStart(2,'0')).join('');
+        if(!/^[a-f0-9]{48}$/.test(value.quote_id)||!/^[a-f0-9]{64}$/.test(value.request_hash)||
+          value.prompt!==local.prompt||value.image_sha256!==imageHash||value.model!==MODEL||value.scene_id!==local.sceneId||
+          JSON.stringify(value.settings)!==JSON.stringify(snapshot.settings)||
+          JSON.stringify(value.cost)!==JSON.stringify(estimateCost(snapshot.settings,now()))||
+          !(Date.parse(value.expires_at)>now()&&Date.parse(value.expires_at)<=now()+125000)||typeof value.paid_enabled!=='boolean')throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
+        if(!value.paid_enabled)throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
+        if(active!==run||run.signal.aborted)throw new Error('CANCELLED');
+        // Step 2: submit immediately
+        consumed=true;approved=null;
+        emit(run,{status:'uploading',busy:true,message:'Đang tải ảnh...'});
+        let admitted=false;
+        let result=await request('/api/local-video/submit','POST',{quote_id:value.quote_id,request_hash:value.request_hash,confirm:true,transfer_consent:true,payload:snapshot},run);
+        if(result.response.status!==202){emit(run,{status:'error',busy:false,message:result.value.error?.message||'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.'});return;}
+        const id=result.value.job_id,path='/api/local-video/jobs/'+id;
+        if(!/^[a-f0-9]{48}$/.test(id)||result.value.status_url!==path)throw new Error('INVALID_RESPONSE');
+        job(result.value,id,value.scene_id);
+        admitted=true;
+        emit(run,{status:'submitting',busy:true,message:'Đang tạo video...'});
+        await track(result,id,value.scene_id,run);
+      }catch(e){
+        if(e.message==='CANCELLED'||e.name==='AbortError')emit(run,{status:'stopped',busy:false,message:'Đã dừng chờ. Không tự gửi lại.'});
+        else emit(run,{status:'error',busy:false,message:e.message||'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.'});
+      }finally{if(active===run)active=null;}
+    },
   };
 }

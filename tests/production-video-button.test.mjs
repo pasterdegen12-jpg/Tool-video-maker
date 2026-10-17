@@ -3,21 +3,22 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { composeScene, estimateCost, videoVisible, DEFAULT_SETTINGS } from '../src/lib/seedanceContract.js';
 
-test('production routing: videoVisible returns false on web/production and true on localhost dev', () => {
-  // Production URL: https://www.aivideomaker.live
+test('production routing: videoVisible returns true on https with VITE_CLOUD_VIDEO_ENABLED=true, false otherwise', () => {
+  // Production with cloud flag set — should be enabled
+  assert.equal(
+    videoVisible({ VITE_CLOUD_VIDEO_ENABLED: 'true' }, { hostname: 'www.aivideomaker.live', protocol: 'https:' }, 'full-ai'),
+    true
+  );
+  // Production without cloud flag — disabled
+  assert.equal(
+    videoVisible({ VITE_CLOUD_VIDEO_ENABLED: 'false' }, { hostname: 'www.aivideomaker.live', protocol: 'https:' }, 'full-ai'),
+    false
+  );
   assert.equal(
     videoVisible({ DEV: false }, { hostname: 'www.aivideomaker.live', protocol: 'https:' }, 'full-ai'),
     false
   );
-  assert.equal(
-    videoVisible({ DEV: false }, { hostname: 'localhost', protocol: 'http:' }, 'full-ai'),
-    false
-  );
-  assert.equal(
-    videoVisible({ DEV: true }, { hostname: 'www.aivideomaker.live', protocol: 'https:' }, 'full-ai'),
-    false
-  );
-  // Local development loopback
+  // Local development loopback (DEV mode)
   assert.equal(
     videoVisible({ DEV: true }, { hostname: 'localhost', protocol: 'http:' }, 'full-ai'),
     true
@@ -28,7 +29,7 @@ test('production routing: videoVisible returns false on web/production and true 
   );
   // Semi-content never enables Seedance full-ai workflow
   assert.equal(
-    videoVisible({ DEV: true }, { hostname: 'localhost', protocol: 'http:' }, 'semi'),
+    videoVisible({ VITE_CLOUD_VIDEO_ENABLED: 'true' }, { hostname: 'www.aivideomaker.live', protocol: 'https:' }, 'semi'),
     false
   );
 });
@@ -70,13 +71,13 @@ test('handleGenVideoSingle behavior: production shows accurate availability erro
   assert.deepEqual(activeVideoGenModal, { scene_n: 3 }); // Modal state remained safely
 });
 
-test('handleGenVideoSingle behavior: when backend is available, transitions to Seedance workflow with correct scene', () => {
+test('handleGenVideoSingle behavior: when cloud backend is available on https, transitions to Seedance workflow', () => {
   const alerts = [];
   const fakeAlert = msg => alerts.push(msg);
 
-  // Simulate local dev environment
-  const envLocal = { DEV: true };
-  const locLocal = { hostname: 'localhost', protocol: 'http:' };
+  // Simulate production environment with cloud enabled
+  const envCloud = { VITE_CLOUD_VIDEO_ENABLED: 'true' };
+  const locProd = { hostname: 'www.aivideomaker.live', protocol: 'https:' };
   const projectType = 'full-ai';
 
   let activeVideoGenModal = { scene_n: 3 };
@@ -87,8 +88,8 @@ test('handleGenVideoSingle behavior: when backend is available, transitions to S
   const isSemi = projectType === 'semi';
   const handleGenVideoSingle = (sceneNo, options, isBatch = false) => {
     if (!isSemi) {
-      if (!videoVisible(envLocal, locLocal, projectType)) {
-        if (!isBatch) fakeAlert("Dịch vụ tạo video AI hiện chưa khả dụng trên môi trường web. Backend dịch vụ video chưa được triển khai trên hệ thống cloud.");
+      if (!videoVisible(envCloud, locProd, projectType)) {
+        if (!isBatch) fakeAlert('Dịch vụ tạo video AI hiện chưa khả dụng.');
         return;
       }
       setActiveVideoGenModal(null);

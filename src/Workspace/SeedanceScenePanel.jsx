@@ -4,8 +4,10 @@ import { SceneVisualProfileAccess } from './VisualProfiles.jsx';
 import { readVideoImage } from '../lib/seedanceImageClient.js';
 import { createVideoController } from '../lib/seedanceClient.js';
 import { createCloudVideoController } from '../lib/cloudVideoClient.js';
-import { ASPECTS,DEFAULT_SETTINGS,composeScene,planDuration,estimateCost,MODEL,MAX_PROMPT_CHARS } from '../lib/seedanceContract.js';
-const button='rounded-lg border border-emerald-500/50 px-3 py-2 text-sm font-semibold disabled:opacity-40';
+import { DEFAULT_SETTINGS,composeScene,planDuration } from '../lib/seedanceContract.js';
+import { Loader2, Video, Download, RefreshCw, X, ImageIcon, Play } from 'lucide-react';
+
+const cn=(...args)=>args.filter(Boolean).join(' ');
 export default function SeedanceScenePanel({scene,projectId,characters,onClose}){
   const auth=useAuth();
   return <SceneVisualProfileAccess scene={scene} characters={characters} projectId={projectId}>{resolved=>
@@ -14,10 +16,10 @@ export default function SeedanceScenePanel({scene,projectId,characters,onClose})
   }</SceneVisualProfileAccess>;
 }
 function Editor({scene,projectId,auth,resolved,onClose}){
-  const [settings,setSettings]=useState({...DEFAULT_SETTINGS});
-  const [assumptions,setAssumptions]=useState({wordsPerMinute:150,pauseSeconds:.8});
+  const [settings]=useState({...DEFAULT_SETTINGS});
+  const [assumptions]=useState({wordsPerMinute:150,pauseSeconds:.8});
   const [image,setImage]=useState(null),[reading,setReading]=useState(false),[state,setState]=useState({status:'idle',busy:false});
-  const [confirm,setConfirm]=useState(false),[transfer,setTransfer]=useState(false),[mediaError,setMediaError]=useState(false);
+  const [mediaError,setMediaError]=useState(false);
   const selection=useRef({revision:0});
   const cloud=import.meta.env.VITE_CLOUD_VIDEO_ENABLED==='true'&&globalThis.location?.protocol==='https:';
   const [controller]=useState(()=>(cloud?createCloudVideoController:createVideoController)({getToken:auth.getToken,onChange:setState}));
@@ -27,17 +29,13 @@ function Editor({scene,projectId,auth,resolved,onClose}){
     globalThis.addEventListener('pagehide',leave);
     return()=>{leave();globalThis.removeEventListener('pagehide',leave);};
   },[controller]);
-  function invalidate(){
-    controller.cancel(false);setConfirm(false);setTransfer(false);setMediaError(false);setState({status:'idle',busy:false});
-  }
-  const profile=null; // The saved scene Character is the only effective identity.
+  function invalidate(){controller.cancel(false);setState({status:'idle',busy:false});setMediaError(false);}
+  // Validate scene can compose a prompt; block generation if not.
   let composed=null,plan=null,issue='';
-  try{composed=composeScene(scene,profile);plan=planDuration(composed.dialogue,assumptions);
-    if(!plan.fits)issue='Lời thoại ước tính cần '+plan.seconds+' giây, vượt 9 giây. Cần người dùng rà soát; không tự chia/cắt lời thoại.';
-    else if(settings.duration<Math.ceil(plan.seconds))issue='Thời lượng đang chọn ngắn hơn ước tính '+plan.seconds+' giây. Hãy tăng thời lượng.';
+  try{composed=composeScene(scene);plan=planDuration(composed.dialogue,assumptions);
+    if(!plan.fits)issue='Lời thoại ước tính vượt 9 giây. Liên hệ quản trị viên.';
+    else if(settings.duration<Math.ceil(plan.seconds))issue='Thời lượng ngắn hơn ước tính. Liên hệ quản trị viên.';
   }catch(error){issue=error.message;}
-  let cost=null;
-  try{cost=estimateCost(settings);}catch{issue ||= 'Thông số video không hợp lệ.';}
   async function choose(event){
     const file=event.target.files?.[0];event.target.value='';
     const revision=++selection.current.revision;invalidate();setImage(null);setReading(false);
@@ -48,77 +46,109 @@ function Editor({scene,projectId,auth,resolved,onClose}){
     catch(error){if(selection.current.revision===revision)setState({status:'error',busy:false,message:error.message});}
     finally{if(selection.current.revision===revision)setReading(false);}
   }
-  function setting(key,value){invalidate();setSettings(previous=>({...previous,[key]:value}));}
-  const quote=state.quote;
-  const labels={quoting:'Đang kiểm tra ảnh và lập báo giá…',uploading:'Đang upload ảnh…',submitting:'Đang gửi tới WaveSpeed…',recovering:'Đang tìm lại lần gửi…',queued:'Đang chờ video từ WaveSpeed…',running:'WaveSpeed đang tạo video…',completed:'Video đã sẵn sàng. Cần tự kiểm tra lời thoại.',failed:'Provider/upload lỗi; không tự gửi lại.',cancelled:'Provider báo đã hủy.',timeout:'Provider báo timeout.',deleted:'Provider báo đã xóa.'};
+  async function genVideo(){
+    if(!image||reading||state.busy||!!issue||!auth.isSignedIn)return;
+    await controller.generate({
+      projectType:'full-ai',project_id:projectId,scene,profile:null,
+      settings,assumptions,
+      image_base64:image.image_base64,mime_type:image.mime_type,
+    });
+  }
+  // Status label shown during processing
+  const statusLabel={
+    idle:'',quoting:'Đang chuẩn bị video...',uploading:'Đang tải ảnh...',
+    submitting:'Đang tạo video...',recovering:'Đang tìm lần gửi...',
+    queued:'Đang chờ video từ WaveSpeed...',running:'Đang tạo video...',
+    completed:'Đã tạo video thành công',
+    failed:'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.',
+    admission_unknown:'Đang tạo video...',stopped:'',error:'',recovered:'',
+  };
+  const isCompleted=state.status==='completed'&&state.result;
+  const isFailed=state.status==='failed'||state.status==='error';
+  const isRunning=state.busy||state.status==='queued'||state.status==='running';
+  const canGenerate=auth.isSignedIn&&!!image&&!reading&&!state.busy&&!issue;
   return <section aria-label={'Seedance scene '+scene.scene_n} data-video-state={state.status}
-    className="my-4 rounded-2xl border border-emerald-500/50 bg-slate-950 text-slate-100 p-5 space-y-4">
-    <div className="flex justify-between gap-4"><h3 className="font-bold">Generate Video — Scene {scene.scene_n}</h3><button className={button} onClick={onClose}>Đóng</button></div>
-    <p className="text-xs text-slate-400">WaveSpeed · Seedance 1.5 Pro Standard · một scene. Không cần Qwen Set ID. Đóng hoặc đổi scene chỉ dừng chờ trên giao diện; job provider có thể vẫn chạy.</p>
-    <button className={button} disabled={!auth.isSignedIn||state.busy} onClick={()=>{setConfirm(false);setTransfer(false);controller.discover(projectId,scene.scene_n);}}>Tìm / khôi phục lần gửi</button>
-    {state.attempts?.map(a=><div key={a.job_id} className="text-xs break-all">{new Date(a.created_at).toLocaleString()} · {a.stage} · {a.job_id}
-      <button className={button} onClick={()=>controller.recover(a.job_id,scene.scene_n)}>Khôi phục / kiểm tra trạng thái</button>
-    </div>)}
-    {state.attemptId&&<p className="text-xs break-all">Mã lần gửi: {state.attemptId}. Đăng nhập đúng tài khoản để khôi phục job cloud.</p>}
-    <details open><summary>Nội dung scene gốc — chỉ đọc</summary><dl className="mt-3 space-y-2 text-xs" data-original-scene>
-      {Object.entries(scene).map(([key,value])=><div key={key}><dt className="font-bold text-emerald-300">{key}</dt><dd className="whitespace-pre-wrap break-words">{typeof value==='string'?value:JSON.stringify(value)}</dd></div>)}
-    </dl></details>
-    <p className="text-xs">Ảnh OpenFrame/R2 hiện chưa được xác minh quyền truy cập cho provider. Chọn bản ảnh gốc từ máy; không thay ảnh hoặc dữ liệu scene đang lưu.</p>
-    <label className="block">Ảnh tham chiếu PNG/JPEG, tối đa 25 MiB / 24 MP
-      <input type="file" accept="image/png,image/jpeg" onChange={choose} disabled={state.busy} className="block my-2"/>
-    </label>
-    {image&&<img src={image.dataUrl} alt="Ảnh sẽ chuyển tới WaveSpeed sau khi xác nhận" onError={()=>{invalidate();setImage(null);setState({status:'error',busy:false,message:'Không giải mã được ảnh PNG/JPEG. Hãy chọn file ảnh hợp lệ.'});}} className="max-h-64 max-w-full rounded object-contain"/>}
-    {image&&<p className="text-xs break-all">{image.name} · {image.size} byte · {image.width}×{image.height} px · SHA-256: {image.image_sha256}. Giữ nguyên file gốc.</p>}
-    <p className="text-xs text-amber-300">Chấp nhận ảnh local không bảo đảm WaveSpeed chấp nhận: giới hạn byte/pixel riêng của Seedance chưa được xác minh. Không tự nén, đổi định dạng hoặc thu nhỏ ảnh. Báo giá local chưa phải kiểm tra provider.</p>
-    <p className="text-xs">{resolved.status==='confirmed'?'Character ID đã lưu: '+resolved.identity.confirmedId:'Dùng Character hiện có; chưa có Character ID được lưu.'}</p>
-    {composed?.spokenSource==='Voiceover'&&<p className="text-amber-300">Dữ liệu Full AI cũ: đọc lời thoại nguyên văn từ Voiceover; không đổi scene.</p>}
-    <label className="block text-sm">Prompt đầy đủ, tạm thời ({MAX_PROMPT_CHARS} ký tự tối đa của ứng dụng)
-      <textarea aria-label="Seedance prompt" readOnly value={composed?.prompt||''} rows={10} className="mt-2 w-full rounded bg-slate-900 p-3 text-xs"/>
-    </label>
-    <p className="text-xs">Translate được giữ riêng và không đưa vào phần lời nói. Các field trống không được bổ sung nội dung.</p>
-    <fieldset disabled={state.busy} className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-      <label>Tốc độ nói (từ/phút)<input aria-label="Tốc độ nói" className="block w-full bg-slate-800 p-2" type="number" min="80" max="220" value={assumptions.wordsPerMinute} onChange={e=>{invalidate();setAssumptions({...assumptions,wordsPerMinute:Number(e.target.value)});}}/></label>
-      <label>Khoảng nghỉ (giây)<input aria-label="Khoảng nghỉ" className="block w-full bg-slate-800 p-2" type="number" min="0" max="3" step=".1" value={assumptions.pauseSeconds} onChange={e=>{invalidate();setAssumptions({...assumptions,pauseSeconds:Number(e.target.value)});}}/></label>
-      <label>Thời lượng<select aria-label="Thời lượng" className="block w-full bg-slate-800 p-2" value={settings.duration} onChange={e=>setting('duration',Number(e.target.value))}>{[4,5,6,7,8,9].map(n=><option key={n} value={n}>{n} giây</option>)}</select></label>
-      <label>Độ phân giải<select aria-label="Độ phân giải" className="block w-full bg-slate-800 p-2" value={settings.resolution} onChange={e=>setting('resolution',e.target.value)}>{['480p','720p'].map(v=><option key={v}>{v}</option>)}</select></label>
-      <label>Tỷ lệ khung hình<select aria-label="Tỷ lệ khung hình" className="block w-full bg-slate-800 p-2" value={settings.aspect_ratio} onChange={e=>setting('aspect_ratio',e.target.value)}>{ASPECTS.map(v=><option key={v}>{v}</option>)}</select></label>
-      <label>Seed<input aria-label="Seed" type="number" min="-1" max="2147483647" className="block w-full bg-slate-800 p-2" value={settings.seed} onChange={e=>setting('seed',Number(e.target.value))}/></label>
-      <label><input type="checkbox" checked={settings.generate_audio} onChange={e=>setting('generate_audio',e.target.checked)}/> Âm thanh Seedance</label>
-      <label><input type="checkbox" checked={settings.camera_fixed} onChange={e=>setting('camera_fixed',e.target.checked)}/> camera_fixed — cố định camera</label>
-    </fieldset>
-    <p className="text-xs">Camera gốc: {scene.Camera||'(trống)'}. Kiểm tra camera_fixed trước khi xác nhận; tắt không thêm chỉ dẫn chuyển động. Seed -1 là ngẫu nhiên.</p>
-    {plan&&<p className="text-sm">{plan.words} từ × 60 / {plan.wordsPerMinute} + {plan.words?plan.pauseSeconds:0} giây nghỉ ≈ {plan.seconds} giây. Gợi ý: {plan.suggested===null?'không vừa 4–9 giây':plan.suggested+' giây'}.
-      {plan.suggested!==null&&<button className="ml-2 underline" disabled={state.busy} onClick={()=>setting('duration',plan.suggested)}>Dùng gợi ý</button>}</p>}
-    {issue&&<p role="alert" className="text-amber-300">{issue}</p>}
-    <p className="text-sm">Ước tính: {cost?'USD '+cost.usd:'Giá chưa xác minh — chặn gửi'}. Đây là giá tham khảo, phí thực tế có thể khác.</p>
-    <p className="text-xs text-amber-300">Seedance không bảo đảm đọc Dialogue nguyên văn hoặc đồng bộ chính xác. Cần nghe và kiểm tra video trả về. Tắt âm thanh không gọi Generate Audio hiện có.</p>
-    <button className={button} disabled={!auth.isSignedIn||!image||reading||state.busy||!!issue||!cost} onClick={()=>{setConfirm(false);setTransfer(false);controller.quote({projectType:'full-ai',project_id:projectId,scene,profile,settings,assumptions,image_base64:image.image_base64,mime_type:image.mime_type});}}>Kiểm tra ảnh &amp; lấy báo giá</button>
-    <p className="text-xs">{cloud?'Báo giá đối chiếu scene đã lưu và khai báo ảnh; sau đồng ý, ảnh gốc upload trực tiếp sang storage và backend kiểm tra hash trước prediction.':'Bước báo giá chỉ chuyển ảnh đến backend local để kiểm tra; chưa upload WaveSpeed và chưa tính phí.'}</p>
-    {quote&&<div className="space-y-3 border border-amber-400/40 p-4 rounded">
-      <p>{MODEL} · Scene {quote.scene_id} · {quote.settings.duration}s · {quote.settings.resolution} · {quote.settings.aspect_ratio} · audio {String(quote.settings.generate_audio)} · camera_fixed {String(quote.settings.camera_fixed)} · seed {quote.settings.seed}</p>
-      <p className="font-bold">Giá tham khảo USD {quote.cost.usd}</p>
-      <p className="text-xs"><a href={quote.cost.source} target="_blank" rel="noopener noreferrer" className="underline">Nguồn giá chính thức</a> · kiểm tra {quote.cost.verifiedDate} · xác nhận hết hạn {new Date(quote.expires_at).toLocaleTimeString()}</p>
-      <p className="text-xs break-all">Ảnh SHA-256: {quote.image_sha256}<br/>Prompt SHA-256: {quote.prompt_sha256}</p>
-      <label className="block"><input type="checkbox" checked={transfer} onChange={e=>setTransfer(e.target.checked)}/> Tôi đồng ý chuyển đúng ảnh đã xem sang WaveSpeed (bao gồm metadata trong file).</label>
-      <label className="block"><input type="checkbox" checked={confirm} onChange={e=>setConfirm(e.target.checked)}/> Tôi xác nhận prompt, camera, thông số và phí tham khảo cho MỘT video này; phí thực tế có thể khác.</label>
-      {cloud&&<button className={button} disabled={!transfer||state.busy||state.uploadVerified} onClick={()=>controller.upload(transfer)}>{state.uploadVerified?'Ảnh đã được xác minh':'Tải ảnh & kiểm tra — chưa tạo video'}</button>}
-      {!quote.paid_enabled&&<p role="status" className="text-amber-300">Backend đang tắt gửi yêu cầu tính phí. Không tạo prediction.</p>}
-      {quote.retry_predecessor_id&&<div className="space-y-2 text-sm">
-        <p>Lần trước thất bại trước khi gửi prediction. Thử lại sẽ tạo một lần gửi mới có thể tính phí; giữ nguyên bản ghi cũ.</p>
-        <p className="text-xs break-all">Lần trước: {quote.retry_predecessor_id}</p>
-        <button className={button} disabled={!confirm||!transfer||!quote.paid_enabled||state.busy||state.retryAuthorized}
-          onClick={()=>controller.authorizeRetry(confirm,transfer)}>{state.retryAuthorized?'Đã phê duyệt thử lại một lần':'Phê duyệt thử lại một lần'}</button>
-      </div>}
-      <button className={button} disabled={!confirm||!transfer||!quote.paid_enabled||state.busy||!!quote.retry_predecessor_id&&!state.retryAuthorized} onClick={()=>controller.submit(confirm,transfer)}>Generate Video — xác nhận tính phí</button>
+    className="my-4 rounded-2xl border border-emerald-500/40 bg-slate-950 text-slate-100 p-5 space-y-4">
+    {/* Header */}
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        <Video size={18} className="text-emerald-400"/>
+        <h3 className="font-bold text-base">Gen Video — Scene {scene.scene_n}</h3>
+      </div>
+      <button className="rounded-lg border border-slate-700 px-3 py-1.5 text-sm hover:bg-slate-800 transition-colors" onClick={onClose}><X size={14}/></button>
+    </div>
+    {/* Image picker */}
+    <div className="space-y-2">
+      <label className={cn("flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 cursor-pointer transition-colors",
+        image?"border-emerald-500/50 bg-emerald-950/20":"border-slate-700 hover:border-slate-600",
+        state.busy&&"pointer-events-none opacity-60")}>
+        {reading
+          ?<><Loader2 size={24} className="animate-spin text-emerald-400"/><span className="text-sm text-slate-400">Đang đọc ảnh...</span></>
+          :image
+            ?<><img src={image.dataUrl} alt="Ảnh tham chiếu" className="max-h-48 max-w-full rounded-lg object-contain"/>
+                <span className="text-xs text-slate-400">{image.name} · {image.size.toLocaleString()} byte · {image.width}×{image.height}</span>
+                <span className="text-xs text-emerald-400">Nhấn để đổi ảnh</span></>
+            :<><ImageIcon size={32} className="text-slate-600"/>
+                <span className="text-sm text-slate-400">Chọn ảnh tham chiếu PNG/JPEG</span>
+                <span className="text-xs text-slate-500">Tối đa 25 MiB / 24 MP</span></>}
+        <input type="file" accept="image/png,image/jpeg" onChange={choose} disabled={state.busy} className="hidden"/>
+      </label>
+    </div>
+    {/* Issue warning */}
+    {issue&&<p role="alert" className="text-sm text-amber-400 bg-amber-950/30 border border-amber-500/30 rounded-lg px-3 py-2">{issue}</p>}
+    {/* Gen Video button */}
+    {!isCompleted&&<button
+      disabled={!canGenerate}
+      onClick={genVideo}
+      className={cn("w-full h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50",
+        canGenerate?"bg-emerald-600 hover:bg-emerald-500 text-white shadow-md":"bg-slate-800 text-slate-500 cursor-not-allowed")}>
+      {isRunning
+        ?<><Loader2 size={18} className="animate-spin"/><span>{statusLabel[state.status]||'Đang xử lý...'}</span></>
+        :<><Play size={18}/><span>Gen Video</span></>}
+    </button>}
+    {/* Status message */}
+    {(state.message||statusLabel[state.status])&&!isCompleted&&
+      <p role="status" aria-live="polite" className={cn("text-sm text-center",isFailed?"text-red-400":"text-slate-400")}>
+        {isFailed?(state.message||statusLabel[state.status]):(!isRunning?(state.message||''):'')}
+      </p>}
+    {/* Cancel while running */}
+    {isRunning&&<button className="w-full rounded-lg border border-slate-700 px-3 py-2 text-sm hover:bg-slate-800 transition-colors" onClick={()=>controller.cancel()}>Hủy chờ</button>}
+    {/* Completed video */}
+    {isCompleted&&<div className="space-y-3" data-seedance-result>
+      <p className="text-sm font-semibold text-emerald-400 flex items-center gap-1.5"><Video size={16}/>Đã tạo video thành công</p>
+      <video src={state.result} crossOrigin="anonymous" referrerPolicy="no-referrer" controls
+        onError={()=>setMediaError(true)} className="w-full rounded-xl max-h-96 bg-black"/>
+      <a href={state.result} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" download={'Scene_'+scene.scene_n+'.mp4'}
+        className="flex items-center justify-center gap-2 w-full h-10 rounded-xl border border-emerald-500/50 text-sm font-semibold hover:bg-emerald-950/40 transition-colors">
+        <Download size={15}/>Tải video
+      </a>
+      {mediaError&&<p role="alert" className="text-xs text-amber-400">Không phát được video: URL có thể hết hạn. Dùng nút tải. Không tự tạo lại.</p>}
+      <p className="text-xs text-slate-500">Job và liên kết video được lưu durable. Dùng Khôi phục sau khi tải lại trang. Lời thoại cần nghe kiểm tra.</p>
     </div>}
-    <p role="status" aria-live="polite">{reading?'Đang đọc ảnh…':state.message||labels[state.status]||''}</p>
-    {state.busy&&<button className={button} onClick={()=>controller.cancel()}>Cancel Waiting</button>}
-    {state.status==='completed'&&state.result&&<div data-seedance-result className="space-y-2">
-      <video src={state.result} crossOrigin="anonymous" referrerPolicy="no-referrer" controls onError={()=>setMediaError(true)} className="max-h-96 w-full"/>
-      <a href={state.result} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" download={'Scene_'+scene.scene_n+'.mp4'} className="underline">Mở / tải video</a>
-      <p className="text-xs">{cloud?'Job và liên kết video được lưu riêng; không ghi đè media của scene. Dùng Khôi phục sau khi tải lại trang. Lời thoại chưa được kiểm chứng.':'URL provider tạm thời; chưa lưu Cloud. Nếu trình duyệt mở tab thay vì tải, dùng chức năng lưu video. Lời thoại chưa được kiểm chứng.'}</p>
-      {mediaError&&<p role="alert">Không phát được video: URL có thể hết hạn hoặc không cho phép phát nhúng. Thử liên kết tải; không tự tạo lại video.</p>}
+    {/* Retry/failed state - allow retry */}
+    {isFailed&&!isRunning&&<div className="space-y-2">
+      <p className="text-sm text-red-400 text-center">{state.message||statusLabel[state.status]}</p>
+      {image&&<button disabled={!canGenerate} onClick={genVideo}
+        className={cn("w-full h-10 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors",
+          canGenerate?"border-emerald-500/50 hover:bg-emerald-950/30":"border-slate-700 text-slate-500 cursor-not-allowed")}>
+        <RefreshCw size={14}/>Thử lại
+      </button>}
     </div>}
-    {!auth.isSignedIn&&<p>Đăng nhập trước khi lấy báo giá.</p>}
+    {/* Recovery controls */}
+    <details className="text-xs">
+      <summary className="cursor-pointer text-slate-500 hover:text-slate-400 select-none">Khôi phục / tìm lần gửi cũ</summary>
+      <div className="mt-2 space-y-2">
+        <button className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs hover:bg-slate-800 transition-colors disabled:opacity-40"
+          disabled={!auth.isSignedIn||state.busy} onClick={()=>controller.discover(projectId,scene.scene_n)}>Tìm / khôi phục lần gửi</button>
+        {state.attempts?.map(a=><div key={a.job_id} className="text-xs break-all border border-slate-800 rounded-lg p-2 space-y-1">
+          <p>{new Date(a.created_at).toLocaleString()} · {a.stage} · <span className="text-slate-500">{a.job_id}</span></p>
+          <button className="rounded border border-slate-700 px-2 py-1 hover:bg-slate-800 transition-colors" onClick={()=>controller.recover(a.job_id,scene.scene_n)}>Khôi phục</button>
+        </div>)}
+        {state.attemptId&&<p className="text-slate-500 break-all">Mã lần gửi: {state.attemptId}</p>}
+        {state.status==='recovered'&&!state.attempts?.length&&<p className="text-slate-500">Chưa có job cloud cho scene này.</p>}
+      </div>
+    </details>
+    {!auth.isSignedIn&&<p className="text-sm text-amber-400">Đăng nhập trước khi tạo video.</p>}
   </section>;
 }

@@ -1,4 +1,4 @@
-// Real React/jsdom components. Auth hook and WaveSpeed HTTP responses are mocks, not live acceptance.
+// Real React/jsdom components for one-click Gen Video flow. Auth hook and WaveSpeed HTTP responses are mocks, not live acceptance.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -55,7 +55,7 @@ function mockFetch(url,options){
   return Promise.resolve(json(result));
 }
 const find=(box,text)=>[...box.querySelectorAll('button')].find(b=>b.textContent.includes(text));
-const click=async node=>{assert.ok(node);await act(async()=>node.click());};
+const click=async node=>{assert.ok(node,'Target button should exist');await act(async()=>node.click());};
 const flush=()=>act(async()=>new Promise(r=>setImmediate(r)));
 async function mount(t,props={}){
   calls=[];paid=true;slow=null;retryPredecessor=null;const oldFetch=globalThis.fetch,oldAuth=auth;globalThis.fetch=mockFetch;
@@ -68,130 +68,128 @@ async function mount(t,props={}){
   t.after(async()=>{assert.equal(JSON.stringify(source),before);await act(async()=>root.unmount());container.remove();globalThis.fetch=oldFetch;auth=oldAuth;});
   return{container,render};
 }
-async function openAndQuote(container){
-  await click(find(container,'Gen Video AI'));
+async function selectImage(container){
   const input=container.querySelector('input[type=file]');
+  assert.ok(input,'File input must exist');
   Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile([Buffer.from(image.image_base64,'base64')],'reference.png',{type:'image/png'})]});
   await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));
-  for(let n=0;n<50&&find(container,'Kiểm tra ảnh').disabled;n++)await flush();
-  await click(find(container,'Kiểm tra ảnh'));
-  for(let n=0;n<50&&!find(container,'xác nhận tính phí');n++)await flush();
-  assert.ok(find(container,'xác nhận tính phí'));
+  for(let n=0;n<50&&find(container,'Gen Video')?.disabled;n++)await flush();
 }
-async function confirmSubmit(container){
-  const checks=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);
-  await click(checks[0]);await click(checks[1]);await click(find(container,'xác nhận tính phí'));
-  for(let n=0;n<50&&container.querySelector('[data-video-state]')?.dataset.videoState!=='queued';n++)await flush();
-}
-test('one Full AI scene, complete prompt, two consent checks, genuine mock transport result only, no source/media writes',async t=>{
+
+test('one-click flow: select image -> click Gen Video -> completed video, no quote/prompt/consent UI',async t=>{
   t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});
-  const{container}=await mount(t);await openAndQuote(container);
+  const{container}=await mount(t);
+  // Step 1: Open panel
+  await click(find(container,'Gen Video AI'));
   assert.equal(container.querySelectorAll('[data-video-state]').length,1);
-  assert.ok(container.querySelector('[data-original-scene]').textContent.includes(scenes[0].Dialogue));
-  const prompt=container.querySelector('textarea').value;
-  assert.ok(prompt.includes(scenes[0].Dialogue));assert.ok(!prompt.includes(scenes[0].Translate));
-  assert.equal(find(container,'xác nhận tính phí').disabled,true);assert.equal(calls.length,1);
-  await confirmSubmit(container);assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,1);
+  // Verify NO prompt textarea, NO price quote, NO consent checkboxes exist
+  assert.equal(container.querySelector('textarea'),null,'No prompt textarea in one-click UX');
+  assert.equal(container.querySelectorAll('input[type=checkbox]').length,0,'No consent checkboxes in one-click UX');
+  assert.ok(!container.textContent.includes('Giá tham khảo'),'No price quote displayed to team user');
+  assert.ok(!container.textContent.includes('Tôi xác nhận prompt'),'No consent text displayed');
+  // Selecting image makes ZERO network requests
+  assert.equal(calls.length,0);
+  await selectImage(container);
+  assert.equal(calls.length,0,'No network calls on selecting image');
+  // Gen Video button is enabled
+  const genBtn=find(container,'Gen Video');
+  assert.ok(genBtn);
+  assert.equal(genBtn.disabled,false);
+  // Click Gen Video once
+  await click(genBtn);
+  for(let n=0;n<50&&calls.filter(c=>c.url.endsWith('/submit')).length===0;n++)await flush();
+  // Internal pipeline ran: quote and submit called automatically
+  assert.equal(calls.filter(c=>c.url.endsWith('/quote')).length,1);
+  assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,1);
+  // Poll to completion
   await act(async()=>t.mock.timers.tick(2000));for(let n=0;n<10;n++)await flush();
   assert.equal(container.querySelector('[data-video-state]').dataset.videoState,'completed');
   assert.equal(container.querySelector('[data-seedance-result] video').getAttribute('src'),'https://video.wavespeed.ai/test-only.mp4');
-  assert.match(container.textContent,/Lời thoại chưa được kiểm chứng/);
+  assert.ok(container.textContent.includes('Đã tạo video thành công'));
 });
-test('paid-disabled quote cannot submit even when both consent boxes are checked',async t=>{
-  const{container}=await mount(t);paid=false;await openAndQuote(container);
-  const checks=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);await click(checks[0]);await click(checks[1]);
-  assert.equal(find(container,'xác nhận tính phí').disabled,true);assert.equal(calls.length,1);
+
+test('paid-disabled: clicking Gen Video fails gracefully and never submits',async t=>{
+  const{container}=await mount(t);
+  paid=false;
+  await click(find(container,'Gen Video AI'));
+  await selectImage(container);
+  await click(find(container,'Gen Video'));
+  for(let n=0;n<50&&!container.textContent.includes('Tạo video thất bại');n++)await flush();
+  assert.equal(calls.filter(c=>c.url.endsWith('/quote')).length,1);
+  assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,0,'Never submits when paid disabled');
+  assert.ok(container.textContent.includes('Tạo video thất bại'));
 });
-test('changing image invalidates previous quote and consent',async t=>{
-  const{container}=await mount(t);await openAndQuote(container);
+
+test('changing image clears previous selection and resets to unread/idle',async t=>{
+  const{container}=await mount(t);
+  await click(find(container,'Gen Video AI'));
+  await selectImage(container);
+  assert.equal(find(container,'Gen Video').disabled,false);
+  // Change image - clear files
   const input=container.querySelector('input[type=file]');
-  await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await flush();
-  assert.equal(find(container,'xác nhận tính phí'),undefined);assert.equal(calls.length,1);
+  Object.defineProperty(input,'files',{configurable:true,value:[]});
+  await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));
+  await flush();
+  // No files selected -> Gen Video disabled
+  assert.equal(find(container,'Gen Video').disabled,true);
+  assert.equal(calls.length,0);
 });
+
 for(const kind of ['cancel','scene','project','session'])test('late provider result ignored after '+kind,async t=>{
   t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});
-  const{container,render}=await mount(t);await openAndQuote(container);
+  const{container,render}=await mount(t);
+  await click(find(container,'Gen Video AI'));
+  await selectImage(container);
   let release,signal;
   slow=(s,value)=>new Promise(r=>{signal=s;release=()=>r(json(value));});
-  await confirmSubmit(container);await act(async()=>t.mock.timers.tick(2000));for(let n=0;n<10&&!release;n++)await flush();
+  await click(find(container,'Gen Video'));
+  for(let n=0;n<50&&!release;n++){await act(async()=>t.mock.timers.tick(200));await flush();}
   assert.ok(release);
-  if(kind==='cancel')await click(find(container,'Cancel Waiting'));
+  if(kind==='cancel')await click(find(container,'Hủy chờ'));
   if(kind==='scene')await click([...container.querySelectorAll('button')].filter(b=>b.textContent.includes('Gen Video AI'))[1]);
   if(kind==='project')await render({projectId:'project_other'});
   if(kind==='session'){auth={...auth,sessionId:'sess_new'};await render({});}
   assert.equal(signal.aborted,true);await act(async()=>release());await flush();
   assert.equal(container.querySelector('[data-seedance-result]'),null);
 });
-test('Semi has no video control and signed-out Full AI cannot request quote',async t=>{
-  const{container,render}=await mount(t,{projectType:'semi'});assert.equal(find(container,'Gen Video AI'),undefined);
-  auth={...auth,isSignedIn:false};await render({});await click(find(container,'Gen Video AI'));
-  assert.equal(find(container,'Kiểm tra ảnh').disabled,true);assert.equal(calls.length,0);
+
+test('Semi has no video control and signed-out Full AI cannot click Gen Video',async t=>{
+  const{container,render}=await mount(t,{projectType:'semi'});
+  assert.equal(find(container,'Gen Video AI'),undefined);
+  auth={...auth,isSignedIn:false};
+  await render({});
+  await click(find(container,'Gen Video AI'));
+  assert.ok(container.textContent.includes('Đăng nhập trước khi tạo video'));
+  assert.equal(find(container,'Gen Video').disabled,true);
+  assert.equal(calls.length,0);
 });
 
-test('settings changes invalidate quote and explicit consent; no automatic submit',async t=>{
-  const {container}=await mount(t);await openAndQuote(container);
-  const checks=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);
-  await click(checks[0]);await click(checks[1]);
-  const select=container.querySelector('[aria-label="Độ phân giải"]');
-  await act(async()=>{select.value='720p';select.dispatchEvent(new window.Event('change',{bubbles:true}));});
-  assert.equal(find(container,'xác nhận tính phí'),undefined);
-  assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,0);
-  await click(find(container,'Kiểm tra ảnh'));
-  for(let n=0;n<100&&!find(container,'xác nhận tính phí');n++)await flush();
-  assert.equal(lastPayload.settings.resolution,'720p');assert.equal(find(container,'xác nhận tính phí').disabled,true);
-});
-test('legacy overlay cannot override saved Character; Set ID and media are unchanged',async t=>{
+test('legacy overlay cannot override saved Character; prompt composed internally from canonical scene',async t=>{
   const {approveVisualProfile}=await import('../src/lib/visualProfile.js');
   const character={id:'judge_id',name:'Judge',imageUrl:''};
   character.visualProfile=approveVisualProfile(character,{status:'detected',visual_id:'man_black_coat',visual_description:'Approved fixture description.'},
     {dataUrl:'data:image/png;base64,'+image.image_base64,sha256:digest(Buffer.from(image.image_base64,'base64'))});
   const original=JSON.stringify(character);
-  const {container}=await mount(t,{projectCharacters:[character]});await openAndQuote(container);
+  const {container}=await mount(t,{projectCharacters:[character]});
+  await click(find(container,'Gen Video AI'));
+  await selectImage(container);
+  await click(find(container,'Gen Video'));
+  for(let n=0;n<50&&!lastPayload;n++)await flush();
   assert.equal(lastPayload.profile,null);
-  assert.equal(lastPayload.scene.Character,'Judge');assert.ok(lastPayload.scene.Dialogue===scenes[0].Dialogue);
-  assert.ok(!container.textContent.includes('Dùng Visual Profile'));
+  assert.equal(lastPayload.scene.Character,'Judge');
+  assert.ok(lastPayload.scene.Dialogue===scenes[0].Dialogue);
   assert.equal(JSON.stringify(character),original);
-  assert.ok(calls.every(c=>c.url.endsWith('/quote')));
 });
 
 test('reopened Storyboard recovers existing video without picking image, quoting or submitting',async t=>{
-  const {container}=await mount(t);await click(find(container,'Gen Video AI'));
-  await click(find(container,'Tìm / khôi phục'));await flush();
-  await click(find(container,'Khôi phục / kiểm tra'));await flush();
+  const {container}=await mount(t);
+  await click(find(container,'Gen Video AI'));
+  await click(find(container,'Tìm / khôi phục lần gửi'));
+  await flush();
+  await click(find(container,'Khôi phục'));
+  await flush();
   assert.equal(container.querySelector('[data-video-state]').dataset.videoState,'completed');
   assert.equal(container.querySelector('[data-seedance-result] video').getAttribute('src'),'https://video.wavespeed.ai/recovered-only.mp4');
-  assert.equal(calls.length,2);assert.ok(calls.every(c=>c.options.method==='GET'));
-});
-test('retry requires two consents and a separate authorization click before Generate; no automatic submission',async t=>{
-  t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});
-  const {container}=await mount(t);retryPredecessor='f'.repeat(48);await openAndQuote(container);
-  const checks=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);
-  assert.equal(find(container,'Phê duyệt thử lại một lần').disabled,true);
-  await click(checks[0]);await click(checks[1]);
-  assert.equal(find(container,'xác nhận tính phí').disabled,true);
-  await click(find(container,'Phê duyệt thử lại một lần'));await flush();
-  assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,0);
-  assert.equal(find(container,'Đã phê duyệt thử lại một lần').disabled,true);
-  assert.equal(find(container,'xác nhận tính phí').disabled,false);
-  const authorization=JSON.parse(calls.find(c=>c.url.endsWith('/retry-authorizations')).options.body);
-  assert.equal(authorization.predecessor_id,retryPredecessor);assert.equal(authorization.confirm,true);assert.equal(authorization.transfer_consent,true);
-  await click(find(container,'xác nhận tính phí'));await flush();
-  const submissions=calls.filter(c=>c.url.endsWith('/submit'));assert.equal(submissions.length,1);
-  assert.equal(JSON.parse(submissions[0].options.body).retry_authorization_id,'d'.repeat(48));
-});
-test('paid=false and setting changes prevent reuse of retry authorization',async t=>{
-  const {container}=await mount(t);retryPredecessor='f'.repeat(48);paid=false;await openAndQuote(container);
-  const checks=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);await click(checks[0]);await click(checks[1]);
-  assert.equal(find(container,'Phê duyệt thử lại một lần').disabled,true);assert.equal(calls.length,1);
-  paid=true;await click(find(container,'Kiểm tra ảnh'));
-  for(let n=0;n<100&&!find(container,'Phê duyệt thử lại một lần');n++)await flush();
-  const checks2=[...container.querySelectorAll('input[type=checkbox]')].slice(-2);await click(checks2[0]);await click(checks2[1]);
-  await click(find(container,'Phê duyệt thử lại một lần'));await flush();
-  const select=container.querySelector('[aria-label="Độ phân giải"]');
-  await act(async()=>{select.value='720p';select.dispatchEvent(new window.Event('change',{bubbles:true}));});
-  assert.equal(find(container,'xác nhận tính phí'),undefined);
-  await click(find(container,'Kiểm tra ảnh'));
-  for(let n=0;n<100&&!find(container,'Phê duyệt thử lại một lần');n++)await flush();
-  assert.equal(find(container,'Phê duyệt thử lại một lần').disabled,true);assert.equal(find(container,'xác nhận tính phí').disabled,true);
-  assert.equal(calls.filter(c=>c.url.endsWith('/submit')).length,0);
+  assert.equal(calls.length,2);
+  assert.ok(calls.every(c=>c.options.method==='GET'));
 });

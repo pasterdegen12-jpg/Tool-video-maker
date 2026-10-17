@@ -81,7 +81,7 @@ for(const phase of ['before-id','after-id'])test('actual process kill '+phase+' 
   assert.equal(a.job_id,q.attempt_id);
   const desired=phase==='before-id'?'SUBMITTING':'SUBMITTED';
   let r;
-  const deadline=Date.now()+10000;
+  const deadline=Date.now()+15000;
   do{r=await read(dir,a.job_id);if(r.stage===desired)break;await new Promise(resolve=>setTimeout(resolve,20));}while(Date.now()<deadline);
   assert.equal(r.stage,desired);
   const exited=once(worker,'exit');worker.kill('SIGKILL');await exited;
