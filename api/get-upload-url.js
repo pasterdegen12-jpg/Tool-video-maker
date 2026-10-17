@@ -17,6 +17,10 @@ export default async function handler(req, res) {
   }
 
   const { fileName, fileType } = req.body;
+  // Paid-video results are written only by the authenticated cloud backend.
+  if (typeof fileName !== 'string' || fileName.split(/[\\/]/).some(part => part === '..' || part.startsWith('_video_'))) {
+    return res.status(400).json({ error: 'Reserved or invalid media path' });
+  }
 
   const S3 = new S3Client({
     region: "auto",

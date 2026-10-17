@@ -1,5 +1,6 @@
 import process from 'node:process';
 import { defineConfig } from 'vite'
+import localMedia from './scripts/local-media.mjs'
 import localAiLoopback from './scripts/local-ai-loopback.mjs'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -7,6 +8,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     localAiLoopback(),
+    localMedia(),
     react(),
     tailwindcss(),
   ],

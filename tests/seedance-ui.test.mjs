@@ -140,18 +140,17 @@ test('settings changes invalidate quote and explicit consent; no automatic submi
   for(let n=0;n<100&&!find(container,'xác nhận tính phí');n++)await flush();
   assert.equal(lastPayload.settings.resolution,'720p');assert.equal(find(container,'xác nhận tính phí').disabled,true);
 });
-test('approved Visual Profile is optional supplement; original Character is unchanged and Set ID never called',async t=>{
+test('legacy overlay cannot override saved Character; Set ID and media are unchanged',async t=>{
   const {approveVisualProfile}=await import('../src/lib/visualProfile.js');
   const character={id:'judge_id',name:'Judge',imageUrl:''};
   character.visualProfile=approveVisualProfile(character,{status:'detected',visual_id:'man_black_coat',visual_description:'Approved fixture description.'},
     {dataUrl:'data:image/png;base64,'+image.image_base64,sha256:digest(Buffer.from(image.image_base64,'base64'))});
   const original=JSON.stringify(character);
   const {container}=await mount(t,{projectCharacters:[character]});await openAndQuote(container);
-  assert.equal(lastPayload.profile.visualId,'man_black_coat');
+  assert.equal(lastPayload.profile,null);
   assert.equal(lastPayload.scene.Character,'Judge');assert.ok(lastPayload.scene.Dialogue===scenes[0].Dialogue);
-  const check=[...container.querySelectorAll('label')].find(l=>l.textContent.includes('Dùng Visual Profile')).querySelector('input');
-  await click(check);await click(find(container,'Kiểm tra ảnh'));await flush();
-  assert.equal(lastPayload.profile,null);assert.equal(JSON.stringify(character),original);
+  assert.ok(!container.textContent.includes('Dùng Visual Profile'));
+  assert.equal(JSON.stringify(character),original);
   assert.ok(calls.every(c=>c.url.endsWith('/quote')));
 });
 

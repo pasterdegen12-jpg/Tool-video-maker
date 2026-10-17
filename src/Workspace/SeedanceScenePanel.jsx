@@ -3,6 +3,7 @@ import { useAuth } from '@clerk/clerk-react';
 import { SceneVisualProfileAccess } from './VisualProfiles.jsx';
 import { readVideoImage } from '../lib/seedanceImageClient.js';
 import { createVideoController } from '../lib/seedanceClient.js';
+import { createCloudVideoController } from '../lib/cloudVideoClient.js';
 import { ASPECTS,DEFAULT_SETTINGS,composeScene,planDuration,estimateCost,MODEL,MAX_PROMPT_CHARS } from '../lib/seedanceContract.js';
 const button='rounded-lg border border-emerald-500/50 px-3 py-2 text-sm font-semibold disabled:opacity-40';
 export default function SeedanceScenePanel({scene,projectId,characters,onClose}){
@@ -18,7 +19,8 @@ function Editor({scene,projectId,auth,resolved,onClose}){
   const [image,setImage]=useState(null),[reading,setReading]=useState(false),[state,setState]=useState({status:'idle',busy:false});
   const [confirm,setConfirm]=useState(false),[transfer,setTransfer]=useState(false),[mediaError,setMediaError]=useState(false);
   const selection=useRef({revision:0});
-  const [controller]=useState(()=>createVideoController({getToken:auth.getToken,onChange:setState}));
+  const cloud=import.meta.env.VITE_CLOUD_VIDEO_ENABLED==='true'&&globalThis.location?.protocol==='https:';
+  const [controller]=useState(()=>(cloud?createCloudVideoController:createVideoController)({getToken:auth.getToken,onChange:setState}));
   useEffect(()=>{
     const selected=selection.current;
     const leave=()=>{selected.revision++;controller.cancel(false);};
@@ -52,12 +54,12 @@ function Editor({scene,projectId,auth,resolved,onClose}){
   return <section aria-label={'Seedance scene '+scene.scene_n} data-video-state={state.status}
     className="my-4 rounded-2xl border border-emerald-500/50 bg-slate-950 text-slate-100 p-5 space-y-4">
     <div className="flex justify-between gap-4"><h3 className="font-bold">Generate Video — Scene {scene.scene_n}</h3><button className={button} onClick={onClose}>Đóng</button></div>
-    <p className="text-xs text-slate-400">WaveSpeed · Seedance 1.5 Pro Standard · một scene · chưa lưu Cloud. Không cần Qwen Set ID. Đóng hoặc đổi scene chỉ dừng chờ trên giao diện; job provider có thể vẫn chạy.</p>
+    <p className="text-xs text-slate-400">WaveSpeed · Seedance 1.5 Pro Standard · một scene. Không cần Qwen Set ID. Đóng hoặc đổi scene chỉ dừng chờ trên giao diện; job provider có thể vẫn chạy.</p>
     <button className={button} disabled={!auth.isSignedIn||state.busy} onClick={()=>{setConfirm(false);setTransfer(false);controller.discover(projectId,scene.scene_n);}}>Tìm / khôi phục lần gửi</button>
     {state.attempts?.map(a=><div key={a.job_id} className="text-xs break-all">{new Date(a.created_at).toLocaleString()} · {a.stage} · {a.job_id}
       <button className={button} onClick={()=>controller.recover(a.job_id,scene.scene_n)}>Khôi phục / kiểm tra trạng thái</button>
     </div>)}
-    {state.attemptId&&<p className="text-xs break-all">Mã lần gửi local: {state.attemptId}. Giữ nguyên phiên Clerk để khôi phục.</p>}
+    {state.attemptId&&<p className="text-xs break-all">Mã lần gửi: {state.attemptId}. Đăng nhập đúng tài khoản để khôi phục job cloud.</p>}
     <details open><summary>Nội dung scene gốc — chỉ đọc</summary><dl className="mt-3 space-y-2 text-xs" data-original-scene>
       {Object.entries(scene).map(([key,value])=><div key={key}><dt className="font-bold text-emerald-300">{key}</dt><dd className="whitespace-pre-wrap break-words">{typeof value==='string'?value:JSON.stringify(value)}</dd></div>)}
     </dl></details>
@@ -91,7 +93,7 @@ function Editor({scene,projectId,auth,resolved,onClose}){
     <p className="text-sm">Ước tính: {cost?'USD '+cost.usd:'Giá chưa xác minh — chặn gửi'}. Đây là giá tham khảo, phí thực tế có thể khác.</p>
     <p className="text-xs text-amber-300">Seedance không bảo đảm đọc Dialogue nguyên văn hoặc đồng bộ chính xác. Cần nghe và kiểm tra video trả về. Tắt âm thanh không gọi Generate Audio hiện có.</p>
     <button className={button} disabled={!auth.isSignedIn||!image||reading||state.busy||!!issue||!cost} onClick={()=>{setConfirm(false);setTransfer(false);controller.quote({projectType:'full-ai',project_id:projectId,scene,profile,settings,assumptions,image_base64:image.image_base64,mime_type:image.mime_type});}}>Kiểm tra ảnh &amp; lấy báo giá</button>
-    <p className="text-xs">Bước báo giá chỉ chuyển ảnh đến backend local để kiểm tra; chưa upload WaveSpeed và chưa tính phí.</p>
+    <p className="text-xs">{cloud?'Báo giá đối chiếu scene đã lưu và khai báo ảnh; sau đồng ý, ảnh gốc upload trực tiếp sang storage và backend kiểm tra hash trước prediction.':'Bước báo giá chỉ chuyển ảnh đến backend local để kiểm tra; chưa upload WaveSpeed và chưa tính phí.'}</p>
     {quote&&<div className="space-y-3 border border-amber-400/40 p-4 rounded">
       <p>{MODEL} · Scene {quote.scene_id} · {quote.settings.duration}s · {quote.settings.resolution} · {quote.settings.aspect_ratio} · audio {String(quote.settings.generate_audio)} · camera_fixed {String(quote.settings.camera_fixed)} · seed {quote.settings.seed}</p>
       <p className="font-bold">Giá tham khảo USD {quote.cost.usd}</p>
@@ -99,7 +101,8 @@ function Editor({scene,projectId,auth,resolved,onClose}){
       <p className="text-xs break-all">Ảnh SHA-256: {quote.image_sha256}<br/>Prompt SHA-256: {quote.prompt_sha256}</p>
       <label className="block"><input type="checkbox" checked={transfer} onChange={e=>setTransfer(e.target.checked)}/> Tôi đồng ý chuyển đúng ảnh đã xem sang WaveSpeed (bao gồm metadata trong file).</label>
       <label className="block"><input type="checkbox" checked={confirm} onChange={e=>setConfirm(e.target.checked)}/> Tôi xác nhận prompt, camera, thông số và phí tham khảo cho MỘT video này; phí thực tế có thể khác.</label>
-      {!quote.paid_enabled&&<p role="status" className="text-amber-300">Backend đang tắt gửi yêu cầu tính phí. Chưa upload ảnh tới provider.</p>}
+      {cloud&&<button className={button} disabled={!transfer||state.busy||state.uploadVerified} onClick={()=>controller.upload(transfer)}>{state.uploadVerified?'Ảnh đã được xác minh':'Tải ảnh & kiểm tra — chưa tạo video'}</button>}
+      {!quote.paid_enabled&&<p role="status" className="text-amber-300">Backend đang tắt gửi yêu cầu tính phí. Không tạo prediction.</p>}
       {quote.retry_predecessor_id&&<div className="space-y-2 text-sm">
         <p>Lần trước thất bại trước khi gửi prediction. Thử lại sẽ tạo một lần gửi mới có thể tính phí; giữ nguyên bản ghi cũ.</p>
         <p className="text-xs break-all">Lần trước: {quote.retry_predecessor_id}</p>
@@ -113,7 +116,7 @@ function Editor({scene,projectId,auth,resolved,onClose}){
     {state.status==='completed'&&state.result&&<div data-seedance-result className="space-y-2">
       <video src={state.result} crossOrigin="anonymous" referrerPolicy="no-referrer" controls onError={()=>setMediaError(true)} className="max-h-96 w-full"/>
       <a href={state.result} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" download={'Scene_'+scene.scene_n+'.mp4'} className="underline">Mở / tải video</a>
-      <p className="text-xs">URL provider tạm thời; chưa lưu Cloud. Nếu trình duyệt mở tab thay vì tải, dùng chức năng lưu video. Lời thoại chưa được kiểm chứng.</p>
+      <p className="text-xs">{cloud?'Job và liên kết video được lưu riêng; không ghi đè media của scene. Dùng Khôi phục sau khi tải lại trang. Lời thoại chưa được kiểm chứng.':'URL provider tạm thời; chưa lưu Cloud. Nếu trình duyệt mở tab thay vì tải, dùng chức năng lưu video. Lời thoại chưa được kiểm chứng.'}</p>
       {mediaError&&<p role="alert">Không phát được video: URL có thể hết hạn hoặc không cho phép phát nhúng. Thử liên kết tải; không tự tạo lại video.</p>}
     </div>}
     {!auth.isSignedIn&&<p>Đăng nhập trước khi lấy báo giá.</p>}

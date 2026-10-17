@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Preserve existing application access, but never expose paid job ledgers
+    // or operator-controlled project grants to client SDKs.
+    match /{collection}/{document=**} {
+      allow read, write: if collection != '_video_projects'
+                         && collection != '_video_ledgers';
+    }
+  }
+}

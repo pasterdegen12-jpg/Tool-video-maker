@@ -4,13 +4,16 @@ import { useParams, useLocation } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
-import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay, Image as ImageIcon } from 'lucide-react';
+import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay, Image as ImageIcon, AlertTriangle } from 'lucide-react';
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
 import FullDialogueField from './FullDialogueField.jsx';
 import { readSpokenText } from '../lib/spokenText.js';
 import {displayCharacterReference,reconcileCharacterScenes} from '../lib/characterIdentity.js';
+import { videoVisible } from '../lib/seedanceContract.js';
+import { useAuth } from '@clerk/clerk-react';
+import { createAudioTransport } from '../lib/wavespeedAudioClient.js';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes) => classes.filter(Boolean).join(' ');
@@ -33,7 +36,7 @@ const proxifyUrl = (url) => {
 // ==========================================
 // 🚀 CẤU HÌNH MINIMAX SPEECH-2.8-TURBO (WAVESPEED)
 // ==========================================
-const MINIMAX_TTS_ENDPOINT = "https://api.wavespeed.ai/api/v3/minimax/speech-2.8-turbo";
+// Provider endpoints and credentials are owned by the authenticated audio backend.
 
 // Danh sách Custom Voice có sẵn — user chỉ được tích chọn, không tự nhập ID.
 const MINIMAX_PRESET_VOICES = [
@@ -60,6 +63,8 @@ const fieldInput = (darkMode) => cn(
 export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode }) {
   const { projectId } = useParams();
   const location = useLocation();
+  const audioAuth = useAuth();
+  const audioTransport = createAudioTransport({getToken:audioAuth.getToken});
 
   const [activeTab, setActiveTab] = useState('storyboard');
   const [projectName, setProjectName] = useState("Dự án chưa đặt tên");
@@ -75,6 +80,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [activeEditSceneModal, setActiveEditSceneModal] = useState(null);
   const [activeStartFrameModal, setActiveStartFrameModal] = useState(null);
   const [activeVideoGenModal, setActiveVideoGenModal] = useState(null);
+  const [activeVideoScene, setActiveVideoScene] = useState(null);
   const [videoGenOptions, setVideoGenOptions] = useState({
     mode: 'start_frame_to_video',
     prompt: '',
@@ -323,7 +329,15 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
   const handleGenVideoSingle = async (sceneNo, options, isBatch = false) => {
     // Phase 5A replaces only the Full AI path; keep the existing Semi handler isolated.
-    if (!isSemi) return alert('Mở Storyboard local và chọn Gen Video AI cho một scene để xem prompt, ảnh và xác nhận phí.');
+    if (!isSemi) {
+      if (!videoVisible({DEV:import.meta.env.DEV,VITE_CLOUD_VIDEO_ENABLED:import.meta.env.VITE_CLOUD_VIDEO_ENABLED}, globalThis.location, projectType)) {
+        if (!isBatch) alert("Dịch vụ tạo video AI hiện chưa khả dụng trên môi trường web. Backend dịch vụ video chưa được triển khai trên hệ thống cloud.");
+        return;
+      }
+      setActiveVideoGenModal(null);
+      setActiveVideoScene(String(sceneNo));
+      return;
+    }
     const scene = parsedData.find(s => s.scene_n === sceneNo);
     if (!scene) return;
 
@@ -637,11 +651,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       let cleanText = scriptText.trim().replace(/[\r\n]+/g, ' ').replace(/["'"'"'()[\]{}]/g, '').replace(/\s+/g, ' ');
       if (!cleanText.match(/[.!?]$/)) cleanText += '.';
 
-      let endpoint, payload;
+      let payload;
 
       if (voiceMode === "minimax") {
         // 🚀 NHÁNH 1: MINIMAX SPEECH-2.8-TURBO
-        endpoint = MINIMAX_TTS_ENDPOINT;
         payload = {
           text: cleanText,
           voice_id: minimaxVoiceId,
@@ -654,7 +667,6 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         };
       } else {
         // 🚀 NHÁNH 2: QWEN VOICE-CLONE
-        endpoint = "https://api.wavespeed.ai/api/v3/wavespeed-ai/qwen3-tts/voice-clone";
         payload = {
           text: cleanText,
           audio: voiceCloneBase64,
@@ -667,18 +679,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         }
       }
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Lỗi kết nối API Wavespeed.");
-
-      const result = await response.json();
+      const result = await audioTransport.submit(voiceMode, payload);
       let audioUrl = null;
 
       if (result.code === 200 && result.data) {
@@ -687,14 +688,10 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         }
         else if (result.data.status === "created" || result.data.status === "processing") {
           let attempts = 0;
-          const getUrl = result.data.urls.get;
           while (attempts < 60) {
             attempts++;
             await new Promise(resolve => setTimeout(resolve, 2000));
-            const statusRes = await fetch(getUrl, {
-              headers: { "Authorization": `Bearer ${import.meta.env.VITE_WAVESPEED_API_KEY}` }
-            });
-            const statusJson = await statusRes.json();
+            const statusJson = await audioTransport.poll(result.handle);
             if (statusJson.data?.status === "completed" || statusJson.data?.status === "success") {
               audioUrl = statusJson.data.outputs?.[0];
               break;
@@ -1125,6 +1122,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             setActiveEditSceneModal={setActiveEditSceneModal}
             setActiveStartFrameModal={setActiveStartFrameModal}
             setActiveVideoGenModal={setActiveVideoGenModal}
+            activeVideoScene={activeVideoScene}
+            setActiveVideoScene={setActiveVideoScene}
             frameInputRef={frameInputRef}
             activeUploadIdRef={activeUploadIdRef}
             setActiveGenModal={setActiveGenModal}
@@ -1443,6 +1442,14 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
                 </div>
               ) : (
                 <div className="flex flex-col gap-6 overflow-y-auto custom-scrollbar max-h-[70vh] pr-2">
+                  {!isSemi && !videoVisible({DEV:import.meta.env.DEV,VITE_CLOUD_VIDEO_ENABLED:import.meta.env.VITE_CLOUD_VIDEO_ENABLED}, globalThis.location, projectType) && (
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex flex-col gap-1">
+                      <span className="font-bold flex items-center gap-1.5 text-amber-400">
+                        <AlertTriangle size={14} /> Dịch vụ Video AI chưa khả dụng trên Web
+                      </span>
+                      <span>Backend tạo video hiện chưa được triển khai trên môi trường cloud/web. Khi backend khả dụng, hệ thống sẽ mở bảng xác nhận thông số, prompt và chi phí chuẩn trước khi tạo video.</span>
+                    </div>
+                  )}
                   <div className="flex gap-4">
                     {sceneInfo.videoUrl && (
                       <div className="flex-1 flex flex-col gap-2">

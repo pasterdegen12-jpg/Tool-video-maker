@@ -81,5 +81,6 @@ export function safeMediaUrl(value) {
   } catch {return false;}
 }
 export function videoVisible(env, location, projectType) {
-  return projectType==='full-ai'&&env?.DEV===true&&location?.protocol==='http:'&&['localhost','127.0.0.1'].includes(location?.hostname);
+  return projectType==='full-ai'&&((env?.DEV===true&&location?.protocol==='http:'&&['localhost','127.0.0.1'].includes(location?.hostname)) ||
+    (env?.VITE_CLOUD_VIDEO_ENABLED==='true'&&location?.protocol==='https:'&&location?.hostname==='www.aivideomaker.live'));
 }

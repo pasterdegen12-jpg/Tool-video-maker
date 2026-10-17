@@ -22,7 +22,7 @@ export async function publicAddress(url, resolver=lookup){
   }finally{clearTimeout(timer);}
 }
 // DNS-pinned TLS connection. Never follows redirects and never forwards cookies/ambient credentials.
-export async function requestHttps(url,{method='GET',headers={},body,timeoutMs=20000,maxBytes=65536}={}, resolver=lookup){
+export async function requestHttps(url,{method='GET',headers={},body,timeoutMs=20000,maxBytes=65536,binary=false}={}, resolver=lookup){
   if(body!==undefined){
     if(typeof body!=='string'&&!Buffer.isBuffer(body))throw diagnosticError('INVALID_PROVIDER_RESPONSE','REQUEST_FRAMING');
     const length=String(Buffer.byteLength(body)),lengthKeys=Object.keys(headers).filter(k=>k.toLowerCase()==='content-length');
@@ -41,7 +41,7 @@ export async function requestHttps(url,{method='GET',headers={},body,timeoutMs=2
       let size=0;const chunks=[];
       if(res.statusCode>=300&&res.statusCode<400){res.destroy();finish(diagnosticError('INVALID_PROVIDER_RESPONSE','REDIRECT',res.statusCode));return;}
       res.on('data',chunk=>{size+=chunk.length;if(size>maxBytes){res.destroy();finish(diagnosticError('INVALID_PROVIDER_RESPONSE','RESPONSE_TOO_LARGE',res.statusCode));}else chunks.push(chunk);});
-      res.on('end',()=>finish(null,{status:res.statusCode,headers:res.headers,body:Buffer.concat(chunks).toString('utf8')}));
+      res.on('end',()=>finish(null,{status:res.statusCode,headers:res.headers,body:binary?Buffer.concat(chunks):Buffer.concat(chunks).toString('utf8')}));
       res.on('error',()=>finish(diagnosticError('UPSTREAM_FAILED','RESPONSE_ERROR',res.statusCode)));
     });
     const timer=setTimeout(()=>{req.destroy();finish(diagnosticError('UPSTREAM_FAILED','REQUEST_TIMEOUT'));},timeoutMs);

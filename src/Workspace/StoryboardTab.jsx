@@ -13,7 +13,9 @@ export default function StoryboardTab({
   setActiveVideoGenModal,
   setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
-  projectType, projectId, darkMode 
+  projectType, projectId, darkMode,
+  activeVideoScene,
+  setActiveVideoScene
 }) {
   
   const toggleFullscreen = (e) => {
@@ -27,8 +29,10 @@ export default function StoryboardTab({
   };
 
   const isSemi = projectType === 'semi';
-  const [videoScene, setVideoScene] = useState(null);
-  const localVideo = videoVisible(import.meta.env, globalThis.location, projectType);
+  const [localVideoScene, setLocalVideoScene] = useState(null);
+  const videoScene = activeVideoScene !== undefined ? activeVideoScene : localVideoScene;
+  const setVideoScene = setActiveVideoScene || setLocalVideoScene;
+  const localVideo = videoVisible({DEV:import.meta.env.DEV,VITE_CLOUD_VIDEO_ENABLED:import.meta.env.VITE_CLOUD_VIDEO_ENABLED}, globalThis.location, projectType);
   const chosenScene = parsedData.find(scene => String(scene.scene_n) === videoScene);
 
   return (

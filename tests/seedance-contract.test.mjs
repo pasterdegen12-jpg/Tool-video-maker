@@ -14,10 +14,10 @@ test('faithful prompt includes original strings once; no translation or scene mu
   assert.ok(!out.prompt.includes('ORIGINAL TONE'));
   assert.ok(!composeScene({scene_n:1,Dialogue:'Only speech.'}).prompt.includes('ORIGINAL CAMERA'));
 });
-test('Visual ID supplements Character; legacy read and conflict remain explicit',()=>{
+test('Saved Character remains authoritative; legacy read and conflict remain explicit',()=>{
   const scene={scene_n:1,Character:'Judge',Voiceover:'Old exact words.'};
   const before=JSON.stringify(scene),out=composeScene(scene,{visualId:'man_black_coat',visualDescription:'Approved test description.'});
-  assert.match(out.prompt,/ORIGINAL CHARACTER:\nJudge/);assert.equal(out.spokenSource,'Voiceover');
+  assert.match(out.prompt,/CHARACTER:\nJudge/);assert.ok(!out.prompt.includes('man_black_coat'));assert.equal(out.spokenSource,'Voiceover');
   assert.equal(JSON.stringify(scene),before);
   assert.throws(()=>composeScene({...scene,Dialogue:'Different.'}));
   assert.throws(()=>composeScene({...scene,AdditionalPrompt:'Unreviewed expansion.'}));

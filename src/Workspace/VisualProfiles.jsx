@@ -9,7 +9,7 @@ const Profiles = createContext(null);
 const button = 'px-3 py-2 rounded-lg border border-purple-400/40 text-xs font-semibold disabled:opacity-40 cursor-pointer';
 
 export function VisualProfilesProvider({ projectId, projectType, characters, onConfirmed, children }) {
-  if (!visualProfilesVisible(import.meta.env, globalThis.location) || projectType !== 'full-ai') return children;
+  if (!visualProfilesVisible({DEV:import.meta.env.DEV,VITE_ENABLE_LOCAL_VISUAL_ID:import.meta.env.VITE_ENABLE_LOCAL_VISUAL_ID}, globalThis.location) || projectType !== 'full-ai') return children;
   return <AuthenticatedProfiles projectId={projectId} characters={characters} onConfirmed={onConfirmed}>{children}</AuthenticatedProfiles>;
 }
 function AuthenticatedProfiles({ projectId, characters, onConfirmed, children }) {

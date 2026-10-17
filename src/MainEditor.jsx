@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2, Workflow } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/util';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
+import { callGeminiBackend } from './lib/geminiClient.js';
 
 import { autoSaveToFirebase } from './firebase.js';
 import LocalParserPanel from './LocalParserPanel.jsx';
@@ -12,6 +14,7 @@ const cn = (...classes) => classes.filter(Boolean).join(' ');
 
 export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMode }) {
   const navigate = useNavigate();
+  const {getToken}=useAuth();
 
   const [script, setScript] = useState('');
   const [videoFile, setVideoFile] = useState(null);
@@ -136,57 +139,7 @@ Kịch bản: ${script}`);
     }
   };
 
-  const callGeminiAPI = async (promptText) => {
-    const geminiKeys = [import.meta.env.VITE_GEMINI_KEY_1, import.meta.env.VITE_GEMINI_KEY_2, import.meta.env.VITE_GEMINI_KEY_3].filter(Boolean);
-    if (geminiKeys.length === 0) throw new Error("Chưa cấu hình API Key");
-
-    for (let i = 0; i < geminiKeys.length; i++) {
-      try {
-        console.log(`Đang thử gọi Gemini API với Key số ${i + 1}...`);
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKeys[i]}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: { response_mime_type: "application/json", temperature: 0 }
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          const errMsg = data.error.message.toLowerCase();
-          if (response.status === 429 || response.status === 503 || errMsg.includes('exhausted') || errMsg.includes('overloaded') || errMsg.includes('demand')) {
-            console.warn(`Key ${i + 1} đang quá tải, chuyển sang Key tiếp theo...`);
-            continue;
-          }
-          throw new Error(data.error.message);
-        }
-
-        const rawText = data.candidates[0].content.parts[0].text;
-
-        const jsonMatch = rawText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-        if (!jsonMatch) throw new Error("Lỗi cấu trúc trả về từ AI.");
-
-        let parsedJson = JSON.parse(jsonMatch[0]);
-
-        if (Array.isArray(parsedJson)) {
-          parsedJson = { characters: [], scenes: parsedJson };
-        }
-
-        if (!parsedJson.scenes) parsedJson.scenes = [];
-        if (!parsedJson.characters) parsedJson.characters = [];
-
-        return parsedJson;
-
-      } catch (err) {
-        if (i === geminiKeys.length - 1) {
-          throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
-        }
-      }
-    }
-    throw new Error("Máy chủ AI đang quá tải lượt yêu cầu. Vui lòng bấm nút thử lại!");
-  };
+  const callGeminiAPI = promptText => callGeminiBackend(promptText,getToken);
 
   const performCutVideo = async (parsedData) => {
     // 🚀 BỔ SUNG CỜ THEO DÕI ĐỂ BÁO LỖI ĐÚNG GIAI ĐOẠN
