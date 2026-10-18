@@ -40,8 +40,9 @@ test('actual Admin store commits user and team ledgers atomically under concurre
   assert.deepEqual(await first.project(owner,'proj_emulator'),project);
   await assert.rejects(first.project('b'.repeat(64),'proj_emulator'),/PROJECT_FORBIDDEN/);
   await db.doc('projects/proj_emulator').update({data:[{scene_n:3,Character:'forged',Dialogue:'Altered.'}]});
-  await assert.rejects(first.project(owner,'proj_emulator'),/PROJECT_CHANGED/);
-  // Existing known jobs remain recoverable; changed legacy data cannot approve a new quote.
+  assert.equal((await first.project(owner,'proj_emulator')).data[0].Character,'forged');
+  await assert.rejects(first.project('b'.repeat(64),'proj_emulator'),/PROJECT_FORBIDDEN/);
+  // Confirmed ownership is separate from editable source; service pins each selected scene per quote.
   assert.equal((await first.project(owner,'proj_emulator',false)).data[0].Character,'forged');
   await assert.rejects(first.transact(owner,(user,team)=>{user.count=99;team.count=99;throw Error('abort');}),/abort/);
   assert.equal((await first.read(owner)).count,2);assert.equal((await db.doc('_video_ledgers/team-shared-v1').get()).data().count,2);

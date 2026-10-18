@@ -1,7 +1,8 @@
-const messages={TEAM_FORBIDDEN:'Đã đạt giới hạn tạo video của nhóm. Liên hệ quản trị viên.',PROJECT_FORBIDDEN:'Dự án chưa được cấp quyền tạo video cho tài khoản này.',PROJECT_CHANGED:'Dữ liệu dự án đã thay đổi. Liên hệ quản trị viên.',QUOTE_EXPIRED:'Phiên tạo video hết hạn. Vui lòng thử lại.',CONCURRENCY_LIMIT:'Đã đạt giới hạn tạo video của nhóm. Liên hệ quản trị viên.',SPENDING_LIMIT:'Đã đạt giới hạn tạo video của nhóm. Liên hệ quản trị viên.',UNRESOLVED_ATTEMPT:'Scene đang có yêu cầu chưa hoàn thành. Dùng Khôi phục để kiểm tra.',DUPLICATE_INPUT:'Yêu cầu này đã được gửi. Dùng Khôi phục để xem kết quả.',PAID_DISABLED:'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.',RATE_LIMIT:'Có quá nhiều yêu cầu. Đợi một phút rồi thử lại.',IMAGE_HASH_MISMATCH:'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.',ARCHIVE_PENDING:'Video đang chờ lưu. Dùng Khôi phục để tiếp tục.',STATUS_UNAVAILABLE:'Chưa đọc được trạng thái. Dùng Khôi phục để kiểm tra.'};
+const messages={SOURCE_IMAGE_MISSING:'Scene chưa có ảnh INPUT. Chọn ảnh ngay tại scene.',SOURCE_IMAGE_FORBIDDEN:'Ảnh INPUT không thuộc kho ảnh của dự án. Chọn lại ảnh cho scene.',SOURCE_IMAGE_UNAVAILABLE:'Không đọc được ảnh INPUT đã lưu. Chọn lại ảnh cho scene.',SOURCE_IMAGE_INVALID:'Ảnh INPUT không hợp lệ hoặc vượt giới hạn. Chọn PNG/JPEG tối đa 25 MiB / 24 MP.',SOURCE_IMAGE_CHANGED:'Ảnh INPUT đã thay đổi. Tải lại dự án rồi thử lại.',DIALOGUE_DURATION:'Lời thoại cần thời lượng vượt giới hạn 12 giây. Hãy chia lời thoại bằng Sửa Scene.',IMAGE_INVALID:'Ảnh không hợp lệ. Chọn PNG/JPEG khác.',SESSION_MISMATCH:'Phiên đăng nhập đã thay đổi. Tải lại trang.',UNAUTHORIZED:'Cần đăng nhập lại.',TEAM_FORBIDDEN:'Tài khoản chưa được cấp quyền tạo video của nhóm. Liên hệ quản trị viên.',PROJECT_FORBIDDEN:'Dự án chưa được cấp quyền tạo video cho tài khoản này.',PROJECT_CHANGED:'Nội dung hoặc ảnh của scene đã thay đổi. Tải lại dự án rồi thử lại.',QUOTE_EXPIRED:'Phiên tạo video hết hạn. Vui lòng thử lại.',CONCURRENCY_LIMIT:'Đã đạt giới hạn tạo video của nhóm. Liên hệ quản trị viên.',SPENDING_LIMIT:'Không đủ hạn mức chi phí ngày hoặc mỗi video. Liên hệ quản trị viên; chưa gửi yêu cầu tính phí.',UNRESOLVED_ATTEMPT:'Scene đang có yêu cầu chưa hoàn thành. Dùng Khôi phục để kiểm tra.',DUPLICATE_INPUT:'Yêu cầu này đã được gửi. Dùng Khôi phục để xem kết quả.',PAID_DISABLED:'Quản trị viên đang tắt tạo video tính phí. Chưa gửi yêu cầu tạo video.',RATE_LIMIT:'Có quá nhiều yêu cầu. Đợi một phút rồi thử lại.',IMAGE_HASH_MISMATCH:'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.',ARCHIVE_PENDING:'Video đang chờ lưu. Dùng Khôi phục để tiếp tục.',STATUS_UNAVAILABLE:'Chưa đọc được trạng thái. Dùng Khôi phục để kiểm tra.'};
 export const videoMessage=code=>messages[String(code).split(';')[0]]||null;
 import {composeScene,estimateCost,MODEL,safeMediaUrl} from './seedanceContract.js';
-import {imageDimensions} from './seedanceImage.js';
+import {imageDimensions,MAX_SELECTED_IMAGE_BYTES} from './seedanceImage.js';
+import {CLOUD_MAX_DURATION} from './cloudVideoContract.js';
 const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const sleep=(ms,signal)=>new Promise((resolve,reject)=>{const stop=()=>{clearTimeout(timer);reject(new Error('CANCELLED'));};const timer=setTimeout(()=>{signal.removeEventListener('abort',stop);resolve();},ms);signal.addEventListener('abort',stop,{once:true});});
 export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,now=Date.now,wait=sleep}){
@@ -15,12 +16,12 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
       ...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.any([run.signal,AbortSignal.timeout(120000)]),credentials:'omit',mode:'same-origin',redirect:'error',cache:'no-store',referrerPolicy:'same-origin'});
     if(!response.headers.get('content-type')?.startsWith('application/json'))throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
     const raw=await response.text();if(raw.length>100000)throw new Error('Phản hồi quá lớn.');
-    const value=JSON.parse(raw);if(!response.ok)throw new Error(videoMessage(value.error?.code)||'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');return value;
+    const value=JSON.parse(raw);if(!response.ok)throw Object.assign(new Error(videoMessage(value.error?.code)||'Không thể tạo video. Liên hệ quản trị viên.'),{code:value.error?.code});return value;
   }
   function checkedJob(value,id,sceneId){
     if(value.job_id!==id||String(value.scene_id)!==String(sceneId)||!['quoted','ready','uploading','admission_unknown','queued','running','completed','failed'].includes(value.state)||
       value.state==='completed'&&!safeMediaUrl(value.video_url))throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
-    return {status:value.state,busy:['queued','running'].includes(value.state),attemptId:id,result:value.video_url,message:value.message||'',predictionId:value.prediction_id};
+    return {status:value.state,busy:['queued','running'].includes(value.state),attemptId:id,result:value.video_url,message:videoMessage(value.message)||(value.state==='admission_unknown'?'Yêu cầu chưa rõ kết quả. Chỉ khôi phục, không gửi lại.':''),predictionId:value.prediction_id,blocked:true};
   }
   async function track(value,id,sceneId,run){
     for(let count=0;count<180;count++){
@@ -49,16 +50,28 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
       let attemptId=null;
       try{
         // Step 1: read and hash image bytes locally
-        const local=composeScene(payload.scene),bytes=Uint8Array.from(atob(payload.image_base64),c=>c.charCodeAt(0));
-        const image={mime:payload.mime_type,size:bytes.length,sha256:await digest(bytes),...imageDimensions(bytes,payload.mime_type)};
+        const local=composeScene(payload.scene);
+        emit(run,{status:'quoting',busy:true,message:'Đang chuẩn bị...'});
+        let bytes,mime=payload.mime_type;
+        if(payload.stored_image){
+          const source=await request('source',{project_id:payload.project_id,scene_id:local.sceneId},run);
+          if(String(source.scene_id)!==String(local.sceneId)||source.url!==(payload.scene.startFrameUrl||payload.scene.imageUrl)||!safeMediaUrl(source.url))throw new Error(videoMessage('SOURCE_IMAGE_CHANGED'));
+          let response;try{response=await fetchImpl(source.url,{method:'GET',credentials:'omit',mode:'cors',redirect:'error',referrerPolicy:'no-referrer',signal:AbortSignal.any([run.signal,AbortSignal.timeout(45000)])});}catch{throw new Error(videoMessage('SOURCE_IMAGE_UNAVAILABLE'));}
+          if(!response.ok||Number(response.headers.get('content-length'))>MAX_SELECTED_IMAGE_BYTES)throw new Error(videoMessage('SOURCE_IMAGE_UNAVAILABLE'));
+          const reader=response.body.getReader(),chunks=[];let size=0;try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>MAX_SELECTED_IMAGE_BYTES)throw new Error(videoMessage('SOURCE_IMAGE_INVALID'));chunks.push(value);}}finally{await reader.cancel();}
+          bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+          mime=source.image.mime;const dims=imageDimensions(bytes,mime);
+          if(size!==source.image.size||await digest(bytes)!==source.image.sha256||dims.width!==source.image.width||dims.height!==source.image.height)throw new Error(videoMessage('SOURCE_IMAGE_CHANGED'));
+        }else bytes=Uint8Array.from(atob(payload.image_base64),c=>c.charCodeAt(0));
+        const image={mime,size:bytes.length,sha256:await digest(bytes),...imageDimensions(bytes,mime)};
         // Step 2: quote (server validates scene, image, settings, budget policy)
         emit(run,{status:'quoting',busy:true,message:'Đang chuẩn bị video...'});
-        const q=await request('quote',{project_id:payload.project_id,scene_id:local.sceneId,image,settings:payload.settings,assumptions:payload.assumptions},run);
+        const q=await request('quote',{project_id:payload.project_id,scene_id:local.sceneId,image,settings:payload.settings,assumptions:payload.assumptions,...(payload.stored_image?{stored_image:true}:{})},run);
         if(q.prompt!==local.prompt||q.image_sha256!==image.sha256||q.model!==MODEL||String(q.scene_id)!==String(local.sceneId)||JSON.stringify(q.settings)!==JSON.stringify(payload.settings)||
-          JSON.stringify(q.cost)!==JSON.stringify(estimateCost(payload.settings,now()))||
+          JSON.stringify(q.cost)!==JSON.stringify(estimateCost(payload.settings,now(),CLOUD_MAX_DURATION))||
           !/^[a-f0-9]{48}$/.test(q.quote_id)||!/^[a-f0-9]{64}$/.test(q.request_hash)||typeof q.paid_enabled!=='boolean'||Date.parse(q.expires_at)<=now()||Date.parse(q.expires_at)>now()+125000)
           throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
-        if(!q.paid_enabled)throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
+        if(!q.paid_enabled)throw new Error(videoMessage('PAID_DISABLED'));
         attemptId=q.quote_id;
         // Step 3: upload image via signed URL (required: image bytes cannot pass through Vercel body limit)
         emit(run,{status:'uploading',busy:true,attemptId,message:'Đang tải ảnh...'});
@@ -70,12 +83,15 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
         await track(value,q.quote_id,q.scene_id,run);
       }catch(e){
         if(e.message==='CANCELLED'){emit(run,{status:'stopped',busy:false,attemptId,message:'Đã dừng chờ. Job đã nhận vẫn có thể tính phí; dùng Khôi phục.'});}
-        else{emit(run,{status:'error',busy:false,attemptId,message:e.message||'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.'});}
+        else{emit(run,{status:'error',busy:false,attemptId,blocked:consumed,code:e.code,message:videoMessage(e.message)||e.message||'Không thể tạo video.'});}
       }finally{if(active===run)active=null;}
     },
-    async discover(projectId,sceneId){
+    async discover(projectId,sceneId,restore=false){
       if(active)return;const run=new AbortController();active=run;emit(run,{status:'recovering',busy:true});
       try{const value=await request('list',null,run,{project_id:projectId,scene_id:String(sceneId)});if(!Array.isArray(value.attempts)||value.attempts.length>20)throw new Error('INVALID_RESPONSE');
+        if(value.attempts.some(a=>String(a.scene_id)!==String(sceneId)))throw new Error('INVALID_RESPONSE');
+        const existing=value.attempts.find(a=>['admission_unknown','queued','running','completed'].includes(a.state));
+        if(restore&&existing){consumed=true;await track(await request('job',null,run,{id:existing.job_id}),existing.job_id,sceneId,run);return;}
         emit(run,{status:'recovered',busy:false,attempts:value.attempts,message:value.attempts.length?'Chọn job để xem kết quả đã lưu; không tạo video mới.':'Chưa có job cloud cho scene này.'});
       }catch(e){emit(run,{status:'error',busy:false,message:e.message});}finally{if(active===run)active=null;}
     },

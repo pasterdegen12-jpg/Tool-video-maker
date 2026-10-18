@@ -11,9 +11,9 @@ export function exactKeys(value, keys) {
     Object.keys(value).every(key=>keys.includes(key));
 }
 export function fail(message) { throw new Error(message); }
-export function validateSettings(s) {
+export function validateSettings(s, maxDuration=9) {
   if (!exactKeys(s,Object.keys(DEFAULT_SETTINGS)) || Object.keys(s).length!==Object.keys(DEFAULT_SETTINGS).length ||
-      !Number.isInteger(s.duration)||s.duration<4||s.duration>9 ||
+      !Number.isInteger(s.duration)||s.duration<4||s.duration>maxDuration ||
       !['480p','720p'].includes(s.resolution)||!ASPECTS.includes(s.aspect_ratio) ||
       typeof s.generate_audio!=='boolean'||typeof s.camera_fixed!=='boolean' ||
       !Number.isSafeInteger(s.seed)||s.seed < -1||s.seed>2147483647) fail('Thông số video không được hỗ trợ.');
@@ -28,8 +28,8 @@ export function planDuration(dialogue, assumptions={wordsPerMinute:150,pauseSeco
   return {words,seconds:Math.ceil(seconds*100)/100,suggested:seconds>9?null:Math.max(4,Math.ceil(seconds)),
     fits:seconds<=9,...assumptions};
 }
-export function estimateCost(settings, now=Date.now()) {
-  validateSettings(settings);
+export function estimateCost(settings, now=Date.now(), maxDuration=9) {
+  validateSettings(settings,maxDuration);
   // Never silently price a new model/resolution or reuse stale reference pricing.
   if(now<Date.parse(VERIFIED_DATE)||now>Date.parse(VERIFIED_DATE)+30*86400000) return null;
   const rate=settings.resolution==='480p' ? 12000 : 26000;

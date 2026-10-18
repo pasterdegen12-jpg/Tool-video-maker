@@ -1,7 +1,7 @@
 import {initializeApp,cert,getApps} from 'firebase-admin/app';
 import {getFirestore} from 'firebase-admin/firestore';
 import {Buffer} from 'node:buffer';
-import {CloudError,newLedger,requireValue,sourceDigest} from './core.js';
+import {CloudError,newLedger,requireValue} from './core.js';
 
 export function cloudDatabase(env){
   let credential;
@@ -12,13 +12,14 @@ export function cloudDatabase(env){
 }
 export function createCloudStore(db){
   return {
-    async project(owner,projectId,verifySource=true){
+    async project(owner,projectId){
       requireValue(/^proj_[A-Za-z0-9_-]{1,100}$/.test(projectId),'INVALID_PROJECT');
       const grant=(await db.doc('_video_projects/'+projectId).get()).data();
       requireValue(grant?.owner===owner&&grant.enabled===true,'PROJECT_FORBIDDEN',403);
       const project=(await db.doc('projects/'+projectId).get()).data();
       requireValue(project,'PROJECT_NOT_FOUND',404);
-      if(verifySource)requireValue(sourceDigest(project)===grant.sourceDigest,'PROJECT_CHANGED',409);
+      // The protected grant establishes ownership. Mutable scene/media data is
+      // pinned per attempt, never used to revoke this confirmed ownership.
       return project;
     },
     async read(owner){return (await db.doc('_video_ledgers/'+owner).get()).data()||newLedger();},

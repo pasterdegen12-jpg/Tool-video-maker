@@ -1,9 +1,9 @@
 import {Buffer} from 'node:buffer';
-import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,requireValue,CloudError,sourceDigest} from './core.js';
+import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,checkAdmission,requireValue,CloudError,sourceDigest,sceneSnapshot,canonical} from './core.js';
 
 // Each provider operation is separated by a committed transaction. A cold start
 // may resume GET polling, but can never resume/repeat a prediction POST.
-export function createCloudVideoService({config,store,upload,provider,archive,now=Date.now}){
+export function createCloudVideoService({config,store,upload,provider,archive,sourceImage,now=Date.now}){
   const owner=session=>ownerOf(session,config.issuer);
   const change=(session,fn)=>store.transact(owner(session),(ledger,team)=>{
     const result=fn(ledger,team);
@@ -17,7 +17,8 @@ export function createCloudVideoService({config,store,upload,provider,archive,no
     await store.project(owner(session),record.projectId,false);return record;
   }
   async function unchanged(session,r){
-    requireValue(sourceDigest(await project(session,r.projectId))===r.sourceDigest,'PROJECT_CHANGED');
+    const current=await project(session,r.projectId);
+    requireValue(r.snapshotVersion===2?sceneSnapshot(current,r.sceneId)===r.sceneDigest:sourceDigest(current)===r.sourceDigest,'PROJECT_CHANGED');
   }
   const validQuote=(r,session,requestHash)=>{
     requireValue(r.sessionHash===sessionOf(session),'SESSION_MISMATCH',403);
@@ -60,13 +61,26 @@ export function createCloudVideoService({config,store,upload,provider,archive,no
     return publicJob(await owned(session,attemptId));
   }
   return {
+    async source(session,input){
+      requireValue(input&&Object.keys(input).sort().join(',')==='project_id,scene_id');
+      const current=await project(session,input.project_id);
+      await change(session,l=>rate(l,'source',now(),10));
+      requireValue(sourceImage,'SOURCE_IMAGE_UNAVAILABLE',503);
+      return sourceImage(current,input.project_id,input.scene_id);
+    },
     async quote(session,input){
       const source=await project(session,input?.project_id);
       const prepared=prepareQuote(source,input,now()),attemptId=id();
+      if(input.stored_image){
+        requireValue(sourceImage,'SOURCE_IMAGE_UNAVAILABLE',503);
+        const selected=await sourceImage(source,input.project_id,input.scene_id);
+        requireValue(canonical(selected.image)===canonical(prepared.image),'SOURCE_IMAGE_CHANGED');
+      }
       const record={...prepared,id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:'QUOTED',transitions:[{stage:'QUOTED',at:now()}]};
       await change(session,(l,team)=>{
         rate(l,'quote',now(),10);rate(team,'quote',now(),30);requireValue(Object.keys(l.records).length<80,'LEDGER_CAPACITY',429);
         requireValue(!Object.values(l.records).some(r=>r.projectId===record.projectId&&String(r.sceneId)===String(record.sceneId)&&['SUBMITTING','UNKNOWN','ACCEPTED','RUNNING'].includes(r.stage)),'UNRESOLVED_ATTEMPT');
+        checkAdmission(l,record,now(),config.limits);checkAdmission(team,record,now(),config.teamLimits);
         l.records[attemptId]=record;
       });
       return publicQuote(record,config.paidEnabled);

@@ -7,6 +7,7 @@ import {createCloudVideoService,readCloudBody} from './_lib/cloud-video/service.
 import {createProvider} from './_lib/seedance/provider.js';
 import {requireValue} from './_lib/cloud-video/core.js';
 import {createVideoArchive} from './_lib/cloud-video/archive.js';
+import {createSourceImageReader} from './_lib/cloud-video/source-image.js';
 
 export const config={maxDuration:120};
 export function createVideoHandler({configure=()=>cloudConfig(process.env),authenticate=authenticateSession,createService}={}){
@@ -16,9 +17,9 @@ export function createVideoHandler({configure=()=>cloudConfig(process.env),authe
       const settings=configure(),session=await authenticate(req,settings);
       authorizeTeam(session,settings);
       const url=new URL(req.url,settings.origin),action=url.searchParams.get('action');
-      requireValue(['quote','ticket','verify','submit','list','job','health'].includes(action),'NOT_FOUND',404);
+      requireValue(['source','quote','ticket','verify','submit','list','job','health'].includes(action),'NOT_FOUND',404);
       requireValue(req.method===(['list','job','health'].includes(action)?'GET':'POST'),'METHOD_NOT_ALLOWED',405);
-      const service=createService?createService(settings):createCloudVideoService({config:settings,store:createCloudStore(cloudDatabase(process.env)),upload:createCloudUpload(settings.apiKey),provider:createProvider(settings),archive:createVideoArchive(process.env)});
+      const service=createService?createService(settings):createCloudVideoService({config:settings,store:createCloudStore(cloudDatabase(process.env)),upload:createCloudUpload(settings.apiKey),provider:createProvider(settings),archive:createVideoArchive(process.env),sourceImage:createSourceImageReader(process.env.R2_PUBLIC_ORIGIN)});
       let output;
       if(action==='health')output={enabled:true,paid_enabled:settings.paidEnabled,storage:'firestore',model:'bytedance/seedance-v1.5-pro/image-to-video'};
       else if(action==='list')output=await service.list(session,{project_id:url.searchParams.get('project_id'),scene_id:url.searchParams.get('scene_id')});

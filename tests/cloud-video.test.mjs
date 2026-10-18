@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createCloudVideoService,readCloudBody} from '../api/_lib/cloud-video/service.js';
 import {createVideoHandler} from '../api/video.js';
-import {newLedger,ownerOf,sourceDigest,CloudError,hash,declaration} from '../api/_lib/cloud-video/core.js';
+import {newLedger,ownerOf,CloudError,hash,declaration} from '../api/_lib/cloud-video/core.js';
 import {createCloudUpload} from '../api/_lib/cloud-video/upload.js';
 import {DEFAULT_SETTINGS} from '../src/lib/seedanceContract.js';
 
@@ -13,9 +13,9 @@ config.teamLimits={...config.limits};
 const scene={scene_n:3,Character:'confirmed_character_id',Voiceover:'Exact original words.',Action:'Sits.',Camera:'Static.',Context:'Court.',videoUrl:'https://media.example.org/old.mp4'};
 function harness(overrides={}){
   const projects={proj_test:{projectType:'full-ai',data:[structuredClone(scene)],characters:[]}},ledgers=new Map();let team=newLedger();let clock=Date.parse('2026-10-17T00:00:00Z'),tail=Promise.resolve(),posts=0,gets=0,tickets=0;
-  const grant=sourceDigest(projects.proj_test);
+
   const store={
-    async project(owner,id,verify=true){if(owner!==ownerOf(session,config.issuer)||id!=='proj_test')throw new CloudError('PROJECT_FORBIDDEN',403);if(verify&&sourceDigest(projects[id])!==grant)throw new CloudError('PROJECT_CHANGED');return structuredClone(projects[id]);},
+    async project(owner,id){if(owner!==ownerOf(session,config.issuer)||id!=='proj_test')throw new CloudError('PROJECT_FORBIDDEN',403);return structuredClone(projects[id]);},
     async read(owner){return structuredClone(ledgers.get(owner)||newLedger());},
     transact(owner,change){const work=tail.then(()=>{const draft=structuredClone(ledgers.get(owner)||newLedger()),teamDraft=structuredClone(team),value=change(draft,teamDraft);ledgers.set(owner,draft);team=teamDraft;return structuredClone(value);});tail=work.catch(()=>{});return work;},
   };
@@ -84,7 +84,7 @@ test('commit failure before provider submit results in zero POST',async()=>{
   const h=harness(),{s,body}=await h.ready();const original=h.options.store.transact;h.options.store.transact=async(owner,fn)=>original(owner,(l,team)=>{fn(l,team);throw new Error('durable unavailable');});await assert.rejects(s.submit(session,body),/durable unavailable/);assert.equal(h.calls().posts,0);
 });
 test('spend/concurrency reservations are durable and conservative',async()=>{
-  const h=harness({config:{limits:{concurrent:1,daily:100000,perRequest:500000}}}),{s,body}=await h.ready();await assert.rejects(s.submit(session,body),/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);
+  const h=harness({config:{limits:{concurrent:1,daily:100000,perRequest:500000}}});await assert.rejects(h.service().quote(session,h.input),/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
 });
 test('full admission stays at 25 MiB and 24 MP; request contains declaration only',()=>{
   assert.equal(declaration({sha256:'a'.repeat(64),size:25*1024*1024,mime:'image/png',width:6000,height:4000}).size,25*1024*1024);
@@ -110,3 +110,26 @@ test('team concurrency and budget reservations block another member before provi
  for(const mode of ['concurrent','budget']){const h=harness(),{s,body}=await h.ready();const team=newLedger();if(mode==='concurrent')team.records.other={id:'other',stage:'UNKNOWN',owner:'another-member'};else team.spend['2026-10-17']=499999;h.setTeam(team);await assert.rejects(s.submit(session,body),mode==='concurrent'?/CONCURRENCY_LIMIT/:/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);assert.deepEqual(h.ledger().spend,{});}
 });
 test('completed video updates shared team state and retains daily cost reservation',async()=>{const h=harness(),{s,body}=await h.ready();await s.submit(session,body);assert.equal(h.team().records[body.attempt_id].stage,'ACCEPTED');await s.poll(session,body.attempt_id);assert.equal(h.team().records[body.attempt_id].stage,'COMPLETED');assert.equal(h.team().spend['2026-10-17'],120000);});
+
+test('legitimate project media and another scene edit do not revoke grant or change selected attempt',async()=>{
+ const h=harness(),{s,body}=await h.ready();h.projects.proj_test.generatedAudios={3:'new.mp3'};h.projects.proj_test.data[0].videoUrl='https://media.example.org/new.mp4';h.projects.proj_test.data.push({scene_n:9,Dialogue:'Other scene edit.'});
+ await s.submit(session,body);assert.equal(h.calls().posts,1);
+});
+test('editing selected prompt or INPUT invalidates only old quote; fresh quote uses new canonical source',async()=>{
+ for(const field of ['Dialogue','Character','startFrameUrl']){const h=harness(),{s,body}=await h.ready();if(field==='Dialogue'){delete h.projects.proj_test.data[0].Voiceover;h.projects.proj_test.data[0].Dialogue='New words.';}else h.projects.proj_test.data[0][field]=field==='startFrameUrl'?'https://media.example.org/new.png':'new_confirmed_character';
+ await assert.rejects(s.submit(session,body),/PROJECT_CHANGED/);assert.equal(h.calls().posts,0);await s.quote(session,h.input);}
+});
+test('actual Scene 1 twelve-second speech is accepted; longer than provider limit is rejected without truncation',async()=>{
+ const h=harness();h.projects.proj_test.data[0].Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
+ const q=await h.service().quote(session,{...h.input,settings:{...h.input.settings,duration:12}});assert.equal(q.cost.usd,'0.2880');assert.ok(q.prompt.includes(h.projects.proj_test.data[0].Voiceover));
+ await assert.rejects(h.service().quote(session,h.input),/DIALOGUE_DURATION/);assert.equal(h.calls().posts,0);
+});
+test('source endpoint rejects browser-supplied URL and wrong project before fetching image',async()=>{
+ let reads=0;const h=harness({options:{sourceImage:async()=>{reads++;return {};}}});
+ await assert.rejects(h.service().source(session,{project_id:'proj_test',scene_id:3,url:'http://127.0.0.1'}),/INVALID_REQUEST/);
+ await assert.rejects(h.service().source(other,{project_id:'proj_test',scene_id:3}),/PROJECT_FORBIDDEN/);assert.equal(reads,0);
+});
+test('stored image declaration must match independently validated canonical bytes',async()=>{
+ const h=harness({options:{sourceImage:async()=>({image:{mime:'image/jpeg',size:1,sha256:'b'.repeat(64),width:32,height:32}})}});
+ await assert.rejects(h.service().quote(session,{...h.input,stored_image:true}),/SOURCE_IMAGE_CHANGED/);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
+});
