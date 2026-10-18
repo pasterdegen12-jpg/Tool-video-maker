@@ -1,5 +1,6 @@
 // Real React/jsdom components for one-click Gen Video flow. Auth hook and WaveSpeed HTTP responses are mocks, not live acceptance.
 import test from 'node:test';
+import {setTimeout as realTimeout} from 'node:timers';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
@@ -143,7 +144,7 @@ for(const kind of ['cancel','scene','project','session'])test('late provider res
   let release,signal;
   slow=(s,value)=>new Promise(r=>{signal=s;release=()=>r(json(value));});
   await click(find(container,'Gen Video'));
-  for(let n=0;n<50&&!release;n++){await act(async()=>t.mock.timers.tick(200));await flush();}
+  for(let n=0;n<500&&!release;n++){await act(async()=>{t.mock.timers.tick(20);await new Promise(resolve=>realTimeout(resolve,10));});await flush();}
   assert.ok(release);
   if(kind==='cancel')await click(find(container,'Hủy chờ'));
   if(kind==='scene')await click([...container.querySelectorAll('button')].filter(b=>b.textContent.includes('Gen Video AI'))[1]);

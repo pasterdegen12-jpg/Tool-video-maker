@@ -44,7 +44,7 @@ const mockFetch=async(url,options={})=>{
  const u=new URL(url,'https://www.aivideomaker.live'),action=u.searchParams.get('action'),b=options.body?JSON.parse(options.body):{};
  const {prepareQuote,publicQuote}=await import('../api/_lib/cloud-video/core.js');
  const job=(q)=>({job_id:q.quote_id,scene_id:q.scene_id,state:'completed',video_url:'https://media.example.org/result-'+q.scene_id+'.mp4',prediction_id:'mock-'+q.scene_id});
- if(action==='list')return json({attempts:completed?[{job_id:'f'.repeat(48),scene_id:u.searchParams.get('scene_id'),state:'completed',video_url:'https://media.example.org/old.mp4'}]:[]});
+ if(action==='list')return json({attempts:completed?[{job_id:'f'.repeat(48),scene_id:u.searchParams.get('scene_id')||1,state:'completed',video_url:'https://media.example.org/old.mp4'}]:[]});
  if(action==='job')return json({job_id:u.searchParams.get('id'),scene_id:1,state:'completed',video_url:'https://media.example.org/old.mp4'});
  if(action==='source'){const s=scenes.find(s=>String(s.scene_n)===String(b.scene_id));return json({scene_id:s.scene_n,url:s.startFrameUrl,image:{mime:'image/png',size:bytes.length,sha256:sha,...imageDimensions(bytes,'image/png')}});}
  if(action==='quote'){const id=String(b.scene_id).repeat(48);const q=publicQuote({...prepareQuote({projectType:'full-ai',data:scenes},b,Date.now()),id,quoteExpires:Date.now()+120000},true);quotes.set(id,q);return json(q);}
@@ -63,7 +63,7 @@ async function mount(t,props={}){
  const container=document.createElement('div');document.body.append(container);const r=createRoot(container),data=structuredClone(scenes),before=JSON.stringify(data);
  const base={parsedData:data,projectId:'proj_test',projectType:'full-ai',projectCharacters:[],generatedAudios:{},isGenerating:{},mergingScenes:{},mergedVideos:{},darkMode:true};
  const render=async p=>act(async()=>r.render(React.createElement(Storyboard,{...base,...p})));
- await render(props);for(let i=0;i<100&&container.querySelector('[data-video-state="recovering"]');i++)await act(async()=>new Promise(r=>setTimeout(r,10)));
+ await render(props);for(let i=0;i<100&&(container.querySelector('[data-video-state="recovering"]')||actionButtons(container).some(b=>b.disabled)&&auth.isSignedIn);i++)await act(async()=>new Promise(r=>setTimeout(r,10)));
  t.after(async()=>{assert.equal(JSON.stringify(data),before);await act(async()=>r.unmount());container.remove();globalThis.fetch=oldFetch;});return {container,render};
 }
 async function settle(){for(let i=0;i<200;i++){await act(async()=>new Promise(r=>setTimeout(r,10)));if(!document.querySelector('[data-video-state="quoting"],[data-video-state="uploading"],[data-video-state="submitting"],[data-video-state="recovering"]'))break;}}
@@ -73,7 +73,7 @@ test('stored INPUT: originating scene button directly generates, duration adapts
  assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1,'one existing-image click must reach submit');
  const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
  assert.equal(body.scene_id,1);assert.equal(body.settings.duration,6);
- const card=container.querySelector('[data-scene-id="1"]');assert.ok(card);assert.ok(card.querySelector('video[src$="result-1.mp4"]'));
+ const card=container.querySelector('[data-scene-id="1"]');assert.ok(card);assert.ok(card.querySelector('video[aria-label="Output scene 1"][src$="result-1.mp4"]'));assert.equal(card.querySelectorAll('video').length,1);assert.equal(card.querySelector('[aria-label="Video scene 1"] video'),null);
  assert.ok(!container.textContent.includes('Gen Video — Scene'),'No global panel');
 });
 test('scene 2 uses its own saved image and prompt; rapid double-click cannot duplicate submit',async t=>{
@@ -94,7 +94,7 @@ test('inaccessible stored image never submits and offers inline replacement',asy
 
 test('existing completed cloud result restores on mount using GET only; old scene video is preserved',async t=>{
  const {container,render}=await mount(t);completed=true;await render({projectId:'proj_reopened',parsedData:[{...scenes[0],videoUrl:'https://media.example.org/legacy.mp4'}]});await settle();
- assert.ok(container.querySelector('[data-scene-id="1"] video[src$="old.mp4"]'));assert.ok(container.querySelector('video[src$="legacy.mp4"]'));
+ assert.ok(container.querySelector('[data-scene-id="1"] video[src$="old.mp4"]'));assert.equal(container.querySelector('video[src$="legacy.mp4"]'),null);assert.equal(container.querySelectorAll('[data-scene-id="1"] video').length,1);
  assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });
 test('sign-out never sends source, quote, upload or prediction',async t=>{
@@ -113,4 +113,12 @@ test('missing image selection validates bytes, then one inline Generate click su
  Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile(['invalid'],'bad.jpg',{type:'image/jpeg'})]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,0);
  Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile([bytes],'valid.png',{type:'image/png'})]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await settle();
  assert.equal(calls.filter(c=>c.options.method==='POST').length,0);const button=[...container.querySelectorAll('button')].find(b=>b.textContent==='Gen Video');assert.ok(button);assert.equal(button.disabled,false);await click(button);await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
+});
+
+test('persisted cloud output is immediately in OUTPUT on first render, without job recovery or duplicate player',async t=>{
+ const saved={...scenes[0],videoUrl:'https://media.example.org/saved.mp4',videoJob:{id:'f'.repeat(48),state:'completed'}};
+ const {container}=await mount(t,{parsedData:[saved]});await settle();
+ assert.equal(container.querySelector('video[aria-label="Output scene 1"]').getAttribute('src'),saved.videoUrl);
+ assert.equal(container.querySelectorAll('video').length,1);assert.ok(!container.textContent.includes('Khôi phục trạng thái'));
+ assert.equal(calls.filter(c=>c.url.includes('action=job')).length,0);assert.equal(calls.filter(c=>c.url.includes('action=list')).length,1);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });

@@ -9,7 +9,8 @@ const Profiles = createContext(null);
 const button = 'px-3 py-2 rounded-lg border border-purple-400/40 text-xs font-semibold disabled:opacity-40 cursor-pointer';
 
 export function VisualProfilesProvider({ projectId, projectType, characters, onConfirmed, children }) {
-  if (!visualProfilesVisible({DEV:import.meta.env.DEV,VITE_ENABLE_LOCAL_VISUAL_ID:import.meta.env.VITE_ENABLE_LOCAL_VISUAL_ID}, globalThis.location) || projectType !== 'full-ai') return children;
+  if(projectType!=='full-ai')return children;
+  if(!visualProfilesVisible({DEV:import.meta.env.DEV,VITE_ENABLE_LOCAL_VISUAL_ID:import.meta.env.VITE_ENABLE_LOCAL_VISUAL_ID},globalThis.location))return <Profiles.Provider value={{projectId,characters,unavailable:true}}>{children}</Profiles.Provider>;
   return <AuthenticatedProfiles projectId={projectId} characters={characters} onConfirmed={onConfirmed}>{children}</AuthenticatedProfiles>;
 }
 function AuthenticatedProfiles({ projectId, characters, onConfirmed, children }) {
@@ -34,6 +35,7 @@ function SessionProfiles({ projectId, characters, onConfirmed, auth, children })
 export function SetIdPanel({ character, disabled = false }) {
   const context = useContext(Profiles);
   if (!context) return null;
+  if(context.unavailable)return <div className="flex items-center gap-2 text-xs" aria-label={'Visual ID '+character.name}><button className={button} disabled title="Dịch vụ Qwen chưa được kết nối với website">✦ Set ID</button><span className="text-slate-400">Chưa kết nối Qwen</span></div>;
   const matches = context.characters.filter(c => c.id === character.id);
   if (matches.length !== 1 || typeof character.id !== 'string' || !character.id) return <p role="alert">Set ID: character ID thiếu hoặc trùng.</p>;
   return <Detection key={characterBinding(character)} context={context} character={character} disabled={disabled} />;

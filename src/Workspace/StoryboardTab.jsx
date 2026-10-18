@@ -1,6 +1,8 @@
 import { SceneVisualProfile } from './VisualProfiles.jsx';
 import {displayCharacterReference} from '../lib/characterIdentity.js';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import {useAuth} from '@clerk/clerk-react';
+import {createCloudVideoController} from '../lib/cloudVideoClient.js';
 import SeedanceScenePanel from './SeedanceScenePanel.jsx';
 import SceneVideoAction from './SceneVideoAction.jsx';
 import { videoVisible } from '../lib/seedanceContract.js';
@@ -14,7 +16,7 @@ export default function StoryboardTab({
   setActiveVideoGenModal,
   setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
-  projectType, projectId, darkMode,
+  projectType, projectId, darkMode, onVideoCompleted,
   activeVideoScene,
   setActiveVideoScene
 }) {
@@ -30,15 +32,19 @@ export default function StoryboardTab({
   };
 
   const isSemi = projectType === 'semi';
+  const [completedOutputs,setCompletedOutputs]=useState({});
+  function completed(sceneId,value){setCompletedOutputs(previous=>({...previous,[projectId+':'+sceneId]:value.url}));onVideoCompleted?.(sceneId,value);}
   const [localVideoScene, setLocalVideoScene] = useState(null);
   const videoScene = activeVideoScene !== undefined ? activeVideoScene : localVideoScene;
   const setVideoScene = setActiveVideoScene || setLocalVideoScene;
   const localVideo = videoVisible({DEV:import.meta.env.DEV,VITE_CLOUD_VIDEO_ENABLED:import.meta.env.VITE_CLOUD_VIDEO_ENABLED}, globalThis.location, projectType);
   const cloudVideo = localVideo && globalThis.location?.protocol === 'https:';
+  const [recovery,setRecovery]=useState({projectId:null,jobs:[],error:''});
   const chosenScene = parsedData.find(scene => String(scene.scene_n) === videoScene);
 
   return (
     <div className="flex flex-col gap-5 animate-fadeIn">
+      {cloudVideo&&<ProjectVideoRecovery projectId={projectId} onLoaded={setRecovery}/>}
       {localVideo && !cloudVideo && chosenScene && <SeedanceScenePanel scene={chosenScene} projectId={projectId} characters={projectCharacters} onClose={() => setVideoScene(null)} />}
       {parsedData.map((scene) => {
         const isLoadingAudio = isGenerating[scene.scene_n];
@@ -55,7 +61,7 @@ export default function StoryboardTab({
         const characterInfo = isSemi ? null : displayCharacterReference(scene.Character,projectCharacters,projectId);
 
         // 🚀 Tích hợp logic Output: Nếu đã Merge thì hiện file Merge, nếu chưa Merge mà có Video AI thì hiện Video AI
-        const outputVideoUrl = hasOutput || (!isSemi && scene.videoUrl ? scene.videoUrl : null);
+        const outputVideoUrl = hasOutput || (!isSemi && (completedOutputs[projectId+':'+sceneKey]||scene.videoUrl)) || null;
 
         return (
           <div key={projectId+':'+sceneKey} data-scene-id={sceneKey} className={`flex flex-col md:flex-row gap-6 p-5 rounded-2xl border shadow-sm transition-all duration-300 group ${darkMode ? 'bg-slate-900/70 backdrop-blur-sm border-white/[0.07] hover:border-white/[0.12] hover:bg-slate-900/90' : 'bg-white hover:bg-zinc-50 border-zinc-200'}`}>
@@ -96,7 +102,7 @@ export default function StoryboardTab({
                       </div>
                     </div>
                     <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative shadow-sm">
-                      <video src={outputVideoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
+                      <video aria-label={'Output scene '+scene.scene_n} src={outputVideoUrl} preload="metadata" crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     </div>
                   </div>
                 )}
@@ -221,7 +227,7 @@ export default function StoryboardTab({
                         <ImageIcon size={14} /> Tải Nền
                     </button>
                     
-                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId}/> : (
+                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} onCompleted={completed} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
                     <button 
                       onClick={() => localVideo ? setVideoScene(String(scene.scene_n)) : setActiveVideoGenModal(scene)} 
                       className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-emerald-500/60 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}
@@ -278,4 +284,15 @@ export default function StoryboardTab({
       })}
     </div>
   );
+}
+
+function ProjectVideoRecovery({projectId,onLoaded}){
+  const auth=useAuth();
+  useEffect(()=>{
+    if(!auth.isSignedIn)return;
+    let live=true;const controller=createCloudVideoController({getToken:auth.getToken,onChange:()=>{}});
+    controller.listProject(projectId).then(jobs=>{if(live)onLoaded({projectId,jobs,error:''});}).catch(error=>{if(live)onLoaded({projectId,jobs:[],error:error.message});});
+    return()=>{live=false;controller.cancel(false);};
+  },[projectId,onLoaded,auth.isSignedIn,auth.userId,auth.sessionId,auth.getToken]);
+  return null;
 }

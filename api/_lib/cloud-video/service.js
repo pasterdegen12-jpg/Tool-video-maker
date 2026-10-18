@@ -29,9 +29,13 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
   async function failBeforePrediction(session,attemptId,code){
     await change(session,l=>{const r=authorizeRecord(l,attemptId,session);if(['TICKETING','UPLOADING','VERIFYING'].includes(r.stage)){r.failure=code;transition(r,'FAILED');}});
   }
+  async function finishJob(session,record){
+    if(record.stage==='COMPLETED')await store.publishVideo(owner(session),record);
+    return publicJob(record);
+  }
   async function poll(session,attemptId){
     let record=await owned(session,attemptId);
-    if(!record.predictionId||['COMPLETED','FAILED'].includes(record.stage))return publicJob(record);
+    if(!record.predictionId||['COMPLETED','FAILED'].includes(record.stage))return finishJob(session,record);
     const ticket=id();
     const claimed=await change(session,l=>{
       const r=authorizeRecord(l,attemptId,session);rate(l,'poll',now(),40);
@@ -42,13 +46,13 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
     let result;
     try{result=await provider.get(record.predictionId);}catch{
       await change(session,l=>{const r=l.records[attemptId];if(r.pollToken===ticket){r.pollUntil=0;r.failure='STATUS_UNAVAILABLE; use recovery, do not resubmit';}});
-      return publicJob(await owned(session,attemptId));
+      return finishJob(session,await owned(session,attemptId));
     }
     let archived=null;
     if(result.state==='completed'){
       try{archived=await archive(result.url,owner(session),record);}catch{
         await change(session,l=>{const r=l.records[attemptId];r.pollUntil=0;r.failure='ARCHIVE_PENDING; recover without creating another prediction';});
-        return publicJob(await owned(session,attemptId));
+        return finishJob(session,await owned(session,attemptId));
       }
     }
     await change(session,l=>{
@@ -58,7 +62,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       else if(['failed','cancelled','timeout','deleted'].includes(result.state)){r.failure='PROVIDER_'+result.state.toUpperCase();transition(r,'FAILED');}
       else transition(r,result.state==='running'?'RUNNING':'ACCEPTED');
     });
-    return publicJob(await owned(session,attemptId));
+    return finishJob(session,await owned(session,attemptId));
   }
   return {
     async source(session,input){
@@ -134,12 +138,12 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
           r.failure=e.code==='SUBMISSION_REJECTED'?'SUBMISSION_REJECTED':'SUBMISSION_UNKNOWN; do not resubmit';
           transition(r,e.code==='SUBMISSION_REJECTED'?'FAILED':'UNKNOWN');});
       }
-      return publicJob(await owned(session,record.id));
+      return finishJob(session,await owned(session,record.id));
     },
     async list(session,input){
       await store.project(owner(session),input.project_id,false);
       const ledger=await store.read(owner(session));
-      const records=Object.values(ledger.records).filter(r=>r.projectId===input.project_id&&String(r.sceneId)===String(input.scene_id)).sort((a,b)=>b.createdAt-a.createdAt).slice(0,20);
+      const records=Object.values(ledger.records).filter(r=>r.projectId===input.project_id&&(!input.scene_id||String(r.sceneId)===String(input.scene_id))).sort((a,b)=>b.createdAt-a.createdAt).slice(0,input.scene_id?20:80);
       return {attempts:records.map(r=>({...publicJob(r),created_at:new Date(r.createdAt).toISOString()}))};
     },
     poll,

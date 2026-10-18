@@ -48,3 +48,13 @@ test('actual Admin store commits user and team ledgers atomically under concurre
   assert.equal((await first.read(owner)).count,2);assert.equal((await db.doc('_video_ledgers/team-shared-v1').get()).data().count,2);
  }finally{await db.terminate();await deleteApp(app);}
 });
+
+test('Admin publishes completed output transactionally, preserves original fields and refuses unrelated owner',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'output-emulator'),db=getFirestore(app);
+ try{const store=createCloudStore(db),owner='c'.repeat(64),project={projectType:'full-ai',data:[{scene_n:1,Character:'Judge',Dialogue:'Exact.',videoUrl:'https://media.example.org/old.mp4'}],generatedAudios:{1:'keep.mp3'}};
+ const {sceneSnapshot}=await import('../../api/_lib/cloud-video/core.js');const record={id:'a'.repeat(48),projectId:'proj_output',sceneId:1,stage:'COMPLETED',snapshotVersion:2,sceneDigest:sceneSnapshot(project,1),videoUrl:'https://media.example.org/new.mp4',predictionId:'test',createdAt:1};
+ await db.doc('projects/proj_output').set(project);await db.doc('_video_projects/proj_output').set({owner,enabled:true});
+ await assert.rejects(store.publishVideo('wrong',record),/PROJECT_FORBIDDEN/);await store.publishVideo(owner,record);await store.publishVideo(owner,record);
+ const saved=(await db.doc('projects/proj_output').get()).data();assert.equal(saved.data[0].videoUrl,record.videoUrl);assert.equal(saved.data[0].Dialogue,'Exact.');assert.equal(saved.data[0].videoHistory.length,1);assert.deepEqual(saved.generatedAudios,project.generatedAudios);
+ }finally{await db.terminate();await deleteApp(app);}
+});

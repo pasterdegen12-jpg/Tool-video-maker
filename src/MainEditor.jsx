@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { FileText, Upload, Scissors, Wand2, Film, Loader2, CheckCircle2, Workflow } from 'lucide-react';
 import { fetchFile } from '@ffmpeg/util';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { callGeminiBackend } from './lib/geminiClient.js';
+import {parseStructuredScript} from './lib/structuredScript.js';
 
 import { autoSaveToFirebase } from './firebase.js';
 import LocalParserPanel from './LocalParserPanel.jsx';
@@ -12,7 +13,7 @@ import { localParserVisible } from './lib/localParserClient.js';
 // ─── Reusable style helpers ────────────────────────────────────────────────
 const cn = (...classes) => classes.filter(Boolean).join(' ');
 
-export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMode }) {
+export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode }) {
   const navigate = useNavigate();
   const {getToken}=useAuth();
 
@@ -32,8 +33,9 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMo
   const blobUrlsRef = useRef([]);
 
   useEffect(() => {
+    const urls=blobUrlsRef.current;
     return () => {
-      blobUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
+      urls.forEach(url => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -46,7 +48,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode, setDarkMo
     setLoadingStatus('Đang xử lý kịch bản GEN AI...');
 
     try {
-      const parsedData = await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
+      const parsedData = parseStructuredScript(script,'full-ai') || await callGeminiAPI(`Bạn là chuyên gia bóc tách kịch bản AI. Hãy đọc kịch bản và trả về DUY NHẤT 1 JSON Object.
 Quy tắc xử lý kịch bản:
 1. Trong kịch bản, phần "Character" thường chứa cả Tên và Mô tả. Hãy tách riêng: Đưa mô tả (VD: 30s Hispanic female...) vào mảng "characters", còn ở mảng "scenes", trường "Character" chỉ ghi ngắn gọn Tên nhân vật (VD: Plaintiff).
 2. Giữ nguyên văn lời thoại trong "Dialogue". Không xuất field "Voiceover" cho Full AI. Dữ liệu từ "Tone" chuyển thành "Tone_of_Voice".
@@ -99,7 +101,7 @@ Kịch bản: ${script}`);
     setLoadingStatus('Đang trích xuất mốc thời gian (Semi)...');
 
     try {
-      const parsedData = await callGeminiAPI(`You are an expert data extraction assistant. Read the provided script and return EXACTLY ONE JSON Object.
+      const parsedData = parseStructuredScript(script,'semi') || await callGeminiAPI(`You are an expert data extraction assistant. Read the provided script and return EXACTLY ONE JSON Object.
 
 CRITICAL INSTRUCTIONS:
 0. VERBATIM EXTRACTION (HIGHEST PRIORITY — OVERRIDES EVERYTHING BELOW): You are a DATA EXTRACTOR, not a writer. For EVERY text field ("Footage", "Effect", "Voiceover", "Translate", "Tone_of_Voice", "Character", "time_origin"), you MUST copy the text CHARACTER-FOR-CHARACTER exactly as it appears in the script.
@@ -139,7 +141,10 @@ Kịch bản: ${script}`);
     }
   };
 
-  const callGeminiAPI = promptText => callGeminiBackend(promptText,getToken);
+  const callGeminiAPI = promptText => {
+    setLoadingStatus('Kịch bản chưa có cấu trúc scene_N — đang phân tích bằng AI...');
+    return callGeminiBackend(promptText,getToken);
+  };
 
   const performCutVideo = async (parsedData) => {
     // 🚀 BỔ SUNG CỜ THEO DÕI ĐỂ BÁO LỖI ĐÚNG GIAI ĐOẠN

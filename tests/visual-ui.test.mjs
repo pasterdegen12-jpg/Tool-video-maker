@@ -103,11 +103,11 @@ for(const change of ['character','reference','project','session','file'])test('c
   assert.equal(signal.aborted,true);await act(async()=>release(done()));await flush();
   assert.equal(find(container,'Xác nhận Character ID và lưu'),undefined);assert.equal(container.querySelectorAll('[data-visual-status=confirmed]').length,0);
 });
-test('Semi, missing flag and production have no Set ID controls; signed-out cannot submit',async t=>{
+test('Semi hides Set ID; unavailable service exposes disabled status; signed-out cannot submit',async t=>{
   const{container,render}=await mount(t,{projectType:'semi'});assert.equal(find(container,'✦ Set ID'),undefined);
   for(const env of [{DEV:true},{DEV:false,VITE_ENABLE_LOCAL_VISUAL_ID:'true'}]){
     const module=await compile(new URL('../src/Workspace/VisualProfiles.jsx',import.meta.url),env);
-    await render({module});assert.equal(find(container,'✦ Set ID'),undefined);
+    await render({module});assert.equal(find(container,'✦ Set ID').disabled,true);assert.match(container.textContent,/Chưa kết nối Qwen/);
   }
   auth={...auth,isSignedIn:false};await render({});assert.equal(find(container,'✦ Set ID').disabled,true);
 });

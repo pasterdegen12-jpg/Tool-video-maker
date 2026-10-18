@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {completedSceneData} from '../api/_lib/cloud-video/publish.js';
 import {createCloudVideoService,readCloudBody} from '../api/_lib/cloud-video/service.js';
 import {createVideoHandler} from '../api/video.js';
 import {newLedger,ownerOf,CloudError,hash,declaration} from '../api/_lib/cloud-video/core.js';
@@ -16,6 +17,7 @@ function harness(overrides={}){
 
   const store={
     async project(owner,id){if(owner!==ownerOf(session,config.issuer)||id!=='proj_test')throw new CloudError('PROJECT_FORBIDDEN',403);return structuredClone(projects[id]);},
+    async publishVideo(owner,record){await this.project(owner,record.projectId);const data=completedSceneData(projects[record.projectId],record);if(data)projects[record.projectId].data=data;},
     async read(owner){return structuredClone(ledgers.get(owner)||newLedger());},
     transact(owner,change){const work=tail.then(()=>{const draft=structuredClone(ledgers.get(owner)||newLedger()),teamDraft=structuredClone(team),value=change(draft,teamDraft);ledgers.set(owner,draft);team=teamDraft;return structuredClone(value);});tail=work.catch(()=>{});return work;},
   };
@@ -71,7 +73,7 @@ test('two simultaneous submits across cold services produce exactly one provider
 });
 test('cold-start polling archives output and refresh recovers without POST or screenplay mutation',async()=>{
   const h=harness(),before=structuredClone(h.projects),{s,body}=await h.ready();await s.submit(session,body);const result=await h.service().poll({...session,session:'sess_new'},body.attempt_id);
-  assert.equal(result.state,'completed');assert.equal(result.video_url,'https://media.example.org/persisted.mp4');assert.equal((await h.service().list(session,h.input)).attempts[0].job_id,body.attempt_id);await h.service().poll(session,body.attempt_id);assert.equal(h.calls().posts,1);assert.equal(h.calls().gets,1);assert.deepEqual(h.projects,before);
+  assert.equal(result.state,'completed');assert.equal(result.video_url,'https://media.example.org/persisted.mp4');assert.equal((await h.service().list(session,h.input)).attempts[0].job_id,body.attempt_id);await h.service().poll(session,body.attempt_id);assert.equal(h.calls().posts,1);assert.equal(h.calls().gets,1);const saved=h.projects.proj_test.data[0];assert.equal(saved.videoUrl,'https://media.example.org/persisted.mp4');assert.equal(saved.videoJob.id,body.attempt_id);assert.deepEqual(saved.videoHistory,[{url:before.proj_test.data[0].videoUrl}]);for(const field of ['Character','Voiceover','Action','Camera','Context'])assert.equal(saved[field],before.proj_test.data[0][field]);
 });
 test('crash after durable SUBMITTING is ambiguous and never auto-retried',async()=>{
   let count=0;const h=harness({provider:{submit:async()=>{count++;throw Error('connection lost');}}}),{s,body}=await h.ready();

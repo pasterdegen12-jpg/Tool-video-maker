@@ -10,6 +10,7 @@ export function cloudDatabase(env){
   const app=getApps().find(a=>a.name==='production-video')||initializeApp({credential:cert(credential),projectId:credential.project_id},'production-video');
   return getFirestore(app);
 }
+import {completedSceneData} from './publish.js';
 export function createCloudStore(db){
   return {
     async project(owner,projectId){
@@ -21,6 +22,16 @@ export function createCloudStore(db){
       // The protected grant establishes ownership. Mutable scene/media data is
       // pinned per attempt, never used to revoke this confirmed ownership.
       return project;
+    },
+    async publishVideo(owner,record){
+      const ref=db.doc('projects/'+record.projectId),grantRef=db.doc('_video_projects/'+record.projectId);
+      return db.runTransaction(async tx=>{
+        const grant=(await tx.get(grantRef)).data();
+        requireValue(grant?.owner===owner&&grant.enabled===true,'PROJECT_FORBIDDEN',403);
+        const project=(await tx.get(ref)).data();requireValue(project,'PROJECT_NOT_FOUND',404);
+        const data=completedSceneData(project,record);
+        if(data)tx.update(ref,{data});
+      });
     },
     async read(owner){return (await db.doc('_video_ledgers/'+owner).get()).data()||newLedger();},
     async transact(owner,change){

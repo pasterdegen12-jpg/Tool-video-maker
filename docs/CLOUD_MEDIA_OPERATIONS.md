@@ -45,3 +45,11 @@ firebase emulators:exec --project demo-webai-production --only firestore --confi
 ```
 
 The rules fixture must be compared against the complete effective production ruleset before claiming live enforcement. Emulator data and mock provider results are not production acceptance. No automated test should make a billable provider call.
+
+## Output persistence and structured script fast path (2026-10-18)
+
+Completed cloud jobs publish videoUrl and videoJob to the canonical scene using an owner-checked Firestore transaction. Existing video is retained in videoHistory; authored fields remain unchanged. Only matching source snapshots may publish and a newer result cannot be replaced by an older attempt. Refresh reads the saved media with the project; one project-level GET checks pending jobs, never one request per card or a prediction POST. The existing OUTPUT player, counter and merge input all consume the scene result.
+
+VIDEO_DAILY_MICRO_USD=0 and VIDEO_TEAM_DAILY_MICRO_USD=0 explicitly mean no daily ceiling, as requested by the operator. Spend accounting, per-request maximum, concurrency, duplicate protection and Clerk verification remain. No new admin accounts or credentials are created.
+
+MainEditor first reads labelled scene_N scripts locally without network/model calls. Full AI preserves Dialogue and Character; Semi preserves Voiceover and time_origin without creating character entities. Unsupported unstructured scripts retain the existing authenticated Gemini route/model. Invalid structured input stops with a field error rather than silently falling back to rewriting. Set ID remains a local Qwen capability: production shows its disconnected state and does not pretend inference is available.

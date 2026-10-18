@@ -8,6 +8,7 @@ import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSqua
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
+import {applySceneVideoOutput} from '../lib/sceneVideoOutput.js';
 import FullDialogueField from './FullDialogueField.jsx';
 import { readSpokenText } from '../lib/spokenText.js';
 import {displayCharacterReference,reconcileCharacterScenes} from '../lib/characterIdentity.js';
@@ -1087,7 +1088,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             <div>
               <div className="text-[10px] font-medium uppercase tracking-wider mb-1 text-slate-500">Video Gen</div>
               <div className="text-lg font-semibold text-orange-400 mt-1">
-                {Object.keys(mergedVideos).length} <span className="text-xs text-slate-500">/ {totalScenes}</span>
+                {parsedData.filter(scene=>mergedVideos[String(scene.scene_n)]||scene.videoUrl).length} <span className="text-xs text-slate-500">/ {totalScenes}</span>
               </div>
             </div>
           </div>
@@ -1118,6 +1119,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             isVideoGenerating={isVideoGenerating}
             handleGenVideo={handleGenVideoSingle}
             mergingScenes={mergingScenes}
+            onVideoCompleted={(sceneId,output)=>setParsedData(previous=>previous.map(scene=>String(scene.scene_n)===String(sceneId)?applySceneVideoOutput(scene,output):scene))}
             mergedVideos={mergedVideos}
             setActiveEditSceneModal={setActiveEditSceneModal}
             setActiveStartFrameModal={setActiveStartFrameModal}

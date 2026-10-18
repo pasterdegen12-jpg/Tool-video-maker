@@ -13,10 +13,10 @@ export function authorizeTeam(session,config){requireValue(config.allowedOwners.
 export function cloudConfig(env){
   requireValue(env.CLOUD_VIDEO_ENABLED==='true','VIDEO_DISABLED',503);
   const auth=mediaAuthConfig(env);
-  const limits={concurrent:Number(env.VIDEO_MAX_CONCURRENT||1),daily:Number(env.VIDEO_DAILY_MICRO_USD||500000),perRequest:Number(env.VIDEO_MAX_REQUEST_MICRO_USD||500000)};
-  requireValue(Object.values(limits).every(n=>Number.isSafeInteger(n)&&n>0)&&limits.concurrent<=2&&limits.daily<=10000000&&limits.perRequest<=500000,'CONFIGURATION',503);
+  const limits={concurrent:Number(env.VIDEO_MAX_CONCURRENT||1),daily:Number(env.VIDEO_DAILY_MICRO_USD??0),perRequest:Number(env.VIDEO_MAX_REQUEST_MICRO_USD||500000)};
+  requireValue(Object.entries(limits).every(([k,n])=>Number.isSafeInteger(n)&&(k==='daily'?n>=0:n>0))&&limits.concurrent<=2&&limits.daily<=10000000&&limits.perRequest<=500000,'CONFIGURATION',503);
   requireValue(env.WAVESPEED_VIDEO_API_KEY&&!/\s/.test(env.WAVESPEED_VIDEO_API_KEY),'CONFIGURATION',503);
-  const teamLimits={...limits,concurrent:Number(env.VIDEO_TEAM_MAX_CONCURRENT||1),daily:Number(env.VIDEO_TEAM_DAILY_MICRO_USD||500000)};
-  requireValue(Number.isSafeInteger(teamLimits.concurrent)&&teamLimits.concurrent>=1&&teamLimits.concurrent<=3&&Number.isSafeInteger(teamLimits.daily)&&teamLimits.daily>=1&&teamLimits.daily<=10000000,'CONFIGURATION',503);
+  const teamLimits={...limits,concurrent:Number(env.VIDEO_TEAM_MAX_CONCURRENT||1),daily:Number(env.VIDEO_TEAM_DAILY_MICRO_USD??0)};
+  requireValue(Number.isSafeInteger(teamLimits.concurrent)&&teamLimits.concurrent>=1&&teamLimits.concurrent<=3&&Number.isSafeInteger(teamLimits.daily)&&teamLimits.daily>=0&&teamLimits.daily<=10000000,'CONFIGURATION',503);
   return {...auth,apiKey:env.WAVESPEED_VIDEO_API_KEY,paidEnabled:env.CLOUD_VIDEO_PAID_ENABLED==='true',limits,teamLimits};
 }

@@ -50,7 +50,7 @@ export function publicQuote(record,paidEnabled){
 export function publicJob(record){
   const states={QUOTED:'quoted',TICKETING:'uploading',UPLOADING:'uploading',VERIFYING:'uploading',READY:'ready',SUBMITTING:'admission_unknown',UNKNOWN:'admission_unknown',ACCEPTED:'queued',RUNNING:'running',COMPLETED:'completed',FAILED:'failed'};
   return {job_id:record.id,scene_id:record.sceneId,state:states[record.stage],stage:record.stage,
-    prediction_id:record.predictionId||null,video_url:record.stage==='COMPLETED'?record.videoUrl:null,
+    created_at:new Date(record.createdAt).toISOString(),prediction_id:record.predictionId||null,video_url:record.stage==='COMPLETED'?record.videoUrl:null,
     message:record.failure||'',speech_review:'unverified',expires_at:new Date(record.createdAt+30*86400000).toISOString()};
 }
 export function newLedger(){return {version:1,records:{},rates:{},spend:{}};}
@@ -69,7 +69,7 @@ export function checkAdmission(ledger,record,now,limits){
   requireValue(active.length<limits.concurrent,'CONCURRENCY_LIMIT',429);
   requireValue(!Object.values(ledger.records).some(r=>r.id!==record.id&&r.requestHash===record.requestHash&&r.paidConsent),'DUPLICATE_INPUT',409);
   const day=new Date(now).toISOString().slice(0,10),used=ledger.spend[day]||0;
-  requireValue(record.cost.microUsd<=limits.perRequest&&used+record.cost.microUsd<=limits.daily,'SPENDING_LIMIT',403);
+  requireValue(record.cost.microUsd<=limits.perRequest&&(limits.daily===0||used+record.cost.microUsd<=limits.daily),'SPENDING_LIMIT',403);
   return {day,used};
 }
 export function reserve(ledger,record,now,limits){
