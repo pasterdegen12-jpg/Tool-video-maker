@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import { callGeminiBackend } from './lib/geminiClient.js';
 import {parseStructuredScript} from './lib/structuredScript.js';
+import {analyzeFullAISceneDurations} from './lib/sceneDuration.js';
 
 import { autoSaveToFirebase } from './firebase.js';
 import LocalParserPanel from './LocalParserPanel.jsx';
@@ -70,7 +71,7 @@ Kịch bản: ${script}`);
       setLoadingStatus('Đang khởi tạo Workspace (Lưu Database)...');
 
       const savedProjectId = await autoSaveToFirebase(
-        parsedData.scenes,
+        analyzeFullAISceneDurations(parsedData.scenes),
         "Dự án Full AI - " + new Date().toLocaleTimeString(),
         script,
         parsedData.characters,

@@ -32,8 +32,8 @@ const Storyboard=(await compile(new URL('../src/Workspace/StoryboardTab.jsx',imp
 const image=JSON.parse(await fs.readFile(new URL('./support/visual-fixture.json',import.meta.url)));
 
 // Representative test scene: the recorded real spoken line; identities/media are isolated mocks.
-const scenes=[{scene_n:1,Character:'elderly_woman_blonde_hair_in_bun_black_robe_white_collar_glasses',Voiceover:'You relocated it directly under your tires. Ms. Harper, please explain the incident.',Action:'Sits.',Camera:'Fixed.',Context:'Court.',startFrameUrl:'https://media.example.org/one.png'},
-{scene_n:2,Character:'second_character',Dialogue:'Second exact scene.',startFrameUrl:'https://media.example.org/two.png'}];
+const scenes=[{scene_n:1,duration_seconds:6,Character:'elderly_woman_blonde_hair_in_bun_black_robe_white_collar_glasses',Voiceover:'You relocated it directly under your tires. Ms. Harper, please explain the incident.',Action:'Sits.',Camera:'Fixed.',Context:'Court.',startFrameUrl:'https://media.example.org/one.png'},
+{scene_n:2,duration_seconds:4,Character:'second_character',Dialogue:'Second exact scene.',startFrameUrl:'https://media.example.org/two.png'}];
 const bytes=Buffer.from(image.image_base64,'base64'),sha=createHash('sha256').update(bytes).digest('hex');
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json'}});
 let calls=[],quotes=new Map(),completed=false,failImage=false;
@@ -76,6 +76,7 @@ const chooseMode=async value=>click(modal().querySelector('input[value="'+value+
 
 test('scene click opens centered dark dialog, existing Start Frame, all three modes and defaults; no POST',async t=>{
  const {container}=await mount(t);await click(actionButtons(container)[0]);
+ assert.equal(modal().querySelectorAll('select').length,2);assert.equal(modal().querySelector('[aria-label="Thời lượng"]'),null);
  assert.match(modal().textContent,/Gen Video — Scene 1/);assert.ok(modal().parentElement.className.includes('fixed inset-0'));assert.ok(modal().parentElement.className.includes('items-center justify-center'));assert.ok(modal().className.includes('bg-slate-900'));
  assert.equal(modal().querySelector('img[alt="Start Frame hiện tại"]').getAttribute('src'),scenes[0].startFrameUrl);
  assert.equal(modal().querySelectorAll('input[type=radio]').length,3);assert.equal(modal().querySelector('input:checked').value,'start_frame_to_video');
@@ -94,7 +95,7 @@ test('mode, ratio, resolution and custom prompt changes are nonbillable and reac
  const {container}=await mount(t);await click(actionButtons(container)[1]);await chooseMode('text_to_video');
  await fieldChange(modal().querySelector('[aria-label="Aspect Ratio"]'),'1:1');await fieldChange(modal().querySelector('[aria-label="Resolution"]'),'720p');await fieldChange(modal().querySelector('textarea'),'Warm light.');
  assert.equal(calls.filter(c=>c.options.method==='POST').length,0);await click(primary());await settle();
- const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);assert.equal(body.mode,'text_to_video');assert.equal(body.image,undefined);assert.equal(body.settings.aspect_ratio,'1:1');assert.equal(body.settings.resolution,'720p');assert.equal(body.additional_prompt,'Warm light.');
+ const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);assert.equal(body.mode,'text_to_video');assert.equal(body.image,undefined);assert.equal(body.settings.aspect_ratio,'1:1');assert.equal(body.settings.resolution,'720p');assert.equal(body.additional_prompt,'Warm light.');assert.equal(body.settings.duration,scenes[1].duration_seconds);
  assert.equal(calls.filter(c=>/action=(source|ticket|verify)/.test(c.url)).length,0);assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
  assert.ok(container.querySelector('[data-scene-id="2"] video[src$="result-2.mp4"]'));
 });
@@ -131,7 +132,7 @@ test('sign-out cannot send source, quote, upload or prediction',async t=>{
 });
 test('actual 28-word Scene 1 still uses 12 seconds and preserves exact dialogue',async()=>{
  const {sceneVideoPlan}=await import('../src/lib/cloudVideoContract.js');const Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
- const resolved=sceneVideoPlan({...scenes[0],Voiceover});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));assert.throws(()=>sceneVideoPlan({...scenes[0],Voiceover:Voiceover+' More words.'}),/12 giây/);
+ const resolved=sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:12});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));assert.throws(()=>sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:13}),/12 giây/);
 });
 
 test('newer manually saved output replaces cached generation preview without another prediction',async t=>{
@@ -144,4 +145,9 @@ test('switch from saved fixed-camera settings to References normalizes unsupport
  const {container}=await mount(t,{parsedData:[saved]});await click(actionButtons(container)[0]);await chooseMode('references_to_video');
  await upload(modal().querySelector('[aria-label="Ảnh tham chiếu"]'),new NativeFile([bytes],'one.png',{type:'image/png'}));
  assert.equal(primary().disabled,false);assert.match(modal().textContent,/không nhận khóa camera hoặc seed/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+});
+
+test('modal blocks missing canonical duration instead of guessing, including saved historical duration',async t=>{
+ const scene={...scenes[0],videoJob:{options:{settings:{duration:12}}}};delete scene.duration_seconds;
+ const {container}=await mount(t,{parsedData:[scene]});await click(actionButtons(container)[0]);assert.equal(primary().disabled,true);assert.match(modal().textContent,/chưa lưu thời lượng/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });

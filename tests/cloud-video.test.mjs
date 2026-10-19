@@ -11,7 +11,7 @@ import {DEFAULT_SETTINGS} from '../src/lib/seedanceContract.js';
 const session={subject:'user_owner',session:'sess_one'},other={subject:'user_other',session:'sess_two'};
 const config={issuer:'https://clerk.example.org',paidEnabled:true,origin:'https://www.aivideomaker.live',limits:{concurrent:1,daily:500000,perRequest:500000}};
 config.teamLimits={...config.limits};
-const scene={scene_n:3,Character:'confirmed_character_id',Voiceover:'Exact original words.',Action:'Sits.',Camera:'Static.',Context:'Court.',videoUrl:'https://media.example.org/old.mp4'};
+const scene={scene_n:3,duration_seconds:5,Character:'confirmed_character_id',Voiceover:'Exact original words.',Action:'Sits.',Camera:'Static.',Context:'Court.',videoUrl:'https://media.example.org/old.mp4'};
 function harness(overrides={}){
   const projects={proj_test:{projectType:'full-ai',data:[structuredClone(scene)],characters:[]}},ledgers=new Map();let team=newLedger();let clock=Date.parse('2026-10-17T00:00:00Z'),tail=Promise.resolve(),posts=0,gets=0,tickets=0;
 
@@ -123,8 +123,9 @@ test('editing selected prompt or INPUT invalidates only old quote; fresh quote u
 });
 test('actual Scene 1 twelve-second speech is accepted; longer than provider limit is rejected without truncation',async()=>{
  const h=harness();h.projects.proj_test.data[0].Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
+ h.projects.proj_test.data[0].duration_seconds=12;
  const q=await h.service().quote(session,{...h.input,settings:{...h.input.settings,duration:12}});assert.equal(q.cost.usd,'0.2880');assert.ok(q.prompt.includes(h.projects.proj_test.data[0].Voiceover));
- await assert.rejects(h.service().quote(session,h.input),/DIALOGUE_DURATION/);assert.equal(h.calls().posts,0);
+ await assert.rejects(h.service().quote(session,h.input),/SCENE_DURATION_MISMATCH/);assert.equal(h.calls().posts,0);
 });
 test('source endpoint rejects browser-supplied URL and wrong project before fetching image',async()=>{
  let reads=0;const h=harness({options:{sourceImage:async()=>{reads++;return {};}}});
@@ -165,4 +166,9 @@ test('mode/options/custom text affect idempotency; no authored source mutation',
 test('current per-request ceiling still rejects high cost before image transfer or prediction; no invented daily limit',async()=>{
  const h=harness({config:{limits:{concurrent:1,daily:0,perRequest:500000},teamLimits:{concurrent:1,daily:0,perRequest:500000}}});h.advance(2*86400000);
  await assert.rejects(h.service().quote(session,{...h.input,mode:'start_frame_to_video',settings:{...h.input.settings,resolution:'1080p',duration:5}}),/SPENDING_LIMIT/);assert.deepEqual(h.calls(),{posts:0,gets:0,tickets:0});
+});
+
+test('missing canonical duration cannot quote; changing saved duration invalidates a prepared attempt',async()=>{
+ const missing=harness();delete missing.projects.proj_test.data[0].duration_seconds;await assert.rejects(missing.service().quote(session,missing.input),e=>e.code==='SCENE_DURATION_MISSING');assert.equal(missing.calls().posts,0);
+ const h=harness(),{s,body}=await h.ready();h.projects.proj_test.data[0].duration_seconds=6;await assert.rejects(s.submit(session,body),/PROJECT_CHANGED/);assert.equal(h.calls().posts,0);
 });

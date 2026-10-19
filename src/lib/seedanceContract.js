@@ -57,7 +57,7 @@ export function composeScene(scene, profile=null, projectType='full-ai') {
   }
   // Review unsupported authored extensions instead of silently incorporating creative instructions.
   const supported=['scene_n','Context','Character','Action','Camera','Dialogue','Voiceover','Translate','Tone_of_Voice',
-    'Word_count','status','time_origin','Time','startFrameUrl','imageUrl','videoUrl','videoJob','videoHistory','source_metadata'];
+    'Word_count','status','time_origin','Time','startFrameUrl','imageUrl','videoUrl','videoJob','videoHistory','source_metadata','duration_seconds'];
   if(Object.entries(scene).some(([key,value])=>!supported.includes(key)&&value!==''&&value!==null)) fail('Scene có field bổ sung chưa được hỗ trợ. Cần rà soát trước khi tạo video.');
   if(profile!==null) {
     if(!exactKeys(profile,['visualId','visualDescription'])||Object.keys(profile).length!==2 ||

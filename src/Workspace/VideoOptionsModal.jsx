@@ -2,16 +2,15 @@ import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {X,Film,Upload,Scissors,Loader2} from 'lucide-react';
 import {VIDEO_MODES,VIDEO_RESOLUTIONS,ASPECTS,videoMode,validateCloudSettings,composeVideoPrompt} from '../lib/cloudVideoOptions.js';
-import {sceneVideoPlan,SPEECH_ASSUMPTIONS} from '../lib/cloudVideoContract.js';
+import {readSceneDuration,SPEECH_ASSUMPTIONS} from '../lib/sceneDuration.js';
 import {readVideoImage} from '../lib/seedanceImageClient.js';
 import VideoTrimEditor from './VideoTrimEditor.jsx';
 
 const field='w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500';
 const secondary='inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600 px-3 py-2 text-xs font-semibold hover:bg-slate-800 disabled:opacity-40';
 export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,onGenerate,onClose,onSaveVideo,savedOptions}){
-  const initial=()=>{try{return sceneVideoPlan(scene).settings;}catch{return {duration:12,resolution:'480p',aspect_ratio:'9:16',generate_audio:true,camera_fixed:false,seed:-1};}};
   const [mode,setMode]=useState(savedOptions?.mode||'start_frame_to_video');
-  const [settings,setSettings]=useState(()=>({...initial(),aspect_ratio:'9:16',...savedOptions?.settings}));
+  const [options,setSettings]=useState(()=>Object.fromEntries(Object.entries({resolution:'480p',aspect_ratio:'9:16',generate_audio:true,camera_fixed:false,seed:-1}).map(([key,value])=>[key,savedOptions?.settings?.[key]??value])));
   const [additional,setAdditional]=useState(savedOptions?.additional_prompt||'');
   const [image,setImage]=useState(null),[references,setReferences]=useState([]),[reading,setReading]=useState(false),[error,setError]=useState('');
   const [inputVideo,setInputVideo]=useState(null),[outputDraft,setOutputDraft]=useState(null),[editor,setEditor]=useState(null),[saving,setSaving]=useState(false);
@@ -24,9 +23,10 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
   const locked=busy||reading||saving;
   const sourceImage=image?.dataUrl||scene.startFrameUrl||scene.imageUrl;
   const cap=videoMode(mode);
-  let issue='';
-  try{validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);const estimate=sceneVideoPlan(scene,mode);
-    if(settings.duration<estimate.settings.duration)issue='Lời thoại cần ít nhất '+estimate.settings.duration+' giây; không tự cắt nội dung.';
+  let issue='',duration;
+  try{duration=readSceneDuration(scene,cap.maxDuration);}catch(e){issue=e.message;}
+  const settings={...options,duration};
+  try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);
     if(!prompt.prompt)issue='Scene không có prompt.';
   }catch(e){issue=e.message;}
   if(mode==='start_frame_to_video'&&!sourceImage)issue||='Chọn ảnh Start Frame trước khi tạo video.';
@@ -99,9 +99,8 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
           <p className="text-xs text-slate-400">{cap.name}{mode==='text_to_video'?' · không cần ảnh đầu vào':mode==='references_to_video'?' · 1–9 ảnh, không phải khung hình bắt đầu':''}</p>
           {mode==='references_to_video'&&<p className="text-xs text-slate-400">Model này không nhận khóa camera hoặc seed; chỉ dẫn Camera gốc vẫn nằm trong prompt.</p>}
           {mode==='references_to_video'&&<div className="space-y-2"><label className={secondary}>Chọn ảnh tham chiếu<input type="file" aria-label="Ảnh tham chiếu" multiple accept="image/png,image/jpeg" className="hidden" onChange={e=>chooseImages(e,true)}/></label><div className="flex flex-wrap gap-2">{references.map((img,i)=><figure key={i}><img crossOrigin="anonymous" src={img.dataUrl} alt={'Reference '+(i+1)} className="h-20 w-20 rounded-lg object-contain bg-black"/><figcaption className="text-xs text-slate-400">@Image {i+1}</figcaption></figure>)}</div></div>}
-          <div className="grid grid-cols-3 gap-3"><label className="space-y-1 text-xs text-slate-400">Aspect Ratio<select aria-label="Aspect Ratio" className={field} value={settings.aspect_ratio} onChange={e=>setSettings({...settings,aspect_ratio:e.target.value})}>{ASPECTS.map(v=><option key={v}>{v}</option>)}</select></label>
-            <label className="space-y-1 text-xs text-slate-400">Resolution<select aria-label="Resolution" className={field} value={settings.resolution} onChange={e=>setSettings({...settings,resolution:e.target.value})}>{VIDEO_RESOLUTIONS.map(v=><option key={v}>{v}</option>)}</select></label>
-            <label className="space-y-1 text-xs text-slate-400">Thời lượng<select aria-label="Thời lượng" className={field} value={settings.duration} onChange={e=>setSettings({...settings,duration:Number(e.target.value)})}>{Array.from({length:cap.maxDuration-3},(_,i)=>i+4).map(v=><option key={v} value={v}>{v}s</option>)}</select></label></div>
+          <div className="grid grid-cols-2 gap-3"><label className="space-y-1 text-xs text-slate-400">Aspect Ratio<select aria-label="Aspect Ratio" className={field} value={settings.aspect_ratio} onChange={e=>setSettings({...options,aspect_ratio:e.target.value})}>{ASPECTS.map(v=><option key={v}>{v}</option>)}</select></label>
+            <label className="space-y-1 text-xs text-slate-400">Resolution<select aria-label="Resolution" className={field} value={settings.resolution} onChange={e=>setSettings({...options,resolution:e.target.value})}>{VIDEO_RESOLUTIONS.map(v=><option key={v}>{v}</option>)}</select></label></div>
           <label className="block space-y-2 text-sm font-semibold">Custom prompt (tùy chọn)<textarea aria-label="Custom prompt (tùy chọn)" value={additional} onChange={e=>setAdditional(e.target.value)} maxLength={1000} rows={3} className={field+' resize-y'} placeholder="Bổ sung phong cách hoặc chi tiết. Không thay lời thoại, nhân vật hay chỉ dẫn gốc."/></label>
         </fieldset>
         <p className="text-xs text-slate-500">Ảnh PNG/JPEG: tối đa 25 MiB, 24 MP. Video MP4/WebM: tối đa 100 MiB; editor cắt video tối đa 10 phút. Đóng modal bỏ các lựa chọn chưa gửi.</p>

@@ -6,6 +6,7 @@ export function completedSceneData(project,record){
   const scene=matches[0];
   if(scene.videoJob?.id===record.id&&scene.videoUrl===record.videoUrl)return null;
   requireValue(record.snapshotVersion===2&&sceneSnapshot(project,record.sceneId)===record.sceneDigest,'OUTPUT_SOURCE_CHANGED');
+  if(record.canonicalDuration!==undefined)requireValue(scene.duration_seconds===record.canonicalDuration,'OUTPUT_SOURCE_CHANGED');
   requireValue(!scene.videoJob?.createdAt||scene.videoJob.createdAt<=record.createdAt,'OUTPUT_SUPERSEDED');
   const history=[...(scene.videoHistory||[])];
   if(scene.videoUrl&&scene.videoUrl!==record.videoUrl&&!history.some(v=>v.url===scene.videoUrl))history.push({url:scene.videoUrl,...(scene.videoJob?{job:scene.videoJob}:{})});

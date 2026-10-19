@@ -20,6 +20,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
   async function unchanged(session,r){
     const current=await project(session,r.projectId);
     requireValue(r.snapshotVersion===2?sceneSnapshot(current,r.sceneId)===r.sceneDigest:sourceDigest(current)===r.sourceDigest,'PROJECT_CHANGED');
+    if(r.canonicalDuration!==undefined)requireValue(current.data.find(s=>String(s.scene_n)===String(r.sceneId))?.duration_seconds===r.canonicalDuration,'PROJECT_CHANGED');
   }
   const validQuote=(r,session,requestHash)=>{
     requireValue(r.sessionHash===sessionOf(session),'SESSION_MISMATCH',403);
