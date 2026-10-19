@@ -132,7 +132,9 @@ test('sign-out cannot send source, quote, upload or prediction',async t=>{
 });
 test('actual 28-word Scene 1 still uses 12 seconds and preserves exact dialogue',async()=>{
  const {sceneVideoPlan}=await import('../src/lib/cloudVideoContract.js');const Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
- const resolved=sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:12});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));assert.throws(()=>sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:13}),/12 giây/);
+ const resolved=sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:12});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));
+ assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:13}).settings.duration,12);
+ assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:25}).settings.duration,12);
 });
 
 test('newer manually saved output replaces cached generation preview without another prediction',async t=>{
@@ -147,7 +149,30 @@ test('switch from saved fixed-camera settings to References normalizes unsupport
  assert.equal(primary().disabled,false);assert.match(modal().textContent,/không nhận khóa camera hoặc seed/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });
 
-test('modal blocks missing canonical duration instead of guessing, including saved historical duration',async t=>{
+test('legacy scene missing duration_seconds resolves estimate and enables Generate Video',async t=>{
  const scene={...scenes[0],videoJob:{options:{settings:{duration:12}}}};delete scene.duration_seconds;
- const {container}=await mount(t,{parsedData:[scene]});await click(actionButtons(container)[0]);assert.equal(primary().disabled,true);assert.match(modal().textContent,/chưa lưu thời lượng/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+ const {container}=await mount(t,{parsedData:[scene]});await click(actionButtons(container)[0]);
+ assert.equal(primary().disabled,false);
+ assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+ await click(primary());await settle();
+ assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
+test('scenes with estimate 15s or 25s convert to provider max 12s without locking generation',async t=>{
+ const scene15={...scenes[0],duration_seconds:15},scene25={...scenes[1],duration_seconds:25};
+ const {container}=await mount(t,{parsedData:[scene15,scene25]});
+ await click(actionButtons(container)[0]);
+ assert.equal(primary().disabled,false);
+ await click(primary());await settle();
+ const quote1=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
+ assert.equal(quote1.settings.duration,12);
+});
+test('scene estimated below provider min converts to 4s without locking generation',async t=>{
+ const scene3={...scenes[1],duration_seconds:3};
+ const {container}=await mount(t,{parsedData:[scene3]});
+ await click(actionButtons(container)[0]);
+ assert.equal(primary().disabled,false);
+ await click(primary());await settle();
+ const quote=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
+ assert.equal(quote.settings.duration,4);
+});
+

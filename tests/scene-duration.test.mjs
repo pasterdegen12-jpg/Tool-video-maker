@@ -13,12 +13,26 @@ test('analysis assigns per-scene canonical durations once and creation preserves
  assert.equal(analyzeFullAISceneDurations([{...base,duration_seconds:8}])[0].duration_seconds,8);
  assert.equal(analyzeFullAISceneDurations([{...base,Dialogue:Array(40).fill('word').join(' ')}])[0].duration_seconds,17);
 });
-test('generation reads saved duration without replanning or reading media/Time_origin/history settings',()=>{
+test('generation converts estimated duration to valid provider request duration without locking',()=>{
  const scene={...base,duration_seconds:8,time_origin:'00:00 - 00:04',videoJob:{options:{settings:{duration:12}}}};
- assert.equal(sceneVideoPlan(scene).settings.duration,8);assert.equal(sceneVideoPlan({...scene,Dialogue:'Different text.'}).settings.duration,8);
- for(const duration_seconds of [null,0,3,4.5,'5',NaN])assert.throws(()=>readSceneDuration({...base,duration_seconds}),e=>e.code==='SCENE_DURATION_INVALID');
- assert.throws(()=>readSceneDuration(base),e=>e.code==='SCENE_DURATION_MISSING');assert.throws(()=>sceneVideoPlan({...base,duration_seconds:13}),e=>e.code==='SCENE_DURATION_INCOMPATIBLE');
+ assert.equal(sceneVideoPlan(scene).settings.duration,8);
+ // Below provider min (3s) -> converts to 4s
+ assert.equal(readSceneDuration({...base,duration_seconds:3}),4);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:3}).settings.duration,4);
+ // Supported values (5s, 8s, 12s)
+ assert.equal(sceneVideoPlan({...base,duration_seconds:5}).settings.duration,5);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:12}).settings.duration,12);
+ // Over provider max (13s, 15s, 25s) -> clamped to 12s for start_frame_to_video, NOT locked
+ assert.equal(sceneVideoPlan({...base,duration_seconds:13}).settings.duration,12);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:15}).settings.duration,12);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:25}).settings.duration,12);
+ // References mode supports up to 15s
  assert.equal(sceneVideoPlan({...base,duration_seconds:13},'references_to_video').settings.duration,13);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:15},'references_to_video').settings.duration,15);
+ assert.equal(sceneVideoPlan({...base,duration_seconds:25},'references_to_video').settings.duration,15);
+ // Legacy scene missing duration_seconds resolves estimate from dialogue (4s)
+ assert.equal(readSceneDuration(base),4);
+ assert.equal(sceneVideoPlan(base).settings.duration,4);
 });
 test('quote, cost and each model payload use exactly the saved duration; custom text cannot change it',()=>{
  const now=Date.parse('2026-10-19T12:00:00Z');

@@ -6,6 +6,7 @@ import {createVideoHandler} from '../api/video.js';
 import {newLedger,ownerOf,CloudError,hash,declaration} from '../api/_lib/cloud-video/core.js';
 import {createCloudUpload} from '../api/_lib/cloud-video/upload.js';
 import {DEFAULT_SETTINGS} from '../src/lib/seedanceContract.js';
+import {readSceneDuration} from '../src/lib/sceneDuration.js';
 
 // All provider/storage doubles in this file are synthetic automated tests.
 const session={subject:'user_owner',session:'sess_one'},other={subject:'user_other',session:'sess_two'};
@@ -168,7 +169,12 @@ test('current per-request ceiling still rejects high cost before image transfer 
  await assert.rejects(h.service().quote(session,{...h.input,mode:'start_frame_to_video',settings:{...h.input.settings,resolution:'1080p',duration:5}}),/SPENDING_LIMIT/);assert.deepEqual(h.calls(),{posts:0,gets:0,tickets:0});
 });
 
-test('missing canonical duration cannot quote; changing saved duration invalidates a prepared attempt',async()=>{
- const missing=harness();delete missing.projects.proj_test.data[0].duration_seconds;await assert.rejects(missing.service().quote(session,missing.input),e=>e.code==='SCENE_DURATION_MISSING');assert.equal(missing.calls().posts,0);
+test('missing duration_seconds quotes with estimated duration; changing saved duration invalidates attempt',async()=>{
+ const missing=harness();delete missing.projects.proj_test.data[0].duration_seconds;
+ const expected=readSceneDuration(missing.projects.proj_test.data[0],12);
+ const q=await missing.service().quote(session,{...missing.input,settings:{...missing.input.settings,duration:expected}});
+ assert.equal(q.settings.duration,expected);assert.equal(missing.calls().posts,0);
  const h=harness(),{s,body}=await h.ready();h.projects.proj_test.data[0].duration_seconds=6;await assert.rejects(s.submit(session,body),/PROJECT_CHANGED/);assert.equal(h.calls().posts,0);
 });
+
+

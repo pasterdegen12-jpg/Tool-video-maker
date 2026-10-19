@@ -1,9 +1,9 @@
 import {videoMode,validateCloudSettings,composeVideoPrompt,cloudVideoCost} from '../../../src/lib/cloudVideoOptions.js';
 import {createHash,randomBytes} from 'node:crypto';
-import {composeScene,estimateCost,validateSettings,planDuration,MODEL} from '../../../src/lib/seedanceContract.js';
+import {composeScene,estimateCost,validateSettings,MODEL} from '../../../src/lib/seedanceContract.js';
 import {MAX_SELECTED_IMAGE_BYTES,MAX_SELECTED_IMAGE_PIXELS} from '../../../src/lib/seedanceImage.js';
 import {CLOUD_MAX_DURATION} from '../../../src/lib/cloudVideoContract.js';
-import {readSceneDuration,SPEECH_ASSUMPTIONS} from '../../../src/lib/sceneDuration.js';
+import {readSceneDuration} from '../../../src/lib/sceneDuration.js';
 
 export const canonical=value=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 export const hash=value=>createHash('sha256').update(typeof value==='string'||value instanceof Uint8Array?value:canonical(value)).digest('hex');
@@ -41,17 +41,18 @@ export function prepareQuote(project,input,now){
   const scenes=project.data?.filter(s=>String(s.scene_n)===String(input.scene_id));
   requireValue(scenes?.length===1,'SCENE_NOT_FOUND',404);
   const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'');
-  const canonicalDuration=readSceneDuration(scenes[0],cap.maxDuration);
-  requireValue(input.settings?.duration===canonicalDuration,'SCENE_DURATION_MISMATCH');
-  const settings=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION),plan=planDuration(composed.dialogue,SPEECH_ASSUMPTIONS);
-  requireValue(plan.seconds<=cap.maxDuration&&settings.duration>=Math.ceil(plan.seconds),'DIALOGUE_DURATION');
+  const requestDuration=readSceneDuration(scenes[0],cap.maxDuration);
+  requireValue(input.settings?.duration===requestDuration,'SCENE_DURATION_MISMATCH');
+  const settings=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION);
   let images=[];
   if(mode==='start_frame_to_video'){requireValue(!input.images,'INVALID_MEDIA');images=[declaration(input.image)];}
   else if(mode==='references_to_video'){requireValue(!input.image&&Array.isArray(input.images)&&input.images.length>=1&&input.images.length<=cap.maxImages,'INVALID_MEDIA');images=input.images.map(declaration);}
   else requireValue(!input.image&&!input.images,'INVALID_MEDIA');
   const image=images[0]||null,cost=modern?cloudVideoCost(settings,mode,now):estimateCost(settings,now,CLOUD_MAX_DURATION);
   requireValue(cost,'PRICE_UNAVAILABLE');
-  const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,canonicalDuration,
+  const canonicalDuration=scenes[0].duration_seconds;
+  const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,
+    ...(canonicalDuration!==undefined?{canonicalDuration}:{}),
     snapshotVersion:2,sceneDigest:sceneSnapshot(project,composed.sceneId),storedImage:input.stored_image===true,
     ...(modern?{mode,images,additionalPrompt:input.additional_prompt||'',attemptKey:input.attempt_key||null,model:cap.model}:{})};
   return {...payload,model:cap.model,promptHash:hash(composed.prompt),settingsHash:hash(settings),requestHash:hash(payload)};
