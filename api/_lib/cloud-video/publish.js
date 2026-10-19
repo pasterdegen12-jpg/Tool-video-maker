@@ -9,5 +9,5 @@ export function completedSceneData(project,record){
   requireValue(!scene.videoJob?.createdAt||scene.videoJob.createdAt<=record.createdAt,'OUTPUT_SUPERSEDED');
   const history=[...(scene.videoHistory||[])];
   if(scene.videoUrl&&scene.videoUrl!==record.videoUrl&&!history.some(v=>v.url===scene.videoUrl))history.push({url:scene.videoUrl,...(scene.videoJob?{job:scene.videoJob}:{})});
-  return project.data.map(s=>s===scene?{...s,videoUrl:record.videoUrl,videoHistory:history,videoJob:{id:record.id,predictionId:record.predictionId,state:'completed',createdAt:record.createdAt}}:s);
+  return project.data.map(s=>s===scene?{...s,videoUrl:record.videoUrl,videoHistory:history,videoJob:{id:record.id,predictionId:record.predictionId,state:'completed',createdAt:record.createdAt,...(record.mode?{options:{mode:record.mode,settings:record.settings,additional_prompt:record.additionalPrompt||''}}:{})}}:s);
 }

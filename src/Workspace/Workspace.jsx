@@ -1,7 +1,7 @@
 import { VisualProfilesProvider } from './VisualProfiles.jsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, runTransaction } from 'firebase/firestore';
 import { db, updateProjectProgress } from "../firebase.js";
 import { fetchFile } from '@ffmpeg/util';
 import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSquare, Square, Download, Upload, Trash2, Loader2, Pencil, Save, Music, Users, Film, Play, Clock, Maximize, Video, Globe, Sun, Moon, User, ImagePlay, RotateCcw, MonitorPlay, Image as ImageIcon, AlertTriangle } from 'lucide-react';
@@ -225,6 +225,30 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       if (updatedParsedData) updates.data = updatedParsedData;
       await updateProjectProgress(projectId, updates);
     } catch (err) { alert("Lỗi khi lưu SetupTab lên Cloud: " + err.message); }
+  };
+
+  const videoSaveProjectRef = useRef(projectId);
+  useEffect(() => { videoSaveProjectRef.current = projectId; }, [projectId]);
+  const handleSaveManualVideo = async (sceneId, file, expectedUrl) => {
+    const targetProject = projectId;
+    const {readEditVideo} = await import('../lib/videoEditing.js');
+    await readEditVideo(file);
+    const url = await uploadFileToR2(file, 'manual_video_' + sceneId);
+    // This async event handler runs only after an explicit Save click, never during render.
+    // eslint-disable-next-line react-hooks/purity
+    const output = {url,id:'manual-' + crypto.randomUUID(),predictionId:null,createdAt:Date.now()};
+    const ref = doc(db, 'projects', targetProject);
+    const data = await runTransaction(db, async tx => {
+      const project = (await tx.get(ref)).data();
+      const matches = project?.data?.filter(scene => String(scene.scene_n) === String(sceneId));
+      if (project?.projectType !== 'full-ai' || matches?.length !== 1) throw Error('Không tìm thấy đúng scene Full AI.');
+      if ((matches[0].videoUrl || null) !== expectedUrl) throw Error('Output đã đổi. Mở lại scene trước khi lưu; video mới không bị ghi đè.');
+      const next = project.data.map(scene => scene === matches[0] ? applySceneVideoOutput(scene, output) : scene);
+      tx.update(ref, {data:next});
+      return next;
+    });
+    if (videoSaveProjectRef.current === targetProject) setParsedData(data);
+    return output;
   };
 
   const uploadFileToR2 = async (file, folderPrefix) => {
@@ -1119,6 +1143,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             isVideoGenerating={isVideoGenerating}
             handleGenVideo={handleGenVideoSingle}
             mergingScenes={mergingScenes}
+            onSaveVideo={handleSaveManualVideo}
             onVideoCompleted={(sceneId,output)=>setParsedData(previous=>previous.map(scene=>String(scene.scene_n)===String(sceneId)?applySceneVideoOutput(scene,output):scene))}
             mergedVideos={mergedVideos}
             setActiveEditSceneModal={setActiveEditSceneModal}

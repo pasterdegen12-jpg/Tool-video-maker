@@ -1,4 +1,4 @@
-// Real React/jsdom components for one-click Gen Video flow. Auth hook and WaveSpeed HTTP responses are mocks, not live acceptance.
+// Real React/jsdom components for the Gen Video options modal. Auth hook and WaveSpeed HTTP responses are mocks, not live acceptance.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -67,58 +67,81 @@ async function mount(t,props={}){
  t.after(async()=>{assert.equal(JSON.stringify(data),before);await act(async()=>r.unmount());container.remove();globalThis.fetch=oldFetch;});return {container,render};
 }
 async function settle(){for(let i=0;i<200;i++){await act(async()=>new Promise(r=>setTimeout(r,10)));if(!document.querySelector('[data-video-state="quoting"],[data-video-state="uploading"],[data-video-state="submitting"],[data-video-state="recovering"]'))break;}}
-test('stored INPUT: originating scene button directly generates, duration adapts, result stays in same card',async t=>{
- const {container}=await mount(t);assert.ok(calls.every(c=>c.options.method==='GET'),'render must never initiate paid work');
- await click(actionButtons(container)[0]);await settle();
- assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1,'one existing-image click must reach submit');
- const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
- assert.equal(body.scene_id,1);assert.equal(body.settings.duration,6);
- const card=container.querySelector('[data-scene-id="1"]');assert.ok(card);assert.ok(card.querySelector('video[aria-label="Output scene 1"][src$="result-1.mp4"]'));assert.equal(card.querySelectorAll('video').length,1);assert.equal(card.querySelector('[aria-label="Video scene 1"] video'),null);
- assert.ok(!container.textContent.includes('Gen Video — Scene'),'No global panel');
+
+const modal=()=>document.querySelector('[role=dialog]');
+const primary=()=>[...modal().querySelectorAll('button')].find(b=>b.textContent==='Generate Video');
+const fieldChange=async(el,value)=>act(async()=>{const proto=el.tagName==='TEXTAREA'?window.HTMLTextAreaElement.prototype:el.tagName==='SELECT'?window.HTMLSelectElement.prototype:window.HTMLInputElement.prototype;Object.getOwnPropertyDescriptor(proto,'value').set.call(el,value);el.dispatchEvent(new window.Event(el.tagName==='SELECT'?'change':'input',{bubbles:true}));});
+const upload=async(input,file)=>{Object.defineProperty(input,'files',{configurable:true,value:Array.isArray(file)?file:[file]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await settle();};
+const chooseMode=async value=>click(modal().querySelector('input[value="'+value+'"]'));
+
+test('scene click opens centered dark dialog, existing Start Frame, all three modes and defaults; no POST',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[0]);
+ assert.match(modal().textContent,/Gen Video — Scene 1/);assert.ok(modal().parentElement.className.includes('fixed inset-0'));assert.ok(modal().parentElement.className.includes('items-center justify-center'));assert.ok(modal().className.includes('bg-slate-900'));
+ assert.equal(modal().querySelector('img[alt="Start Frame hiện tại"]').getAttribute('src'),scenes[0].startFrameUrl);
+ assert.equal(modal().querySelectorAll('input[type=radio]').length,3);assert.equal(modal().querySelector('input:checked').value,'start_frame_to_video');
+ assert.equal(modal().querySelector('[aria-label="Aspect Ratio"]').value,'9:16');assert.equal(modal().querySelector('[aria-label="Resolution"]').value,'480p');
+ assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+ await click([...modal().querySelectorAll('button')].find(b=>b.textContent==='Hủy'));assert.equal(modal(),null);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });
-test('scene 2 uses its own saved image and prompt; rapid double-click cannot duplicate submit',async t=>{
- const {container}=await mount(t);const b=actionButtons(container)[1];await act(async()=>{b.click();b.click();});await settle();
- assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
- assert.ok(calls.some(c=>c.url==='https://media.example.org/two.png'));assert.ok(!calls.some(c=>c.url==='https://media.example.org/one.png'));
+test('one explicit Generate click reaches submit and output stays only in correct scene box',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[0]);await click(primary());await settle();
+ assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
+ assert.equal(body.scene_id,1);assert.equal(body.settings.duration,6);assert.equal(body.mode,'start_frame_to_video');assert.equal(body.settings.aspect_ratio,'9:16');
+ const card=container.querySelector('[data-scene-id="1"]');assert.ok(card.querySelector('video[aria-label="Output scene 1"][src$="result-1.mp4"]'));assert.equal(card.querySelectorAll('video').length,1);
+ assert.equal(card.querySelector('[aria-label="Video scene 1"] video'),null);
+});
+test('mode, ratio, resolution and custom prompt changes are nonbillable and reach the backend',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[1]);await chooseMode('text_to_video');
+ await fieldChange(modal().querySelector('[aria-label="Aspect Ratio"]'),'1:1');await fieldChange(modal().querySelector('[aria-label="Resolution"]'),'720p');await fieldChange(modal().querySelector('textarea'),'Warm light.');
+ assert.equal(calls.filter(c=>c.options.method==='POST').length,0);await click(primary());await settle();
+ const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);assert.equal(body.mode,'text_to_video');assert.equal(body.image,undefined);assert.equal(body.settings.aspect_ratio,'1:1');assert.equal(body.settings.resolution,'720p');assert.equal(body.additional_prompt,'Warm light.');
+ assert.equal(calls.filter(c=>/action=(source|ticket|verify)/.test(c.url)).length,0);assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
  assert.ok(container.querySelector('[data-scene-id="2"] video[src$="result-2.mp4"]'));
 });
-test('missing image: picker is attached to scene; selection alone is nonbillable',async t=>{
- const {container}=await mount(t,{parsedData:[{...scenes[0],startFrameUrl:''}]});await click(actionButtons(container)[0]);
- const card=container.querySelector('[data-scene-id="1"]');assert.ok(card?.querySelector('input[type=file]'));
- assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+test('double Generate click cannot duplicate paid submit',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[1]);const b=primary();await act(async()=>{b.click();b.click();});await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
-test('inaccessible stored image never submits and offers inline replacement',async t=>{
- const {container}=await mount(t);failImage=true;await click(actionButtons(container)[0]);await settle();
- assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,0);assert.ok(container.querySelector('[data-scene-id="1"] input[type=file]'));
+test('missing image can be supplied and selection alone never transfers',async t=>{
+ const {container}=await mount(t,{parsedData:[{...scenes[0],startFrameUrl:''}]});await click(actionButtons(container)[0]);assert.equal(primary().disabled,true);
+ const input=modal().querySelector('[aria-label="Ảnh Start Frame"]');await upload(input,new NativeFile(['invalid'],'bad.jpg',{type:'image/jpeg'}));assert.equal(primary().disabled,true);
+ await upload(input,new NativeFile([bytes],'valid.png',{type:'image/png'}));assert.equal(primary().disabled,false);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+ await click(primary());await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
-
-test('existing completed cloud result restores on mount using GET only; old scene video is preserved',async t=>{
- const {container,render}=await mount(t);completed=true;await render({projectId:'proj_reopened',parsedData:[{...scenes[0],videoUrl:'https://media.example.org/legacy.mp4'}]});await settle();
- assert.ok(container.querySelector('[data-scene-id="1"] video[src$="old.mp4"]'));assert.equal(container.querySelector('video[src$="legacy.mp4"]'),null);assert.equal(container.querySelectorAll('[data-scene-id="1"] video').length,1);
- assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+test('text mode works without image; references passes ordered images, not Start Frame',async t=>{
+ const {container}=await mount(t,{parsedData:[{...scenes[1],startFrameUrl:''}]});await click(actionButtons(container)[0]);await chooseMode('references_to_video');assert.equal(primary().disabled,true);
+ await upload(modal().querySelector('[aria-label="Ảnh tham chiếu"]'),[new NativeFile([bytes],'one.png',{type:'image/png'}),new NativeFile([bytes],'two.png',{type:'image/png'})]);
+ assert.equal(calls.filter(c=>c.options.method==='POST').length,0);await click(primary());await settle();
+ const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);assert.equal(body.mode,'references_to_video');assert.equal(body.images.length,2);assert.equal(body.image,undefined);
+ assert.equal(calls.filter(c=>c.url.includes('action=ticket')).length,2);assert.deepEqual(calls.filter(c=>c.url.includes('action=ticket')).map(c=>JSON.parse(c.options.body).image_index),[0,1]);assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
-test('sign-out never sends source, quote, upload or prediction',async t=>{
- const saved=auth;auth={...auth,isSignedIn:false};t.after(()=>auth=saved);const {container}=await mount(t);await click(actionButtons(container)[0]);await settle();assert.equal(calls.length,0);
+test('inaccessible stored image never submits, replacement control remains in modal',async t=>{
+ const {container}=await mount(t);failImage=true;await click(actionButtons(container)[0]);await click(primary());await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,0);assert.ok(modal().querySelector('[aria-label="Ảnh Start Frame"]'));
 });
-test('actual production 28-word Scene 1 selects 12 seconds; old five/nine-second gate is reproduced numerically',async()=>{
- const {sceneVideoPlan}=await import('../src/lib/cloudVideoContract.js');const {planDuration}=await import('../src/lib/seedanceContract.js');
- const Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
- const plan=planDuration(Voiceover);assert.equal(plan.words,28);assert.equal(plan.seconds,12);assert.equal(plan.fits,false);
- const resolved=sceneVideoPlan({...scenes[0],Voiceover});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));
- assert.throws(()=>sceneVideoPlan({...scenes[0],Voiceover:Voiceover+' More words.'}),/12 giây/);
+test('close and scene switch discard temporary prompt; saved scene data stays untouched',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[0]);await fieldChange(modal().querySelector('textarea'),'Only first scene.');await click(modal().querySelector('[aria-label="Đóng tùy chọn video"]'));await click(actionButtons(container)[1]);assert.equal(modal().querySelector('textarea').value,'');assert.match(modal().textContent,/Scene 2/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });
-
-test('missing image selection validates bytes, then one inline Generate click submits; invalid image never charges',async t=>{
- const {container}=await mount(t,{parsedData:[{...scenes[0],startFrameUrl:''}]});await click(actionButtons(container)[0]);const input=container.querySelector('input[type=file]');
- Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile(['invalid'],'bad.jpg',{type:'image/jpeg'})]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,0);
- Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile([bytes],'valid.png',{type:'image/png'})]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));await settle();
- assert.equal(calls.filter(c=>c.options.method==='POST').length,0);const button=[...container.querySelectorAll('button')].find(b=>b.textContent==='Gen Video');assert.ok(button);assert.equal(button.disabled,false);await click(button);await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
-});
-
-test('persisted cloud output is immediately in OUTPUT on first render, without job recovery or duplicate player',async t=>{
+test('existing completed output is immediate after F5; modal can reopen without regenerating, and Edit Video is real',async t=>{
  const saved={...scenes[0],videoUrl:'https://media.example.org/saved.mp4',videoJob:{id:'f'.repeat(48),state:'completed'}};
- const {container}=await mount(t,{parsedData:[saved]});await settle();
- assert.equal(container.querySelector('video[aria-label="Output scene 1"]').getAttribute('src'),saved.videoUrl);
- assert.equal(container.querySelectorAll('video').length,1);assert.ok(!container.textContent.includes('Khôi phục trạng thái'));
- assert.equal(calls.filter(c=>c.url.includes('action=job')).length,0);assert.equal(calls.filter(c=>c.url.includes('action=list')).length,1);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+ const {container}=await mount(t,{parsedData:[saved]});await settle();assert.equal(container.querySelector('video[aria-label="Output scene 1"]').getAttribute('src'),saved.videoUrl);assert.equal(container.querySelectorAll('video').length,1);
+ await click(actionButtons(container)[0]);assert.ok(modal().querySelector('video[src="'+saved.videoUrl+'"]'));await click([...modal().querySelectorAll('button')].find(b=>b.textContent==='Sửa Output video'));
+ assert.ok(modal().querySelector('[data-video-editor]'));assert.ok(modal().querySelector('input[aria-label="Bắt đầu (giây)"]'));assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+});
+test('sign-out cannot send source, quote, upload or prediction',async t=>{
+ const saved=auth;auth={...auth,isSignedIn:false};t.after(()=>auth=saved);const {container}=await mount(t);await click(actionButtons(container)[0]);await settle();assert.equal(calls.length,0);assert.equal(modal(),null);
+});
+test('actual 28-word Scene 1 still uses 12 seconds and preserves exact dialogue',async()=>{
+ const {sceneVideoPlan}=await import('../src/lib/cloudVideoContract.js');const Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
+ const resolved=sceneVideoPlan({...scenes[0],Voiceover});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));assert.throws(()=>sceneVideoPlan({...scenes[0],Voiceover:Voiceover+' More words.'}),/12 giây/);
+});
+
+test('newer manually saved output replaces cached generation preview without another prediction',async t=>{
+ const {container,render}=await mount(t);await click(actionButtons(container)[1]);await click(primary());await settle();
+ const saved={...scenes[1],videoUrl:'https://media.example.org/manual.mp4',videoJob:{id:'manual-new',state:'completed',createdAt:Date.now()}};
+ await render({parsedData:[saved]});await settle();assert.equal(container.querySelector('video[aria-label="Output scene 2"]').getAttribute('src'),saved.videoUrl);assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
+});
+test('switch from saved fixed-camera settings to References normalizes unsupported flags visibly without POST',async t=>{
+ const saved={...scenes[1],videoUrl:'https://media.example.org/saved.mp4',videoJob:{state:'completed',options:{mode:'start_frame_to_video',settings:{duration:4,resolution:'480p',aspect_ratio:'9:16',generate_audio:true,camera_fixed:true,seed:10}}}};
+ const {container}=await mount(t,{parsedData:[saved]});await click(actionButtons(container)[0]);await chooseMode('references_to_video');
+ await upload(modal().querySelector('[aria-label="Ảnh tham chiếu"]'),new NativeFile([bytes],'one.png',{type:'image/png'}));
+ assert.equal(primary().disabled,false);assert.match(modal().textContent,/không nhận khóa camera hoặc seed/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });

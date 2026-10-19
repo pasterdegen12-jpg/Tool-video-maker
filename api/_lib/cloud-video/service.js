@@ -1,3 +1,4 @@
+import {providerVideoPayload} from '../../../src/lib/cloudVideoOptions.js';
 import {Buffer} from 'node:buffer';
 import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,checkAdmission,requireValue,CloudError,sourceDigest,sceneSnapshot,canonical} from './core.js';
 
@@ -44,7 +45,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
     });
     if(!claimed)return publicJob(record);
     let result;
-    try{result=await provider.get(record.predictionId);}catch{
+    try{result=await provider.get(record.predictionId,record.model);}catch{
       await change(session,l=>{const r=l.records[attemptId];if(r.pollToken===ticket){r.pollUntil=0;r.failure='STATUS_UNAVAILABLE; use recovery, do not resubmit';}});
       return finishJob(session,await owned(session,attemptId));
     }
@@ -80,7 +81,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
         const selected=await sourceImage(source,input.project_id,input.scene_id);
         requireValue(canonical(selected.image)===canonical(prepared.image),'SOURCE_IMAGE_CHANGED');
       }
-      const record={...prepared,id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:'QUOTED',transitions:[{stage:'QUOTED',at:now()}]};
+      const record={...prepared,id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:prepared.mode==='text_to_video'?'READY':'QUOTED',transitions:[{stage:prepared.mode==='text_to_video'?'READY':'QUOTED',at:now()}]};
       await change(session,(l,team)=>{
         rate(l,'quote',now(),10);rate(team,'quote',now(),30);requireValue(Object.keys(l.records).length<80,'LEDGER_CAPACITY',429);
         requireValue(!Object.values(l.records).some(r=>r.projectId===record.projectId&&String(r.sceneId)===String(record.sceneId)&&['SUBMITTING','UNKNOWN','ACCEPTED','RUNNING'].includes(r.stage)),'UNRESOLVED_ATTEMPT');
@@ -90,27 +91,31 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       return publicQuote(record,config.paidEnabled);
     },
     async ticket(session,input){
-      requireValue(input?.transfer_consent===true&&Object.keys(input).sort().join(',')==='quote_id,request_hash,transfer_consent');
+      requireValue(input?.transfer_consent===true&&['quote_id,request_hash,transfer_consent','image_index,quote_id,request_hash,transfer_consent'].includes(Object.keys(input).sort().join(',')));
       const record=await owned(session,input.quote_id,true);await unchanged(session,record);
-      await change(session,l=>{const r=authorizeRecord(l,record.id,session);validQuote(r,session,input.request_hash);rate(l,'upload',now(),3);
-        requireValue(r.stage==='QUOTED','ALREADY_USED');r.transferConsent={at:now(),requestHash:r.requestHash,sessionHash:r.sessionHash};transition(r,'TICKETING');});
+      const index=input.image_index??0,images=record.images||[record.image];
+      requireValue(Number.isInteger(index)&&index>=0&&index<images.length&&index===(record.uploadedImages?.length||0),'INVALID_IMAGE_INDEX');
+      await change(session,l=>{const r=authorizeRecord(l,record.id,session);validQuote(r,session,input.request_hash);rate(l,'upload',now(),12);
+        requireValue(r.stage==='QUOTED'&&index===(r.uploadedImages?.length||0),'ALREADY_USED');r.transferConsent={at:now(),requestHash:r.requestHash,sessionHash:r.sessionHash};transition(r,'TICKETING');});
       try{
-        const ticket=await upload.ticket(record.image);
+        const ticket=await upload.ticket(images[index]);
         await change(session,l=>{const r=l.records[record.id];requireValue(r.stage==='TICKETING','ALREADY_USED');
-          r.downloadUrl=ticket.download_url;r.uploadExpires=Date.parse(ticket.upload.expires_at);transition(r,'UPLOADING');});
+          r.pendingImageIndex=index;r.downloadUrl=ticket.download_url;r.uploadExpires=Date.parse(ticket.upload.expires_at);transition(r,'UPLOADING');});
         // The signed URL is returned once, never stored in Firestore/logs.
-        return {attempt_id:record.id,upload:ticket.upload,image_sha256:record.image.sha256};
+        return {attempt_id:record.id,upload:ticket.upload,image_sha256:images[index].sha256};
       }catch(e){await failBeforePrediction(session,record.id,e.code||'UPLOAD_TICKET_FAILED');throw e;}
     },
     async verify(session,input){
-      requireValue(input&&Object.keys(input).sort().join(',')==='attempt_id,request_hash');
+      requireValue(input&&['attempt_id,request_hash','attempt_id,image_index,request_hash'].includes(Object.keys(input).sort().join(',')));
       const record=await owned(session,input.attempt_id,true);await unchanged(session,record);
+      const index=input.image_index??0,images=record.images||[record.image];
+      requireValue(Number.isInteger(index)&&index===(record.pendingImageIndex??0)&&images[index],'INVALID_IMAGE_INDEX');
       await change(session,l=>{const r=l.records[record.id];validQuote(r,session,input.request_hash);
         requireValue(r.stage==='UPLOADING'&&r.uploadExpires>now(),'UPLOAD_EXPIRED');transition(r,'VERIFYING');});
       try{
-        await upload.verify(record.downloadUrl,record.image);
-        await change(session,l=>{const r=l.records[record.id];requireValue(r.stage==='VERIFYING','ALREADY_USED');r.verifiedAt=now();transition(r,'READY');});
-        return {attempt_id:record.id,verified:true,image_sha256:record.image.sha256};
+        await upload.verify(record.downloadUrl,images[index]);
+        await change(session,l=>{const r=l.records[record.id];requireValue(r.stage==='VERIFYING','ALREADY_USED');r.verifiedAt=now();r.uploadedImages=[...(r.uploadedImages||[]),{sha256:images[index].sha256,url:record.downloadUrl}];transition(r,r.uploadedImages.length===images.length?'READY':'QUOTED');});
+        return {attempt_id:record.id,verified:true,image_sha256:images[index].sha256};
       }catch(e){await failBeforePrediction(session,record.id,e.code||'IMAGE_VERIFICATION_FAILED');throw e;}
     },
     async submit(session,input){
@@ -118,15 +123,15 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       requireValue(input&&Object.keys(input).sort().join(',')==='attempt_id,confirm,cost_micro_usd,request_hash'&&input.confirm===true);
       const record=await owned(session,input.attempt_id,true);await unchanged(session,record);
       await change(session,(l,team)=>{const r=authorizeRecord(l,record.id,session);validQuote(r,session,input.request_hash);
-        requireValue(r.stage==='READY'&&r.verifiedAt&&r.transferConsent,'NOT_READY');
+        requireValue(r.stage==='READY'&&(r.mode==='text_to_video'||r.verifiedAt&&r.transferConsent&&(!r.mode||(r.uploadedImages?.length||0)===r.images.length)),'NOT_READY');
         requireValue(input.cost_micro_usd===r.cost.microUsd,'COST_MISMATCH');
         reserve(l,r,now(),config.limits);reserve(team,r,now(),config.teamLimits);r.paidConsent={at:now(),requestHash:r.requestHash,costMicroUsd:r.cost.microUsd,sessionHash:r.sessionHash};
         transition(r,'SUBMITTING');});
       // Never place this POST inside a transaction callback or retry loop.
       try{
-        const result=await provider.submit({image:record.downloadUrl,prompt:record.prompt,...record.settings},async predictionId=>{
+        const result=await provider.submit(providerVideoPayload(record),async predictionId=>{
           await change(session,l=>{const r=l.records[record.id];r.predictionId=predictionId;transition(r,'ACCEPTED');});
-        });
+        },record.model);
         const archived=result.state==='completed'?await archive(result.url,owner(session),{...record,predictionId:result.id}):null;
         await change(session,l=>{const r=l.records[record.id];requireValue(r.predictionId===result.id,'PREDICTION_MISMATCH');
           if(result.state==='completed'){r.providerUrl=result.url;r.videoUrl=archived;transition(r,'COMPLETED');}

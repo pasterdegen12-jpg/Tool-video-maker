@@ -1,3 +1,4 @@
+import {VIDEO_MODES} from '../../../src/lib/cloudVideoOptions.js';
 import { MODEL } from '../../../src/lib/seedanceContract.js';
 import { requestHttps, publicAddress } from './transport.js';
 import { VideoError } from './errors.js';
@@ -72,11 +73,14 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
   const apiHeaders={'Authorization':'Bearer '+config.apiKey,'Content-Type':'application/json'};
   const uploader=createImageUploader(config.apiKey,{request,checkUrl,now});
   function paid(){if(config.paidEnabled!==true||!config.apiKey)throw new VideoError('PAID_DISABLED');}
-  async function parsePrediction(raw,expectedId){
+  const models=new Set(Object.values(VIDEO_MODES).map(v=>v.model));
+  const checkedModel=model=>{if(!models.has(model))throw new VideoError('INVALID_PROVIDER_MODEL');return model;};
+  async function parsePrediction(raw,expectedId,model=MODEL){
+    checkedModel(model);
     const task=data(raw);
     // Get Result explicitly permits a deleted tombstone without outputs.
     const deletedWithoutOutputs=task.status==='deleted'&&!Object.hasOwn(task,'outputs');
-    if(typeof task.id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(task.id)||task.model!==MODEL||
+    if(typeof task.id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(task.id)||task.model!==model||
       (expectedId&&task.id!==expectedId)||!['created','pending','queued','processing','running',...terminals].includes(task.status)||
       (!Array.isArray(task.outputs)&&!deletedWithoutOutputs))throw new VideoError('INVALID_PROVIDER_RESPONSE');
     const state=['created','pending'].includes(task.status)?'queued':task.status==='processing'?'running':task.status;
@@ -92,20 +96,22 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
       paid();
       return uploader.upload(image);
     },
-    async submit(payload,onAccepted=()=>{}){
+    async submit(payload,onAccepted=()=>{},model=MODEL){
+      checkedModel(model);
       paid();
-      const raw=await request(API+'/'+MODEL,{method:'POST',headers:apiHeaders,body:JSON.stringify(payload)});
+      const raw=await request(API+'/'+model,{method:'POST',headers:apiHeaders,body:JSON.stringify(payload)});
       if([400,401,402,403,404,422].includes(raw.status))throw new VideoError('SUBMISSION_REJECTED');
       const task=data(raw);
-      if(task.model===MODEL&&typeof task.id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(task.id)){
+      if(task.model===model&&typeof task.id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(task.id)){
         // Persist the accepted ID before validating the remaining fields/URLs.
         await onAccepted(task.id);
       }
-      return await parsePrediction(raw);
+      return await parsePrediction(raw,undefined,model);
     },
-    async get(id){
+    async get(id,model=MODEL){
+      checkedModel(model);
       if(!/^[A-Za-z0-9_-]{1,128}$/.test(id))throw new VideoError('INVALID_PROVIDER_RESPONSE');
-      return await parsePrediction(await request(API+'/predictions/'+encodeURIComponent(id)+'/result',{headers:apiHeaders}),id);
+      return await parsePrediction(await request(API+'/predictions/'+encodeURIComponent(id)+'/result',{headers:apiHeaders}),id,model);
     },
   };
 }

@@ -135,3 +135,34 @@ test('stored image declaration must match independently validated canonical byte
  const h=harness({options:{sourceImage:async()=>({image:{mime:'image/jpeg',size:1,sha256:'b'.repeat(64),width:32,height:32}})}});
  await assert.rejects(h.service().quote(session,{...h.input,stored_image:true}),/SOURCE_IMAGE_CHANGED/);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
 });
+
+// New modal contract; provider calls below remain test doubles.
+test('Text mode reaches its own provider without image ticket/verification',async()=>{
+ let captured;const h=harness({provider:{submit:async(p,accepted,model)=>{captured={p,model};await accepted('text_prediction');return {id:'text_prediction',state:'queued'};}}});h.advance(2*86400000);
+ const input={...h.input,mode:'text_to_video',additional_prompt:'Warm natural light.',attempt_key:'a'.repeat(36)};delete input.image;
+ const before=structuredClone(h.projects),s=h.service(),q=await s.quote(session,input);
+ assert.equal(q.model,'bytedance/seedance-v1.5-pro/text-to-video');assert.equal(q.image_sha256,null);assert.match(q.prompt,/Exact original words/);assert.ok(q.prompt.endsWith('Warm natural light.'));
+ await s.submit(session,{attempt_id:q.quote_id,request_hash:q.request_hash,confirm:true,cost_micro_usd:q.cost.microUsd});
+ assert.equal(captured.model,q.model);assert.equal(captured.p.image,undefined);assert.equal(captured.p.aspect_ratio,input.settings.aspect_ratio);assert.deepEqual(h.projects,before);assert.equal(h.calls().tickets,0);
+});
+test('References mode requires ordered verified images and submits reference_images to Mini, never I2V',async()=>{
+ let captured;const h=harness({provider:{submit:async(p,accepted,model)=>{captured={p,model};await accepted('ref_prediction');return {id:'ref_prediction',state:'queued'};}}});h.advance(2*86400000);
+ const input={...h.input,mode:'references_to_video',additional_prompt:'@Image 1 is the room; @Image 2 is the character.',images:[h.input.image,{...h.input.image,sha256:'b'.repeat(64)}]};delete input.image;
+ const s=h.service(),q=await s.quote(session,input),body={attempt_id:q.quote_id,request_hash:q.request_hash,confirm:true,cost_micro_usd:q.cost.microUsd};
+ await assert.rejects(s.submit(session,body),/NOT_READY/);
+ await assert.rejects(s.ticket(session,{quote_id:q.quote_id,request_hash:q.request_hash,transfer_consent:true,image_index:1}),/INVALID_IMAGE_INDEX/);
+ for(let i=0;i<2;i++){await s.ticket(session,{quote_id:q.quote_id,request_hash:q.request_hash,transfer_consent:true,image_index:i});const verified=await s.verify(session,{attempt_id:q.quote_id,request_hash:q.request_hash,image_index:i});assert.equal(verified.image_sha256,input.images[i].sha256);if(i===0)await assert.rejects(s.submit(session,body),/NOT_READY/);}
+ await Promise.allSettled([s.submit(session,body),s.submit(session,body)]);
+ assert.equal(captured.model,'bytedance/seedance-2.0-mini/text-to-video');assert.equal(captured.p.reference_images.length,2);assert.equal(captured.p.image,undefined);assert.equal(captured.p.camera_fixed,undefined);assert.equal(captured.p.seed,undefined);assert.equal(captured.p.enable_web_search,false);
+ assert.equal(h.ledger().records[q.quote_id].stage,'ACCEPTED');assert.equal(h.ledger().records[q.quote_id].images[1].sha256,'b'.repeat(64));
+});
+test('mode/options/custom text affect idempotency; no authored source mutation',async()=>{
+ const h=harness();h.advance(2*86400000);const s=h.service(),before=structuredClone(h.projects),base={...h.input,mode:'start_frame_to_video'};
+ const a=await s.quote(session,base),b=await s.quote(session,{...base,additional_prompt:'Warm light.'}),c=await s.quote(session,{...base,settings:{...base.settings,aspect_ratio:'9:16'}});
+ assert.notEqual(a.request_hash,b.request_hash);assert.notEqual(a.request_hash,c.request_hash);assert.deepEqual(h.projects,before);
+ for(const changes of [{mode:'invented_mode'},{mode:''},{mode:null},{additional_prompt:false},{additional_prompt:0},{settings:{...base.settings,resolution:'4k'}},{additional_prompt:'x'.repeat(1001)},{images:[base.image]}])await assert.rejects(s.quote(session,{...base,...changes}));
+});
+test('current per-request ceiling still rejects high cost before image transfer or prediction; no invented daily limit',async()=>{
+ const h=harness({config:{limits:{concurrent:1,daily:0,perRequest:500000},teamLimits:{concurrent:1,daily:0,perRequest:500000}}});h.advance(2*86400000);
+ await assert.rejects(h.service().quote(session,{...h.input,mode:'start_frame_to_video',settings:{...h.input.settings,resolution:'1080p',duration:5}}),/SPENDING_LIMIT/);assert.deepEqual(h.calls(),{posts:0,gets:0,tickets:0});
+});

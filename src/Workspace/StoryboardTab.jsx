@@ -16,7 +16,7 @@ export default function StoryboardTab({
   setActiveVideoGenModal,
   setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
-  projectType, projectId, darkMode, onVideoCompleted,
+  projectType, projectId, darkMode, onVideoCompleted, onSaveVideo,
   activeVideoScene,
   setActiveVideoScene
 }) {
@@ -33,7 +33,7 @@ export default function StoryboardTab({
 
   const isSemi = projectType === 'semi';
   const [completedOutputs,setCompletedOutputs]=useState({});
-  function completed(sceneId,value){setCompletedOutputs(previous=>({...previous,[projectId+':'+sceneId]:value.url}));onVideoCompleted?.(sceneId,value);}
+  function completed(sceneId,value){setCompletedOutputs(previous=>({...previous,[projectId+':'+sceneId]:value}));onVideoCompleted?.(sceneId,value);}
   const [localVideoScene, setLocalVideoScene] = useState(null);
   const videoScene = activeVideoScene !== undefined ? activeVideoScene : localVideoScene;
   const setVideoScene = setActiveVideoScene || setLocalVideoScene;
@@ -61,7 +61,9 @@ export default function StoryboardTab({
         const characterInfo = isSemi ? null : displayCharacterReference(scene.Character,projectCharacters,projectId);
 
         // 🚀 Tích hợp logic Output: Nếu đã Merge thì hiện file Merge, nếu chưa Merge mà có Video AI thì hiện Video AI
-        const outputVideoUrl = hasOutput || (!isSemi && (completedOutputs[projectId+':'+sceneKey]||scene.videoUrl)) || null;
+        const recentOutput = completedOutputs[projectId+':'+sceneKey];
+        const latestOutput = recentOutput && (!scene.videoJob?.createdAt || recentOutput.createdAt >= scene.videoJob.createdAt) ? recentOutput.url : scene.videoUrl;
+        const outputVideoUrl = hasOutput || (!isSemi && latestOutput) || null;
 
         return (
           <div key={projectId+':'+sceneKey} data-scene-id={sceneKey} className={`flex flex-col md:flex-row gap-6 p-5 rounded-2xl border shadow-sm transition-all duration-300 group ${darkMode ? 'bg-slate-900/70 backdrop-blur-sm border-white/[0.07] hover:border-white/[0.12] hover:bg-slate-900/90' : 'bg-white hover:bg-zinc-50 border-zinc-200'}`}>
@@ -227,7 +229,7 @@ export default function StoryboardTab({
                         <ImageIcon size={14} /> Tải Nền
                     </button>
                     
-                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} onCompleted={completed} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
+                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} onCompleted={completed} onSaveVideo={onSaveVideo} outputUrl={outputVideoUrl} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
                     <button 
                       onClick={() => localVideo ? setVideoScene(String(scene.scene_n)) : setActiveVideoGenModal(scene)} 
                       className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-emerald-500/60 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}

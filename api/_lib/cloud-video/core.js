@@ -1,3 +1,4 @@
+import {videoMode,validateCloudSettings,composeVideoPrompt,cloudVideoCost} from '../../../src/lib/cloudVideoOptions.js';
 import {createHash,randomBytes} from 'node:crypto';
 import {composeScene,estimateCost,validateSettings,planDuration,MODEL} from '../../../src/lib/seedanceContract.js';
 import {MAX_SELECTED_IMAGE_BYTES,MAX_SELECTED_IMAGE_PIXELS} from '../../../src/lib/seedanceImage.js';
@@ -29,28 +30,40 @@ export function sceneSnapshot(project,sceneId){
 }
 export function prepareQuote(project,input,now){
   requireValue(project.projectType==='full-ai','FULL_AI_REQUIRED');
-  requireValue(input&&['assumptions,image,project_id,scene_id,settings','assumptions,image,project_id,scene_id,settings,stored_image'].includes(Object.keys(input).sort().join(',')));
+  requireValue(input&&Object.keys(input).every(k=>['assumptions','image','images','project_id','scene_id','settings','stored_image','mode','additional_prompt','attempt_key'].includes(k)));
+  const modern=Object.hasOwn(input,'mode'),mode=modern?input.mode:'start_frame_to_video',cap=videoMode(mode);
+  if(modern)requireValue(typeof mode==='string'&&mode.length>0);
+  if(Object.hasOwn(input,'additional_prompt'))requireValue(typeof input.additional_prompt==='string');
+  if(input.attempt_key!==undefined)requireValue(modern&&/^[a-f0-9-]{36}$/.test(input.attempt_key),'INVALID_ATTEMPT_KEY');
+  requireValue(mode==='start_frame_to_video'||!input.stored_image,'INVALID_MEDIA');
   if(Object.hasOwn(input,'stored_image'))requireValue(input.stored_image===true);
   const scenes=project.data?.filter(s=>String(s.scene_n)===String(input.scene_id));
   requireValue(scenes?.length===1,'SCENE_NOT_FOUND',404);
-  const composed=composeScene(scenes[0]);
-  const settings=validateSettings(input.settings,CLOUD_MAX_DURATION),plan=planDuration(composed.dialogue,input.assumptions);
-  requireValue(plan.seconds<=CLOUD_MAX_DURATION&&settings.duration>=Math.ceil(plan.seconds),'DIALOGUE_DURATION');
-  const image=declaration(input.image),cost=estimateCost(settings,now,CLOUD_MAX_DURATION);
+  const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'');
+  const settings=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION),plan=planDuration(composed.dialogue,input.assumptions);
+  requireValue(plan.seconds<=cap.maxDuration&&settings.duration>=Math.ceil(plan.seconds),'DIALOGUE_DURATION');
+  let images=[];
+  if(mode==='start_frame_to_video'){requireValue(!input.images,'INVALID_MEDIA');images=[declaration(input.image)];}
+  else if(mode==='references_to_video'){requireValue(!input.image&&Array.isArray(input.images)&&input.images.length>=1&&input.images.length<=cap.maxImages,'INVALID_MEDIA');images=input.images.map(declaration);}
+  else requireValue(!input.image&&!input.images,'INVALID_MEDIA');
+  const image=images[0]||null,cost=modern?cloudVideoCost(settings,mode,now):estimateCost(settings,now,CLOUD_MAX_DURATION);
   requireValue(cost,'PRICE_UNAVAILABLE');
   const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,
-    snapshotVersion:2,sceneDigest:sceneSnapshot(project,composed.sceneId),storedImage:input.stored_image===true};
-  return {...payload,model:MODEL,promptHash:hash(composed.prompt),settingsHash:hash(settings),requestHash:hash(payload)};
+    snapshotVersion:2,sceneDigest:sceneSnapshot(project,composed.sceneId),storedImage:input.stored_image===true,
+    ...(modern?{mode,images,additionalPrompt:input.additional_prompt||'',attemptKey:input.attempt_key||null,model:cap.model}:{})};
+  return {...payload,model:cap.model,promptHash:hash(composed.prompt),settingsHash:hash(settings),requestHash:hash(payload)};
 }
 export function publicQuote(record,paidEnabled){
   return {quote_id:record.id,attempt_id:record.id,request_hash:record.requestHash,scene_id:record.sceneId,
-    model:MODEL,prompt:record.prompt,prompt_sha256:record.promptHash,image_sha256:record.image.sha256,
+    model:record.model||MODEL,prompt:record.prompt,prompt_sha256:record.promptHash,image_sha256:record.image?.sha256||null,
+    ...(record.mode?{mode:record.mode,image_sha256s:record.images.map(i=>i.sha256)}:{}),
     settings:record.settings,cost:record.cost,expires_at:new Date(record.quoteExpires).toISOString(),paid_enabled:paidEnabled};
 }
 export function publicJob(record){
   const states={QUOTED:'quoted',TICKETING:'uploading',UPLOADING:'uploading',VERIFYING:'uploading',READY:'ready',SUBMITTING:'admission_unknown',UNKNOWN:'admission_unknown',ACCEPTED:'queued',RUNNING:'running',COMPLETED:'completed',FAILED:'failed'};
   return {job_id:record.id,scene_id:record.sceneId,state:states[record.stage],stage:record.stage,
     created_at:new Date(record.createdAt).toISOString(),prediction_id:record.predictionId||null,video_url:record.stage==='COMPLETED'?record.videoUrl:null,
+    settings:record.settings,mode:record.mode||'start_frame_to_video',additional_prompt:record.additionalPrompt||'',model:record.model||MODEL,
     message:record.failure||'',speech_review:'unverified',expires_at:new Date(record.createdAt+30*86400000).toISOString()};
 }
 export function newLedger(){return {version:1,records:{},rates:{},spend:{}};}
