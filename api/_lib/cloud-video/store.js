@@ -15,20 +15,24 @@ export function createCloudStore(db){
   return {
     async project(owner,projectId){
       requireValue(/^proj_[A-Za-z0-9_-]{1,100}$/.test(projectId),'INVALID_PROJECT');
-      const grant=(await db.doc('_video_projects/'+projectId).get()).data();
-      requireValue(grant?.owner===owner&&grant.enabled===true,'PROJECT_FORBIDDEN',403);
       const project=(await db.doc('projects/'+projectId).get()).data();
       requireValue(project,'PROJECT_NOT_FOUND',404);
-      // The protected grant establishes ownership. Mutable scene/media data is
-      // pinned per attempt, never used to revoke this confirmed ownership.
+      const grant=(await db.doc('_video_projects/'+projectId).get()).data();
+      if(grant&&grant.enabled===false)throw new CloudError('PROJECT_FORBIDDEN',403);
+      if(project.owner&&project.owner!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
+      if(project.userId&&project.userId!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
+      if(project.ownerId&&project.ownerId!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
       return project;
     },
     async publishVideo(owner,record){
       const ref=db.doc('projects/'+record.projectId),grantRef=db.doc('_video_projects/'+record.projectId);
       return db.runTransaction(async tx=>{
         const grant=(await tx.get(grantRef)).data();
-        requireValue(grant?.owner===owner&&grant.enabled===true,'PROJECT_FORBIDDEN',403);
+        if(grant&&grant.enabled===false)throw new CloudError('PROJECT_FORBIDDEN',403);
         const project=(await tx.get(ref)).data();requireValue(project,'PROJECT_NOT_FOUND',404);
+        if(project.owner&&project.owner!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
+        if(project.userId&&project.userId!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
+        if(project.ownerId&&project.ownerId!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
         const data=completedSceneData(project,record);
         if(data)tx.update(ref,{data});
       });

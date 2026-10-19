@@ -34,7 +34,7 @@ test('actual Admin store commits user and team ledgers atomically under concurre
   const first=createCloudStore(db),second=createCloudStore(db),owner='a'.repeat(64);
   await Promise.all([first.transact(owner,(user,team)=>{user.count=(user.count||0)+1;team.count=(team.count||0)+1;}),second.transact(owner,(user,team)=>{user.count=(user.count||0)+1;team.count=(team.count||0)+1;})]);
   assert.equal((await first.read(owner)).count,2);assert.equal((await db.doc('_video_ledgers/team-shared-v1').get()).data().count,2);
-  const project={id:'proj_emulator',projectType:'full-ai',data:[{scene_n:3,Character:'confirmed_character',Dialogue:'Original.'}],generatedAudios:{3:'https://media.example.org/old.mp3'}};
+  const project={id:'proj_emulator',owner,projectType:'full-ai',data:[{scene_n:3,Character:'confirmed_character',Dialogue:'Original.'}],generatedAudios:{3:'https://media.example.org/old.mp3'}};
   await db.doc('projects/proj_emulator').set(project);
   await db.doc('_video_projects/proj_emulator').set({owner,enabled:true,sourceDigest:sourceDigest(project)});
   assert.deepEqual(await first.project(owner,'proj_emulator'),project);
@@ -42,6 +42,16 @@ test('actual Admin store commits user and team ledgers atomically under concurre
   await db.doc('projects/proj_emulator').update({data:[{scene_n:3,Character:'forged',Dialogue:'Altered.'}]});
   assert.equal((await first.project(owner,'proj_emulator')).data[0].Character,'forged');
   await assert.rejects(first.project('b'.repeat(64),'proj_emulator'),/PROJECT_FORBIDDEN/);
+  // Unowned project without _video_projects is accessible to any team member
+  const shared={id:'proj_shared',projectType:'full-ai',data:[{scene_n:1,Dialogue:'Shared.'}]};
+  await db.doc('projects/proj_shared').set(shared);
+  assert.deepEqual(await first.project('b'.repeat(64),'proj_shared'),shared);
+  // Old grant with another owner does not block team member
+  await db.doc('_video_projects/proj_shared').set({owner:'other-owner-hash',enabled:true});
+  assert.deepEqual(await first.project(owner,'proj_shared'),shared);
+  // Explicitly disabled project is forbidden
+  await db.doc('_video_projects/proj_shared').update({enabled:false});
+  await assert.rejects(first.project(owner,'proj_shared'),/PROJECT_FORBIDDEN/);
   // Confirmed ownership is separate from editable source; service pins each selected scene per quote.
   assert.equal((await first.project(owner,'proj_emulator',false)).data[0].Character,'forged');
   await assert.rejects(first.transact(owner,(user,team)=>{user.count=99;team.count=99;throw Error('abort');}),/abort/);
@@ -51,7 +61,7 @@ test('actual Admin store commits user and team ledgers atomically under concurre
 
 test('Admin publishes completed output transactionally, preserves original fields and refuses unrelated owner',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'output-emulator'),db=getFirestore(app);
- try{const store=createCloudStore(db),owner='c'.repeat(64),project={projectType:'full-ai',data:[{scene_n:1,Character:'Judge',Dialogue:'Exact.',videoUrl:'https://media.example.org/old.mp4'}],generatedAudios:{1:'keep.mp3'}};
+ try{const store=createCloudStore(db),owner='c'.repeat(64),project={id:'proj_output',owner,projectType:'full-ai',data:[{scene_n:1,Character:'Judge',Dialogue:'Exact.',videoUrl:'https://media.example.org/old.mp4'}],generatedAudios:{1:'keep.mp3'}};
  const {sceneSnapshot}=await import('../../api/_lib/cloud-video/core.js');const record={id:'a'.repeat(48),projectId:'proj_output',sceneId:1,stage:'COMPLETED',snapshotVersion:2,sceneDigest:sceneSnapshot(project,1),videoUrl:'https://media.example.org/new.mp4',predictionId:'test',createdAt:1};
  await db.doc('projects/proj_output').set(project);await db.doc('_video_projects/proj_output').set({owner,enabled:true});
  await assert.rejects(store.publishVideo('wrong',record),/PROJECT_FORBIDDEN/);await store.publishVideo(owner,record);await store.publishVideo(owner,record);

@@ -177,4 +177,36 @@ test('missing duration_seconds quotes with estimated duration; changing saved du
  const h=harness(),{s,body}=await h.ready();h.projects.proj_test.data[0].duration_seconds=6;await assert.rejects(s.submit(session,body),/PROJECT_CHANGED/);assert.equal(h.calls().posts,0);
 });
 
+test('authenticated user not on allowlist can access video handler without TEAM_FORBIDDEN',async()=>{
+ let called=false;
+ const teamConfig={...config,allowedOwners:['other-hash-only'],apiKey:'server-secret'};
+ const handler=createVideoHandler({
+  configure:()=>teamConfig,
+  authenticate:async()=>session,
+  createService:()=>({
+   quote:async()=>{called=true;return {quote_id:'q1'};}
+  })
+ });
+ const res={statusCode:200,setHeader(){},end(){}};
+ await handler({url:'/api/video?action=quote',method:'POST',headers:{},body:{}},res);
+ assert.equal(res.statusCode,200);
+ assert.equal(called,true);
+});
+
+test('cloudConfig does not require MEDIA_ALLOWED_OWNER_HASHES to be present',async()=>{
+ const {cloudConfig}=await import('../api/_lib/cloud-video/config.js');
+ const env={
+  CLOUD_VIDEO_ENABLED:'true',
+  VIDEO_WEB_ORIGIN:'https://www.aivideomaker.live',
+  CLERK_ISSUER:'https://clerk.example.org',
+  CLERK_JWT_KEY:'-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0\n-----END PUBLIC KEY-----',
+  WAVESPEED_VIDEO_API_KEY:'test-api-key',
+  CLOUD_VIDEO_PAID_ENABLED:'true',
+ };
+ const cfg=cloudConfig(env);
+ assert.equal(cfg.origin,'https://www.aivideomaker.live');
+ assert.equal(cfg.apiKey,'test-api-key');
+ assert.deepEqual(cfg.allowedOwners,[]);
+});
+
 

@@ -1,6 +1,6 @@
 import process from 'node:process';
 import {authenticateSession} from './_lib/local-ai/auth.js';
-import {cloudConfig,authorizeTeam} from './_lib/cloud-video/config.js';
+import {cloudConfig} from './_lib/cloud-video/config.js';
 import {cloudDatabase,createCloudStore} from './_lib/cloud-video/store.js';
 import {createCloudUpload} from './_lib/cloud-video/upload.js';
 import {createCloudVideoService,readCloudBody} from './_lib/cloud-video/service.js';
@@ -15,7 +15,6 @@ export function createVideoHandler({configure=()=>cloudConfig(process.env),authe
     res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('X-Content-Type-Options','nosniff');
     try{
       const settings=configure(),session=await authenticate(req,settings);
-      authorizeTeam(session,settings);
       const url=new URL(req.url,settings.origin),action=url.searchParams.get('action');
       requireValue(['source','quote','ticket','verify','submit','list','job','health'].includes(action),'NOT_FOUND',404);
       requireValue(req.method===(['list','job','health'].includes(action)?'GET':'POST'),'METHOD_NOT_ALLOWED',405);
