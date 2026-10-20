@@ -21,8 +21,14 @@ export function validateCloudSettings(settings,mode='start_frame_to_video'){
 export function composeVideoPrompt(scene,additional=''){
   const composed=composeScene(scene);
   if(typeof additional!=='string'||additional.length>1000||[...additional].some(c=>{const n=c.charCodeAt(0);return n<32&&![9,10,13].includes(n)||n===127;}))throw Error('Custom prompt không hợp lệ (tối đa 1000 ký tự).');
-  const prompt=composed.prompt+(additional.trim()?'\n\nOPTIONAL ADDITIONAL DIRECTION (subordinate to the original scene; never change the original spoken dialogue or character identity):\n'+additional:'');
-  if([...prompt].length>MAX_PROMPT_CHARS)throw Error('Tổng prompt vượt '+MAX_PROMPT_CHARS+' ký tự; hãy rút ngắn phần bổ sung. Kịch bản gốc không bị cắt.');
+  // A default for generated speech, not a rewrite of authored tempo or emotion.
+  // Keep composeScene/snapshot semantics unchanged for existing durable attempts.
+  const speech=composed.dialogue.trim()?'\n\nSPEECH DELIVERY (not spoken text):\nFollow explicit authored speech pace and pauses first, including slow or deliberate delivery. Otherwise use natural conversational pace, clear articulation and short natural pauses; avoid drawn-out words or excess silence. Preserve every word, language, emotion and character identity.':'';
+  const extra=additional.trim()?'\n\nOPTIONAL ADDITIONAL DIRECTION (subordinate to the original scene; never change the original spoken dialogue or character identity):\n'+additional:'';
+  const original=composed.prompt+extra;
+  if([...original].length>MAX_PROMPT_CHARS)throw Error('Tổng prompt vượt '+MAX_PROMPT_CHARS+' ký tự; hãy rút ngắn phần bổ sung. Kịch bản gốc không bị cắt.');
+  // Optional guidance must not make a previously valid authored prompt unusable.
+  const prompt=[...original+speech].length<=MAX_PROMPT_CHARS?composed.prompt+speech+extra:original;
   return {...composed,prompt};
 }
 // Provider docs / public model pricing metadata verified 2026-10-19.
