@@ -30,7 +30,7 @@ test('explicit slow delivery and authored pauses remain higher priority than the
   }
 });
 test('silent scenes get no speech direction; optional guidance never blocks an otherwise valid long prompt',()=>{
-  const silent={...scene,Dialogue:''};assert.equal(composeVideoPrompt(silent).prompt,composeScene(silent).prompt);
+  const silent={...scene,Dialogue:''};assert.ok(composeVideoPrompt(silent).prompt.startsWith(composeScene(silent).prompt));assert.ok(!composeVideoPrompt(silent).prompt.includes('SPEECH DELIVERY'));
   const base={...scene,Context:''},space=MAX_PROMPT_CHARS-[...composeScene(base).prompt].length-20;
   const long={...base,Context:'x'.repeat(space)};
   assert.equal(composeVideoPrompt(long).prompt,composeScene(long).prompt);

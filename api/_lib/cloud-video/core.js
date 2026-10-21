@@ -1,3 +1,4 @@
+import {sceneCameraFixed} from '../../../src/lib/sceneCamera.js';
 import {videoMode,validateCloudSettings,composeVideoPrompt,cloudVideoCost} from '../../../src/lib/cloudVideoOptions.js';
 import {createHash,randomBytes} from 'node:crypto';
 import {composeScene,estimateCost,validateSettings,MODEL} from '../../../src/lib/seedanceContract.js';
@@ -43,7 +44,8 @@ export function prepareQuote(project,input,now){
   const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'');
   const requestDuration=readSceneDuration(scenes[0],cap.maxDuration);
   requireValue(input.settings?.duration===requestDuration,'SCENE_DURATION_MISMATCH');
-  const settings=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION);
+  const validated=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION);
+  const settings={...validated,camera_fixed:sceneCameraFixed(scenes[0],mode,validated.camera_fixed)};
   let images=[];
   if(mode==='start_frame_to_video'){requireValue(!input.images,'INVALID_MEDIA');images=[declaration(input.image)];}
   else if(mode==='references_to_video'){requireValue(!input.image&&Array.isArray(input.images)&&input.images.length>=1&&input.images.length<=cap.maxImages,'INVALID_MEDIA');images=input.images.map(declaration);}

@@ -210,3 +210,10 @@ test('cloudConfig does not require MEDIA_ALLOWED_OWNER_HASHES to be present',asy
 });
 
 
+
+test('canonical Camera reaches actual provider submit despite stale false client setting',async()=>{
+ let payload;const h=harness({provider:{submit:async(p,accepted)=>{payload=p;await accepted('camera_test');return{id:'camera_test',state:'queued'};}}});
+ h.projects.proj_test.data[0].Camera='Máy quay cố định. Không di chuyển máy quay.';const before=structuredClone(h.projects);
+ const {s,quote,body}=await h.ready();assert.equal(quote.settings.camera_fixed,true);assert.equal(payload,undefined);
+ await s.submit(session,body);assert.equal(payload.camera_fixed,true);assert.equal(payload.duration,quote.settings.duration);assert.equal(payload.prompt,quote.prompt);assert.deepEqual(h.projects,before);
+});

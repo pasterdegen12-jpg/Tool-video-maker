@@ -24,11 +24,14 @@ export function composeVideoPrompt(scene,additional=''){
   // A default for generated speech, not a rewrite of authored tempo or emotion.
   // Keep composeScene/snapshot semantics unchanged for existing durable attempts.
   const speech=composed.dialogue.trim()?'\n\nSPEECH DELIVERY (not spoken text):\nFollow explicit authored speech pace and pauses first, including slow or deliberate delivery. Otherwise use natural conversational pace, clear articulation and short natural pauses; avoid drawn-out words or excess silence. Preserve every word, language, emotion and character identity.':'';
-  const extra=additional.trim()?'\n\nOPTIONAL ADDITIONAL DIRECTION (subordinate to the original scene; never change the original spoken dialogue or character identity):\n'+additional:'';
+  const extra=additional.trim()?'\n\nOPTIONAL ADDITIONAL DIRECTION (subordinate to original Dialogue, Character, Camera and Action; never override them):\n'+additional:'';
   const original=composed.prompt+extra;
   if([...original].length>MAX_PROMPT_CHARS)throw Error('Tổng prompt vượt '+MAX_PROMPT_CHARS+' ký tự; hãy rút ngắn phần bổ sung. Kịch bản gốc không bị cắt.');
   // Optional guidance must not make a previously valid authored prompt unusable.
-  const prompt=[...original+speech].length<=MAX_PROMPT_CHARS?composed.prompt+speech+extra:original;
+  let prompt=[...original+speech].length<=MAX_PROMPT_CHARS?composed.prompt+speech+extra:original;
+  const visual='\n\nVISUAL PRESENTATION (not spoken text):\nUnless explicitly required by the original scene, no subtitles, captions, on-screen dialogue text, speech bubbles or text overlays. Speak dialogue naturally; do not display it as text. Preserve authored signs, writing on objects and explicitly requested text. Camera constraints do not freeze character movement or acting.';
+  // Never truncate authored content or block an existing valid prompt to fit guidance.
+  if([...prompt+visual].length<=MAX_PROMPT_CHARS)prompt=prompt.slice(0,prompt.length-extra.length)+visual+extra;
   return {...composed,prompt};
 }
 // Provider docs / public model pricing metadata verified 2026-10-19.

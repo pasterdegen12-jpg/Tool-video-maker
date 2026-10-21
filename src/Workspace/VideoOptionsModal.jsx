@@ -1,3 +1,4 @@
+import {sceneCameraFixed} from '../lib/sceneCamera.js';
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import {X,Film,Upload,Scissors,Loader2} from 'lucide-react';
@@ -25,7 +26,7 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
   const cap=videoMode(mode);
   let issue='',duration;
   try{duration=readSceneDuration(scene,cap.maxDuration);}catch(e){issue=e.message;}
-  const settings={...options,duration};
+  const settings={...options,duration,camera_fixed:sceneCameraFixed(scene,mode,options.camera_fixed)};
   try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);
     if(!prompt.prompt)issue='Scene không có prompt.';
   }catch(e){issue=e.message;}
