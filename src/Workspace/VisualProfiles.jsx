@@ -4,23 +4,30 @@ import { characterBinding, resolveSceneCharacterProfile, visualProfilesVisible }
 import { createVisualProfileController, readReferenceFile } from '../lib/visualProfileClient.js';
 import {characterProjectRequest} from '../lib/characterIdentityClient.js';
 import {confirmedIdentity,validCharacterId} from '../lib/characterIdentity.js';
+import {remoteQwenVisible,createRemoteQwenController,remoteQwenRequest} from '../lib/remoteQwenClient.js';
 
 const Profiles = createContext(null);
 const button = 'px-3 py-2 rounded-lg border border-purple-400/40 text-xs font-semibold disabled:opacity-40 cursor-pointer';
 
 export function VisualProfilesProvider({ projectId, projectType, characters, onConfirmed, children }) {
   if(projectType!=='full-ai')return children;
+  if(remoteQwenVisible(import.meta.env,globalThis.location))return <AuthenticatedProfiles projectId={projectId} characters={characters} onConfirmed={onConfirmed} remote>{children}</AuthenticatedProfiles>;
   if(!visualProfilesVisible({DEV:import.meta.env.DEV,VITE_ENABLE_LOCAL_VISUAL_ID:import.meta.env.VITE_ENABLE_LOCAL_VISUAL_ID},globalThis.location))return <Profiles.Provider value={{projectId,characters,unavailable:true}}>{children}</Profiles.Provider>;
   return <AuthenticatedProfiles projectId={projectId} characters={characters} onConfirmed={onConfirmed}>{children}</AuthenticatedProfiles>;
 }
-function AuthenticatedProfiles({ projectId, characters, onConfirmed, children }) {
+function AuthenticatedProfiles({ projectId, characters, onConfirmed, children, remote=false }) {
   const auth = useAuth();
   return <SessionProfiles key={JSON.stringify([projectId, auth.sessionId, auth.userId, auth.isSignedIn])}
-    projectId={projectId} characters={characters} onConfirmed={onConfirmed} auth={auth}>{children}</SessionProfiles>;
+    projectId={projectId} characters={characters} onConfirmed={onConfirmed} auth={auth} remote={remote}>{children}</SessionProfiles>;
 }
-function SessionProfiles({ projectId, characters, onConfirmed, auth, children }) {
-  async function prepare(){return characterProjectRequest(auth.getToken,projectId);}
+function SessionProfiles({ projectId, characters, onConfirmed, auth, children, remote }) {
+  async function prepare(){return remote?null:characterProjectRequest(auth.getToken,projectId);}
   async function confirm(character, proposedId, image, jobId, snapshot) {
+    if(remote){
+      if(!auth.isSignedIn||!onConfirmed)throw Error('Đăng nhập để xác nhận.');
+      const saved=await remoteQwenRequest(auth.getToken,'confirm',{projectId,characterId:character.id,jobId,confirmedId:proposedId,confirm:true});
+      onConfirmed(saved.project);return saved.changed;
+    }
     const matches = characters.filter(c => c.id === character.id);
     if (!auth.isSignedIn || matches.length !== 1 || characterBinding(matches[0]) !== characterBinding(character)||!snapshot||!onConfirmed) throw Error('Nhân vật/project đã thay đổi hoặc chưa nối lưu.');
     const old=snapshot.project.characters.find(c=>c.id===character.id);
@@ -30,7 +37,7 @@ function SessionProfiles({ projectId, characters, onConfirmed, auth, children })
     onConfirmed(saved.project);
     return saved.changed;
   }
-  return <Profiles.Provider value={{ projectId,characters,prepare,confirm,auth }}>{children}</Profiles.Provider>;
+  return <Profiles.Provider value={{ projectId,characters,prepare,confirm,auth,remote }}>{children}</Profiles.Provider>;
 }
 export function SetIdPanel({ character, disabled = false }) {
   const context = useContext(Profiles);
@@ -58,7 +65,8 @@ function Detection({ context, character, disabled }) {
   const [reading, setReading] = useState(false);
   const [editedId,setEditedId]=useState(''),[snapshot,setSnapshot]=useState(null),[saving,setSaving]=useState(false);
   const selection = useRef({ revision: 0 });
-  const [controller] = useState(() => createVisualProfileController({ getToken: context.auth.getToken, onChange: setState }));
+  const [controller] = useState(() => context.remote?createRemoteQwenController({getToken:context.auth.getToken,onChange:setState,projectId:context.projectId,characterId:character.id}):createVisualProfileController({ getToken: context.auth.getToken, onChange: setState }));
+  useEffect(()=>{if(context.remote&&context.auth.isSignedIn)controller.resume();},[controller,context.remote,context.auth.isSignedIn]);
   useEffect(() => {
     const ticket = selection.current;
     const leave = () => { ticket.revision++; controller.cancel(); };
@@ -84,7 +92,7 @@ function Detection({ context, character, disabled }) {
   }
   function cancel() {
     selection.current.revision++;
-    controller.cancel(false);
+    controller.cancel(context.remote);
     setReading(false);
     setState({ status: 'cancelled', busy: false, message: 'Đã bỏ đề xuất/dừng chờ; job trên server có thể vẫn chạy.' });
   }
@@ -97,17 +105,19 @@ function Detection({ context, character, disabled }) {
   }
   return <div data-detection-status={state.status} className="space-y-3">
     <p className="text-xs opacity-80">Qwen đề xuất ID từ ảnh. Chỉ khi xác nhận, ID mới được lưu và thay Character trong các scene liên kết chính xác; các nội dung khác giữ nguyên.</p>
-    <label className="block text-xs">Ảnh tham chiếu cho {character.name}
+    {!context.remote&&<label className="block text-xs">Ảnh tham chiếu cho {character.name}
       <input type="file" accept="image/png,image/jpeg,image/webp" onChange={choose} disabled={disabled || saving || !context.auth.isSignedIn} className="block mt-2 text-xs" />
-    </label>
+    </label>}
+    {context.remote&&<p className="text-xs opacity-80">Phân tích ảnh nhân vật đang lưu trong dự án; chỉ tạo bản sao thu nhỏ để nhận diện.</p>}
     {image && <img src={image.dataUrl} alt={'Ảnh tham chiếu ' + character.name} className="max-h-48 max-w-full rounded-lg object-contain" />}
     <div className="flex flex-wrap gap-2">
-      <button className={button} disabled={disabled || saving || !context.auth.isSignedIn || !image || reading || state.busy}
+      <button className={button} disabled={disabled || saving || !context.auth.isSignedIn || (context.remote?!character.imageUrl:!image) || reading || state.busy}
         onClick={detect}>✦ Set ID</button>
       {(state.busy || state.status === 'detected' || reading) && <button className={button} onClick={cancel}>Hủy đề xuất / dừng chờ</button>}
+      {context.remote&&!state.busy&&<button className={button} disabled={saving||!context.auth.isSignedIn} onClick={()=>controller.resume()}>Khôi phục trạng thái</button>}
     </div>
     {!context.auth.isSignedIn && <p>Đăng nhập để dùng Set ID.</p>}
-    <p role="status" aria-live="polite">{reading ? 'Đang đọc ảnh…' : state.busy ? 'Đang chờ Qwen Vision…' : state.message}</p>
+    <p role="status" aria-live="polite">{context.remote?state.message:reading ? 'Đang đọc ảnh…' : state.busy ? 'Đang chờ Qwen Vision…' : state.message}</p>
     {state.status === 'detected' && state.result && <div className="rounded-lg border border-purple-400/40 p-3 space-y-2">
       <p>Qwen đề xuất: <span className="font-mono break-all">{state.result.visual_id}</span></p><p>{state.result.visual_description}</p>
       <label>Character ID cuối cùng<input aria-label="Character ID cuối cùng" value={editedId||state.result.visual_id} disabled={saving} onChange={e=>setEditedId(e.target.value)} className="block w-full bg-slate-800 p-2"/></label>

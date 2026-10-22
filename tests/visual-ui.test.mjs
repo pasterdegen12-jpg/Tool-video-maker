@@ -138,3 +138,23 @@ test('Firestore character hydration wins over stale route state and preserves di
  assert.deepEqual(savedProjectCharacters({}, {characters:stale}),stale);
  assert.deepEqual(savedProjectCharacters({characters:confirmedChars}).map(c=>c.name),savedNames);
 });
+
+test('production remote Set ID uses saved character image binding, restores proposal and requires explicit save',async t=>{
+ for(const c of confirmedChars)c.characterIdentity.proposal={status:'detected',visual_id:c.characterIdentity.confirmedId,visual_description:'Previously confirmed appearance.'};
+ const previousLocation=globalThis.location;globalThis.location={origin:'https://www.aivideomaker.live',protocol:'https:',hostname:'www.aivideomaker.live'};t.after(()=>{globalThis.location=previousLocation;});
+ const env={DEV:false,VITE_ENABLE_REMOTE_QWEN:'true'},module=await compile(new URL('../src/Workspace/VisualProfiles.jsx',import.meta.url),env),setup=(await compile(new URL('../src/Workspace/SetupTab.jsx',import.meta.url),env)).default;
+ const calls=[];let created=false,saves=0;
+ globalThis.fetch=async(url,options)=>{
+  assert.ok(url.startsWith('/api/qwen?'));const action=new URL(url,'https://www.aivideomaker.live').searchParams.get('action'),body=JSON.parse(options.body);calls.push(action);
+  assert.ok(!('image_base64' in body));assert.ok(!('imageUrl' in body));
+  if(action==='confirm'){saves++;return json({project:{characters:confirmedChars,data:scenes},changed:[]});}
+  if(action==='create')created=true;
+  return json(created?{id:'d'.repeat(64),projectId:'project_a',characterId:body.characterId,state:'proposal_ready',profile:proposal}:{state:'idle',worker:'offline'});
+ };
+ const {container,render}=await mount(t,{module,setup,chars:confirmedChars,full:true});await flush();assert.ok(calls.every(c=>c==='status'));assert.equal(saves,0);
+ const panel=container.querySelector('[aria-label="Visual ID Judge"]');assert.equal(panel.querySelector('input[type=file]'),null);assert.equal(find(panel,'✦ Set ID').disabled,false);
+ await click(find(panel,'✦ Set ID'));await flush();assert.match(panel.textContent,/Qwen đề xuất/);assert.equal(saves,0);assert.ok(panel.textContent.includes(savedIds[0]));
+ await render({module,setup,chars:confirmedChars,full:true,projectType:'semi'});await render({module,setup,chars:confirmedChars,full:true});await flush();
+ assert.match(container.querySelector('[aria-label="Visual ID Judge"]').textContent,/Qwen đề xuất/);assert.equal(saves,0);
+ await click(find(container.querySelector('[aria-label="Visual ID Judge"]'),'Xác nhận Character ID và lưu'));assert.equal(saves,1);
+});

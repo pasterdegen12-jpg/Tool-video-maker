@@ -5,7 +5,9 @@ service cloud.firestore {
     // or operator-controlled project grants to client SDKs.
     match /{collection}/{document=**} {
       allow read, write: if collection != '_video_projects'
-                         && collection != '_video_ledgers';
+                         && collection != '_video_ledgers'
+                         && collection != '_qwen_queue'
+                         && collection != '_qwen_results';
     }
   }
 }

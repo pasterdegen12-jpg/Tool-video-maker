@@ -8,12 +8,25 @@ import {initializeApp,deleteApp} from 'firebase-admin/app';
 import {getFirestore} from 'firebase-admin/firestore';
 import {createCloudStore} from '../../api/_lib/cloud-video/store.js';
 import {sourceDigest} from '../../api/_lib/cloud-video/core.js';
+import {queueStore} from '../../api/_lib/qwen/store.js';
+import {blank,enqueue,claim} from '../../api/_lib/qwen/queue.js';
 const rules=await fs.readFile(new URL('./firestore.rules',import.meta.url),'utf8');
 const env=await initializeTestEnvironment({projectId:'demo-webai-production',firestore:{host:'127.0.0.1',port:8187,rules}});
 test.after(()=>env.cleanup());
+test('Qwen Admin durable queue serializes competing claims and survives a fresh store instance',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'qwen-emulator'),db=getFirestore(app);
+ try{
+  const first=queueStore(db),second=queueStore(db),now=Date.now(),project={id:'proj_queue',projectType:'full-ai',characters:[{id:'char_1',name:'Judge'}],data:[]};
+  await db.doc('projects/proj_queue').set(project);await db.doc('_qwen_queue/state').set(blank());
+  await first.transact({projectId:'proj_queue',now},(q,p)=>({value:enqueue(q,{project:p,projectId:'proj_queue',characterId:'char_1',owner:'a'.repeat(64),requestKey:'b'.repeat(36),image:{sha256:'c'.repeat(64),url:'https://example.org/image.jpg',mime:'image/jpeg'}},now)}));
+  const claims=await Promise.all([first,second].map(s=>s.transact({now},q=>({value:claim(q,true,now)}))));assert.equal(claims.filter(Boolean).length,1);
+  const reload=queueStore(db),q=await reload.read();assert.equal(Object.keys(q.jobs).length,1);assert.equal(Object.values(q.jobs)[0].state,'running');
+  await assert.rejects(first.transact({now},q=>{q.worker.status='corrupted';throw Error('abort');}),/abort/);assert.notEqual((await reload.read()).worker.status,'corrupted');
+ }finally{await db.terminate();await deleteApp(app);}
+});
 for(const identity of ['anonymous','unrelated','malicious-admin-claim'])test('effective rules deny all sensitive operations: '+identity,async()=>{
  const db=identity==='anonymous'?env.unauthenticatedContext().firestore():env.authenticatedContext(identity,{admin:true,owner:'forged',role:'admin'}).firestore();
- for(const name of ['_video_projects','_video_ledgers']){
+ for(const name of ['_video_projects','_video_ledgers','_qwen_queue','_qwen_results']){
   await env.withSecurityRulesDisabled(async c=>{await setDoc(doc(c.firestore(),name,'existing'),{owner:'server-owner',enabled:true});await setDoc(doc(c.firestore(),name,'existing/nested/private'),{secret:'test'});});
   await assertFails(getDoc(doc(db,name,'existing')));await assertFails(getDocs(collection(db,name)));
   await assertFails(setDoc(doc(db,name,'new'),{owner:identity}));await assertFails(updateDoc(doc(db,name,'existing'),{enabled:false}));await assertFails(deleteDoc(doc(db,name,'existing')));

@@ -153,5 +153,5 @@ test('serverless function count in api/ conforms to Vercel Hobby plan limit <= 1
     .filter(path => !path.includes('_lib') && !path.includes('\\_lib') && !path.includes('/_lib'));
 
   assert.ok(serverlessFunctions.length <= 12, `Expected <= 12 serverless functions, found ${serverlessFunctions.length}`);
-  assert.equal(serverlessFunctions.length, 11); // Existing eight plus consolidated video, audio and Gemini.
+  assert.equal(serverlessFunctions.length, 12); // Existing eleven plus the consolidated remote Qwen dispatcher.
 });
