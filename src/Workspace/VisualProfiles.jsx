@@ -35,10 +35,22 @@ function SessionProfiles({ projectId, characters, onConfirmed, auth, children })
 export function SetIdPanel({ character, disabled = false }) {
   const context = useContext(Profiles);
   if (!context) return null;
-  if(context.unavailable)return <div className="flex items-center gap-2 text-xs" aria-label={'Visual ID '+character.name}><button className={button} disabled title="Dịch vụ Qwen chưa được kết nối với website">✦ Set ID</button><span className="text-slate-400">Chưa kết nối Qwen</span></div>;
   const matches = context.characters.filter(c => c.id === character.id);
   if (matches.length !== 1 || typeof character.id !== 'string' || !character.id) return <p role="alert">Set ID: character ID thiếu hoặc trùng.</p>;
-  return <Detection key={characterBinding(character)} context={context} character={character} disabled={disabled} />;
+  return <section aria-label={'Visual ID '+character.name} className="space-y-3 border-t border-purple-400/20 pt-4 text-sm">
+    <SavedIdentity character={character} projectId={context.projectId} />
+    {context.unavailable ? <div className="flex items-center gap-2 text-xs"><button className={button} disabled title="Dịch vụ Qwen chưa được kết nối với website">✦ Set ID</button><span className="text-slate-400">Qwen Local chưa kết nối</span></div>
+      : <Detection key={characterBinding(character)} context={context} character={character} disabled={disabled} />}
+  </section>;
+}
+function SavedIdentity({character,projectId}) {
+  const identity=confirmedIdentity(character,projectId);
+  if(!identity)return <p className="text-xs text-slate-400">Chưa Set ID</p>;
+  return <div data-approved-visual-id={identity.confirmedId} className="text-xs space-y-2">
+    <p>Character ID: <span className="font-mono break-all">{identity.confirmedId}</span></p>
+    <p className="text-emerald-400">Đã xác nhận</p>
+    {identity.referenceImage.dataUrl && <img src={identity.referenceImage.dataUrl} alt={'Ảnh đã duyệt '+character.name} className="h-20 rounded object-contain" />}
+  </div>;
 }
 function Detection({ context, character, disabled }) {
   const [image, setImage] = useState(null);
@@ -83,7 +95,7 @@ function Detection({ context, character, disabled }) {
     catch(error){setState({status:'error',busy:false,message:error.message});}
     finally{if(revision===selection.current.revision)setReading(false);}
   }
-  return <section data-detection-status={state.status} aria-label={'Visual ID ' + character.name} className="space-y-3 border-t border-purple-400/20 pt-4 text-sm">
+  return <div data-detection-status={state.status} className="space-y-3">
     <p className="text-xs opacity-80">Qwen đề xuất ID từ ảnh. Chỉ khi xác nhận, ID mới được lưu và thay Character trong các scene liên kết chính xác; các nội dung khác giữ nguyên.</p>
     <label className="block text-xs">Ảnh tham chiếu cho {character.name}
       <input type="file" accept="image/png,image/jpeg,image/webp" onChange={choose} disabled={disabled || saving || !context.auth.isSignedIn} className="block mt-2 text-xs" />
@@ -107,12 +119,8 @@ function Detection({ context, character, disabled }) {
         finally{setSaving(false);}
       }}>{saving?'Đang lưu…':'Xác nhận Character ID và lưu'}</button>
     </div>}
-    {['approved','confirmed'].includes(resolved.status) && <div data-approved-visual-id={resolved.profile.visualId} className="text-xs space-y-2">
-      <p>Đã duyệt: <span className="font-mono">{resolved.profile.visualId}</span></p>
-      <img src={resolved.profile.referenceImage.dataUrl} alt="Ảnh đã duyệt" className="h-20 rounded object-contain" />
-    </div>}
     <p className="text-xs opacity-60">Giữ ảnh tham chiếu cùng profile. Visual ID dạng chữ không bảo đảm khuôn mặt nhất quán khi tạo video.</p>
-  </section>;
+  </div>;
 }
 export function SceneVisualProfile({ scene }) {
   const context = useContext(Profiles);

@@ -62,3 +62,7 @@ export function migrateCharacterIdentity(project,{projectId,ownerHash,characterI
   const characters=project.characters.map(other=>other.id===characterId?{...other,characterIdentity:identity}:other);
   return {data,characters,changed};
 }
+// A saved project owns its identities; navigation state is only a legacy fallback.
+export function savedProjectCharacters(project, navigationState) {
+  return Array.isArray(project?.characters) ? project.characters : navigationState?.characters || [];
+}

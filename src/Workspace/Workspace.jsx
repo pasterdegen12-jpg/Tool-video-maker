@@ -11,7 +11,7 @@ import StoryboardTab from './StoryboardTab.jsx';
 import {applySceneVideoOutput} from '../lib/sceneVideoOutput.js';
 import FullDialogueField from './FullDialogueField.jsx';
 import { readSpokenText } from '../lib/spokenText.js';
-import {displayCharacterReference,reconcileCharacterScenes} from '../lib/characterIdentity.js';
+import {displayCharacterReference,reconcileCharacterScenes,savedProjectCharacters} from '../lib/characterIdentity.js';
 import { videoVisible } from '../lib/seedanceContract.js';
 import { useAuth } from '@clerk/clerk-react';
 import { createAudioTransport } from '../lib/wavespeedAudioClient.js';
@@ -159,11 +159,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
           }
 
           setParsedData(projectInfo.data || []);
-          if (location.state?.characters && location.state.characters.length > 0) {
-            setProjectCharacters(location.state.characters);
-          } else {
-            setProjectCharacters(projectInfo.characters || []);
-          }
+          setProjectCharacters(savedProjectCharacters(projectInfo,location.state));
           if (projectInfo.originalScript) setOriginalScript(projectInfo.originalScript);
 
           if (projectInfo.generatedAudios) {

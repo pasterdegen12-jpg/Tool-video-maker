@@ -49,13 +49,13 @@ const find=(root,text)=>[...root.querySelectorAll('button')].find(b=>b.textConte
 const click=async b=>{assert.ok(b);await act(async()=>b.click());};
 const flush=()=>act(async()=>{await new Promise(r=>setImmediate(r));});
 async function choose(container){const input=container.querySelector('input[type=file]');Object.defineProperty(input,'files',{configurable:true,value:[new NativeFile([Buffer.from(fixtures.image_base64,'base64')],'reference.png',{type:'image/png'})]});await act(async()=>input.dispatchEvent(new window.Event('change',{bubbles:true})));for(let n=0;n<100 && find(container,'✦ Set ID').disabled;n++)await flush();assert.equal(find(container,'✦ Set ID').disabled,false);}
-function Tree({chars=characters,projectId='project_a',projectType='full-ai',full=false,module=visual}={}){
+function Tree({chars=characters,projectId='project_a',projectType='full-ai',full=false,module=visual,setup=Setup}={}){
   const [saved,setSaved]=React.useState(null);
   const activeChars=saved?.characters||chars,activeScenes=saved?.data||scenes;
   chars=activeChars;
   const plaintiff=chars.find(c=>c.id===characters.find(c=>c.name==='Plaintiff').id)||chars[0];
   return React.createElement(module.VisualProfilesProvider,{projectId,projectType,characters:chars,onConfirmed:setSaved},
-    full?React.createElement(Setup,{projectCharacters:chars,parsedData:activeScenes,darkMode:true}):plaintiff&&React.createElement(module.SetIdPanel,{character:plaintiff}),
+    full?React.createElement(setup,{projectCharacters:chars,parsedData:activeScenes,darkMode:true}):plaintiff&&React.createElement(module.SetIdPanel,{character:plaintiff}),
     React.createElement(Storyboard,{parsedData:activeScenes,projectCharacters:chars,projectId,generatedAudios:{},isGenerating:{},mergingScenes:{},mergedVideos:{},projectType,darkMode:true}));
 }
 function tree(options){return React.createElement(Tree,options);}
@@ -107,7 +107,34 @@ test('Semi hides Set ID; unavailable service exposes disabled status; signed-out
   const{container,render}=await mount(t,{projectType:'semi'});assert.equal(find(container,'✦ Set ID'),undefined);
   for(const env of [{DEV:true},{DEV:false,VITE_ENABLE_LOCAL_VISUAL_ID:'true'}]){
     const module=await compile(new URL('../src/Workspace/VisualProfiles.jsx',import.meta.url),env);
-    await render({module});assert.equal(find(container,'✦ Set ID').disabled,true);assert.match(container.textContent,/Chưa kết nối Qwen/);
+    await render({module});assert.equal(find(container,'✦ Set ID').disabled,true);assert.match(container.textContent,/Qwen Local chưa kết nối/);
   }
   auth={...auth,isSignedIn:false};await render({});assert.equal(find(container,'✦ Set ID').disabled,true);
+});
+
+// Persisted data fixture only: no real Qwen or Clerk request.
+const savedIds=['elderly_man_gray_hair_white_beard_glasses_black_robe','woman_dark_hair_ponytail_white_polka_dot_top_blue_jeans','woman_long_dark_hair_white_dress_light_blue_cardigan_pink_bag'];
+const savedNames=['Judge','Lawyer','Defendant'];
+const confirmedChars=savedIds.map((confirmedId,i)=>({id:'char_'+(i+1),name:savedNames[i],imageUrl:'https://example.org/avatar.png',characterIdentity:{version:1,status:'confirmed',characterId:'char_'+(i+1),projectId:'project_a',confirmedId,referenceImage:{sha256:'a'.repeat(64),dataUrl:'data:image/png;base64,'+fixtures.image_base64}},visualProfile:{status:'detected',visualId:'stale_proposal'}}));
+test('production Setup reads all three saved identities offline across tab remount and reload hydration; no inference',async t=>{
+ let calls=0;globalThis.fetch=async()=>{calls++;throw Error('Unexpected network');};
+ const module=await compile(new URL('../src/Workspace/VisualProfiles.jsx',import.meta.url),{DEV:false});
+ const setup=(await compile(new URL('../src/Workspace/SetupTab.jsx',import.meta.url),{DEV:false})).default;
+ const{container,render}=await mount(t,{module,setup,chars:confirmedChars,full:true});
+ const verify=()=>{for(let i=0;i<3;i++){const panel=container.querySelector('[aria-label="Visual ID '+savedNames[i]+'"]');assert.ok(panel);assert.equal(panel.querySelector('[data-approved-visual-id]').getAttribute('data-approved-visual-id'),savedIds[i]);assert.match(panel.textContent,/Đã xác nhận/);assert.match(panel.textContent,/Qwen Local chưa kết nối/);assert.ok(find(panel,'✦ Set ID').disabled);assert.ok(!panel.textContent.includes('stale_proposal'));}};
+ verify();await render({module,setup,chars:confirmedChars,projectType:'semi',full:true});await render({module,setup,chars:JSON.parse(JSON.stringify(confirmedChars)),full:true});verify();assert.equal(calls,0);
+});
+test('proposal, wrong project and missing persisted identity never show confirmed',async t=>{
+ const module=await compile(new URL('../src/Workspace/VisualProfiles.jsx',import.meta.url),{DEV:false});
+ const setup=(await compile(new URL('../src/Workspace/SetupTab.jsx',import.meta.url),{DEV:false})).default;
+ const chars=structuredClone(confirmedChars);chars[0].characterIdentity.status='detected';chars[1].characterIdentity.projectId='other';delete chars[2].characterIdentity;
+ const{container}=await mount(t,{module,setup,chars,full:true});assert.equal(container.querySelectorAll('[data-approved-visual-id]').length,0);assert.equal((container.textContent.match(/Chưa Set ID/g)||[]).length,3);
+});
+test('Firestore character hydration wins over stale route state and preserves display names',async()=>{
+ const {savedProjectCharacters}=await import('../src/lib/characterIdentity.js');
+ const stale=confirmedChars.map(c=>({...c,characterIdentity:null}));
+ assert.deepEqual(savedProjectCharacters({characters:confirmedChars},{characters:stale}),confirmedChars);
+ assert.deepEqual(savedProjectCharacters({characters:[]},{characters:stale}),[]);
+ assert.deepEqual(savedProjectCharacters({}, {characters:stale}),stale);
+ assert.deepEqual(savedProjectCharacters({characters:confirmedChars}).map(c=>c.name),savedNames);
 });
