@@ -32,6 +32,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode }) {
 
   const fileInputRef = useRef(null);
   const blobUrlsRef = useRef([]);
+  const fullAIImportRef = useRef(false);
 
   useEffect(() => {
     const urls=blobUrlsRef.current;
@@ -43,8 +44,9 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode }) {
   const handleFileUpload = (e) => e.target.files[0] && setVideoFile(e.target.files[0]);
 
   const handleFullAIWorkflow = async () => {
+    if (fullAIImportRef.current) return;
     if (!script) return alert("Vui lòng nhập kịch bản!");
-
+    fullAIImportRef.current = true;
     setIsLocked(true);
     setLoadingStatus('Đang xử lý kịch bản GEN AI...');
 
@@ -86,6 +88,7 @@ Kịch bản: ${script}`);
 
     } catch (error) {
       console.error(error);
+      fullAIImportRef.current = false;
       setIsLocked(false);
       alert(error.message || "Đã xảy ra lỗi trong quá trình xử lý!");
     }

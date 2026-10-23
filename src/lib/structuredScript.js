@@ -5,6 +5,17 @@ const full=new Set(['context','character','tone','tone_of_voice','dialogue','voi
 const semi=new Set(['time','time_origin','scene_duration','footage','voiceover','effect','character','translate','tone_of_voice','vo_token_count','vo_target_range','audio_mode','content_function','review_angle']);
 const key=s=>s.normalize('NFC').toLowerCase()==='dịch'?'translate':s.normalize('NFC').toLowerCase();
 const fail=(code,scene,line)=>{throw Object.assign(new Error('Kịch bản '+(scene?'scene_'+scene+': ':'')+code+(line?' (dòng '+line+')':'')),{code});};
+const characterKey=value=>value.normalize('NFC').trim().replace(/\s+/gu,' ').toLowerCase();
+function characterName(value,scene){
+  // One speaker per scene in this grammar. Dashes between labels may repeat
+  // that same speaker; a hyphen inside a name (Mary-Jane) remains a name.
+  const parts=value.normalize('NFC').trim().split(/\s*[—–]\s*|\s+-\s+/u).map(s=>s.trim().replace(/\s+/gu,' '));
+  const name=parts[0];
+  if(!name||parts.some(part=>characterKey(part)!==characterKey(name))||full.has(key(name))||semi.has(key(name))||!/^\p{L}[\p{L}\p{M}\p{N}_ .'’-]*$/u.test(name)||/\s+(and|và)\s+/i.test(name)){
+    throw Object.assign(new Error(`Kịch bản scene_${scene}: trường Character cần một tên nhân vật rõ ràng. Các nhãn nối bằng dấu gạch phải cùng chỉ một nhân vật; nếu là hai người khác nhau, hãy tách lời thoại thành scene riêng. Không cần Set ID trước khi nhập.`),{code:'AMBIGUOUS_CHARACTER',scene,field:'Character'});
+  }
+  return name;
+}
 export function parseStructuredScript(script,projectType){
   if(!['full-ai','semi'].includes(projectType))throw Error('Unsupported project type');
   if(!/^\s*scene_/im.test(script))return null; // Other formats keep the explicit AI path.
@@ -36,14 +47,12 @@ export function parseStructuredScript(script,projectType){
   for(const {number,fields:f}of blocks){
     const get=k=>f[k]??'';
     if(projectType==='full-ai'){
-      const name=get('character').trim();
-      if(!name||known.has(key(name))||semi.has(key(name))||!/^\p{L}[\p{L}\p{N}_ .'’-]*$/u.test(name)||/\s+(and|và)\s+/i.test(name))fail('AMBIGUOUS_CHARACTER',number);
+      const name=characterName(get('character'),number);
       if(!get('dialogue').trim()||['""',"''",'“”'].includes(get('dialogue').trim()))fail('MISSING_DIALOGUE',number);
       if(Object.hasOwn(f,'voiceover')&&get('voiceover')!==get('dialogue'))fail('DIALOGUE_VOICEOVER_CONFLICT',number);
-      const id='char_'+Array.from(name.normalize('NFC').toLowerCase()).map(c=>c.codePointAt(0).toString(16)).join('_');
-      if(seen.has(id)&&seen.get(id)!==name)fail('AMBIGUOUS_CHARACTER',number);
+      const id='char_'+Array.from(characterKey(name)).map(c=>c.codePointAt(0).toString(16)).join('_');
       if(!seen.has(id)){seen.set(id,name);characters.push({id,name,description:'',voiceTone:''});}
-      scenes.push({scene_n:number,Context:get('context'),Camera:get('camera'),Action:get('action'),Character:name,Dialogue:get('dialogue'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice')||get('tone'),Word_count:countSpokenWords(get('dialogue')),status:'pending'});
+      scenes.push({scene_n:number,Context:get('context'),Camera:get('camera'),Action:get('action'),Character:seen.get(id),Dialogue:get('dialogue'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice')||get('tone'),Word_count:countSpokenWords(get('dialogue')),status:'pending'});
     }else{
       validateTime(get('time_origin'),number);if(get('time'))validateTime(get('time'),number);
       scenes.push({scene_n:number,time_origin:get('time_origin'),Footage:get('footage'),Effect:get('effect'),Character:get('character'),Voiceover:get('voiceover'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice'),Word_count:countSpokenWords(get('voiceover')),status:'pending'});
