@@ -21,18 +21,26 @@ export function validateCloudSettings(settings,mode='start_frame_to_video'){
 export function composeVideoPrompt(scene,additional=''){
   const composed=composeScene(scene);
   if(typeof additional!=='string'||additional.length>1000||[...additional].some(c=>{const n=c.charCodeAt(0);return n<32&&![9,10,13].includes(n)||n===127;}))throw Error('Custom prompt không hợp lệ (tối đa 1000 ký tự).');
-  // A default for generated speech, not a rewrite of authored tempo or emotion.
-  // Keep composeScene/snapshot semantics unchanged for existing durable attempts.
-  const speech=composed.dialogue.trim()?'\n\nSPEECH DELIVERY (not spoken text):\nFollow explicit authored speech pace and pauses first, including slow or deliberate delivery. Otherwise use natural conversational pace, clear articulation and short natural pauses; avoid drawn-out words or excess silence. Preserve every word, language, emotion and character identity.':'';
   const extra=additional.trim()?'\n\nOPTIONAL ADDITIONAL DIRECTION (subordinate to original Dialogue, Character, Camera and Action; never override them):\n'+additional:'';
-  const original=composed.prompt+extra;
+  // composeScene remains the validator and legacy snapshot contract. Construct only
+  // the outbound presentation here; never parse its text or mutate saved fields.
+  const visual=[['Context','CONTEXT'],['Character','CHARACTER'],['Action','ACTION'],['Camera','CAMERA'],['Tone_of_Voice','TONE']]
+    .filter(([key])=>scene[key]).map(([key,label])=>label+':\n'+scene[key]).join('\n\n');
+  const spoken=composed.dialogue!==''?'\n\nSPOKEN AUDIO (exact words, original language, synchronized lips):\n'+composed.dialogue:'';
+  const constraint='\n\nPICTURE: No dialogue captions, subtitles or overlays unless explicitly authored. Preserve physical writing.';
+  const original='VISUAL:\n'+visual+spoken+constraint+extra;
   if([...original].length>MAX_PROMPT_CHARS)throw Error('Tổng prompt vượt '+MAX_PROMPT_CHARS+' ký tự; hãy rút ngắn phần bổ sung. Kịch bản gốc không bị cắt.');
-  // Optional guidance must not make a previously valid authored prompt unusable.
-  let prompt=[...original+speech].length<=MAX_PROMPT_CHARS?composed.prompt+speech+extra:original;
-  const visual='\n\nVISUAL PRESENTATION (not spoken text):\nUnless explicitly required by the original scene, no subtitles, captions, on-screen dialogue text, speech bubbles or text overlays. Speak dialogue naturally; do not display it as text. Preserve authored signs, writing on objects and explicitly requested text. Camera constraints do not freeze character movement or acting.';
-  // Never truncate authored content or block an existing valid prompt to fit guidance.
-  if([...prompt+visual].length<=MAX_PROMPT_CHARS)prompt=prompt.slice(0,prompt.length-extra.length)+visual+extra;
-  return {...composed,prompt};
+  const delivery=composed.dialogue.trim()?'\n\nPERFORMANCE: Follow authored pace and pauses first. Otherwise speak naturally with clear articulation and short pauses; preserve words, language and emotion. Camera constraints do not freeze acting.':'';
+  const prompt=[...original+delivery].length<=MAX_PROMPT_CHARS?'VISUAL:\n'+visual+spoken+constraint+delivery+extra:original;
+  return {...composed,prompt,warnings:videoPromptWarnings(additional)};
+}
+// Report explicit additive requests without deleting user direction or adding a
+// confirmation gate. This narrow language check is not a semantic classifier.
+export function videoPromptWarnings(additional=''){
+  const clauses=additional.normalize('NFC').toLowerCase().split(/[.!?;\n]/);
+  const requested=clauses.some(s=>!/(?:\bno\b|\bnot\b|\bwithout\b|\bavoid\b|\bnever\b|không|đừng)/u.test(s)&&
+    /(?:add|show|include|render|display|enable|burn.?in|thêm|hiển thị|chèn|bật).{0,50}(?:subtitles?|captions?|phụ đề)/u.test(s));
+  return requested?['Custom prompt đang yêu cầu phụ đề, trái với mục tiêu hình ảnh không phụ đề. Nội dung bạn nhập vẫn được giữ nguyên; hãy sửa nếu đây không phải chủ ý.']:[];
 }
 // Provider docs / public model pricing metadata verified 2026-10-19.
 // No video references in this release: their input-duration pricing is distinct.

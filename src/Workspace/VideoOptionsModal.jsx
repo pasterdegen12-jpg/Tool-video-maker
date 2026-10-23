@@ -24,10 +24,11 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
   const locked=busy||reading||saving;
   const sourceImage=image?.dataUrl||scene.startFrameUrl||scene.imageUrl;
   const cap=videoMode(mode);
-  let issue='',duration;
+  let issue='',duration,warnings=[];
   try{duration=readSceneDuration(scene,cap.maxDuration);}catch(e){issue=e.message;}
   const settings={...options,duration,camera_fixed:sceneCameraFixed(scene,mode,options.camera_fixed)};
   try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);
+    warnings=prompt.warnings;
     if(!prompt.prompt)issue='Scene không có prompt.';
   }catch(e){issue=e.message;}
   if(mode==='start_frame_to_video'&&!sourceImage)issue||='Chọn ảnh Start Frame trước khi tạo video.';
@@ -103,6 +104,7 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
           <div className="grid grid-cols-2 gap-3"><label className="space-y-1 text-xs text-slate-400">Aspect Ratio<select aria-label="Aspect Ratio" className={field} value={settings.aspect_ratio} onChange={e=>setSettings({...options,aspect_ratio:e.target.value})}>{ASPECTS.map(v=><option key={v}>{v}</option>)}</select></label>
             <label className="space-y-1 text-xs text-slate-400">Resolution<select aria-label="Resolution" className={field} value={settings.resolution} onChange={e=>setSettings({...options,resolution:e.target.value})}>{VIDEO_RESOLUTIONS.map(v=><option key={v}>{v}</option>)}</select></label></div>
           <label className="block space-y-2 text-sm font-semibold">Custom prompt (tùy chọn)<textarea aria-label="Custom prompt (tùy chọn)" value={additional} onChange={e=>setAdditional(e.target.value)} maxLength={1000} rows={3} className={field+' resize-y'} placeholder="Bổ sung phong cách hoặc chi tiết. Không thay lời thoại, nhân vật hay chỉ dẫn gốc."/></label>
+          {warnings.map(warning=><p key={warning} role="status" className="text-xs text-amber-300">{warning}</p>)}
         </fieldset>
         <p className="text-xs text-slate-500">Ảnh PNG/JPEG: tối đa 25 MiB, 24 MP. Video MP4/WebM: tối đa 100 MiB; editor cắt video tối đa 10 phút. Đóng modal bỏ các lựa chọn chưa gửi.</p>
         {(error||issue||message)&&<p role="status" className="rounded-lg bg-slate-950 p-3 text-xs text-amber-300">{error||issue||message}</p>}

@@ -121,6 +121,11 @@ test('inaccessible stored image never submits, replacement control remains in mo
 test('close and scene switch discard temporary prompt; saved scene data stays untouched',async t=>{
  const {container}=await mount(t);await click(actionButtons(container)[0]);await fieldChange(modal().querySelector('textarea'),'Only first scene.');await click(modal().querySelector('[aria-label="Đóng tùy chọn video"]'));await click(actionButtons(container)[1]);assert.equal(modal().querySelector('textarea').value,'');assert.match(modal().textContent,/Scene 2/);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
 });
+test('caption request is visible as a nonblocking conflict, no confirmation or request on edit',async t=>{
+ const {container}=await mount(t);await click(actionButtons(container)[0]);await fieldChange(modal().querySelector('textarea'),'Add subtitles.');
+ assert.match(modal().textContent,/trái với mục tiêu hình ảnh không phụ đề/);assert.equal(primary().disabled,false);
+ assert.equal(modal().querySelector('textarea').value,'Add subtitles.');assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+});
 test('existing completed output is immediate after F5; modal can reopen without regenerating, and Edit Video is real',async t=>{
  const saved={...scenes[0],videoUrl:'https://media.example.org/saved.mp4',videoJob:{id:'f'.repeat(48),state:'completed'}};
  const {container}=await mount(t,{parsedData:[saved]});await settle();assert.equal(container.querySelector('video[aria-label="Output scene 1"]').getAttribute('src'),saved.videoUrl);assert.equal(container.querySelectorAll('video').length,1);

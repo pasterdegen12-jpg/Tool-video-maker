@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {VIDEO_MODES,composeVideoPrompt,cloudVideoCost,validateCloudSettings} from '../src/lib/cloudVideoOptions.js';
-import {DEFAULT_SETTINGS,composeScene} from '../src/lib/seedanceContract.js';
+import {DEFAULT_SETTINGS} from '../src/lib/seedanceContract.js';
 import {createProvider} from '../api/_lib/seedance/provider.js';
 import {readEditVideo,trimArguments} from '../src/lib/videoEditing.js';
 const scene={scene_n:1,Character:'confirmed_judge_id',Dialogue:'Exact spoken text.',Camera:'Fixed.',Action:'Sits.',Context:'Court.',Tone_of_Voice:'Calm'};
-test('additional direction is appended after exact canonical prompt; original screenplay untouched',()=>{
-  const before=structuredClone(scene),base=composeScene(scene),extra='Warm lighting.';
+test('additional direction is appended after canonical outbound prompt; original screenplay untouched',()=>{
+  const before=structuredClone(scene),base=composeVideoPrompt(scene),extra='Warm lighting.';
   assert.ok(composeVideoPrompt(scene,extra).prompt.startsWith(base.prompt+'\n\n'));
   assert.ok(composeVideoPrompt(scene,extra).prompt.endsWith(extra));assert.deepEqual(scene,before);
   assert.throws(()=>composeVideoPrompt(scene,'x'.repeat(1001)));assert.throws(()=>composeVideoPrompt(scene,'\0'));

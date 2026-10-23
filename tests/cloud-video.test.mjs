@@ -217,3 +217,12 @@ test('canonical Camera reaches actual provider submit despite stale false client
  const {s,quote,body}=await h.ready();assert.equal(quote.settings.camera_fixed,true);assert.equal(payload,undefined);
  await s.submit(session,body);assert.equal(payload.camera_fixed,true);assert.equal(payload.duration,quote.settings.duration);assert.equal(payload.prompt,quote.prompt);assert.deepEqual(h.projects,before);
 });
+
+test('real service submit boundary sends one spoken block, no translation and exact durable quote',async()=>{
+ let payload;const h=harness({provider:{submit:async(p,accepted)=>{payload=p;await accepted('subtitle_mock');return{id:'subtitle_mock',state:'queued'};}}});
+ h.projects.proj_test.data[0].Translate='Bản dịch chỉ dành cho trình biên tập.';
+ const before=structuredClone(h.projects),{s,quote,body}=await h.ready();assert.equal(payload,undefined);
+ await s.submit(session,body);assert.equal(payload.prompt,quote.prompt);assert.equal(payload.prompt,h.ledger().records[quote.quote_id].prompt);
+ assert.equal(payload.prompt.split('Exact original words.').length-1,1);assert.ok(payload.prompt.includes('SPOKEN AUDIO'));assert.ok(payload.prompt.includes('No dialogue captions'));assert.ok(!payload.prompt.includes('Bản dịch'));
+ assert.equal(payload.generate_audio,true);assert.equal(payload.duration,quote.settings.duration);assert.deepEqual(h.projects,before);
+});
