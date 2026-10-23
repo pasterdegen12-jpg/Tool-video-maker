@@ -3,6 +3,7 @@ import { MODEL } from '../../../src/lib/seedanceContract.js';
 import { requestHttps, publicAddress } from './transport.js';
 import { VideoError } from './errors.js';
 import {annotateFailure,diagnosticError,storageFailureReason} from './diagnostics.js';
+import {createHash,randomUUID} from 'node:crypto';
 export const API='https://api.wavespeed.ai/api/v3';
 const terminals=['completed','failed','cancelled','timeout','deleted'];
 export function retrySeconds(value,now=Date.now()){
@@ -69,7 +70,7 @@ export function createImageUploader(apiKey,{request=requestHttps,checkUrl=public
     }catch(error){throw annotateFailure(error,step,httpStatus);}
   }};
 }
-export function createProvider(config,{request=requestHttps,checkUrl=publicAddress,now=Date.now}={}){
+export function createProvider(config,{request=requestHttps,checkUrl=publicAddress,now=Date.now,diagnostics=event=>console.info(JSON.stringify(event))}={}){
   const apiHeaders={'Authorization':'Bearer '+config.apiKey,'Content-Type':'application/json'};
   const uploader=createImageUploader(config.apiKey,{request,checkUrl,now});
   function paid(){if(config.paidEnabled!==true||!config.apiKey)throw new VideoError('PAID_DISABLED');}
@@ -99,10 +100,20 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
     async submit(payload,onAccepted=()=>{},model=MODEL){
       checkedModel(model);
       paid();
-      const raw=await request(API+'/'+model,{method:'POST',headers:apiHeaders,body:JSON.stringify(payload)});
+      const body=JSON.stringify(payload),requestId=randomUUID();
+      const emit=event=>{try{diagnostics(event);}catch{/* Observability must never retry or block a billable request. */}};
+      // Allowlisted scalar diagnostics of the exact serialized request. Never log
+      // credentials, dialogue, image URLs or complete payloads; no ledger changes.
+      const serialized=JSON.parse(body);
+      emit({event:'video_provider_request',requestId,model,bodySha256:createHash('sha256').update(body).digest('hex'),
+        promptSha256:createHash('sha256').update(serialized.prompt||'').digest('hex'),promptChars:[...(serialized.prompt||'')].length,
+        cameraFixed:serialized.camera_fixed??null,duration:serialized.duration,resolution:serialized.resolution,aspectRatio:serialized.aspect_ratio,
+        generateAudio:serialized.generate_audio,seed:serialized.seed??null,hasImage:!!serialized.image,hasLastImage:!!serialized.last_image,referenceImageCount:serialized.reference_images?.length||0});
+      const raw=await request(API+'/'+model,{method:'POST',headers:apiHeaders,body});
       if([400,401,402,403,404,422].includes(raw.status))throw new VideoError('SUBMISSION_REJECTED');
       const task=data(raw);
       if(task.model===model&&typeof task.id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(task.id)){
+        emit({event:'video_provider_accepted',requestId,predictionId:task.id,model});
         // Persist the accepted ID before validating the remaining fields/URLs.
         await onAccepted(task.id);
       }
