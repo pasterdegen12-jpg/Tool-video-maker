@@ -15,7 +15,7 @@ test('incident screenshot excerpt imports exactly one Judge without visual ident
 });
 
 test('equivalent labels reuse existing stable character ID across scenes',()=>{
- const names=['Judge','Judge — Judge','Judge - Judge','Judge – Judge','Judge—Judge','  judge — JUDGE  '];
+ const names=['Judge','Judge — Judge','Judge - Judge','Judge – Judge','Judge—Judge','  judge — JUDGE  ','Judge-Judge','Judge -Judge','Judge- Judge'];
  const result=parse(names.map((name,i)=>scene(name,i+1)).join('\n'),'full-ai');
  assert.equal(result.characters.length,1);assert.equal(result.characters[0].id,parse(scene('Judge'),'full-ai').characters[0].id);
  assert.deepEqual(result.scenes.map(s=>s.Character),names.map(()=>'Judge'));
@@ -30,7 +30,7 @@ test('general names, internal hyphens, unicode and whitespace do not hardcode co
 
 test('different speakers stay distinct; unsupported multi-speaker declarations remain actionable errors',()=>{
  assert.deepEqual(parse(scene('Judge')+'\n'+scene('Lawyer',2),'full-ai').characters.map(c=>c.name),['Judge','Lawyer']);
- for(const name of ['Judge — Lawyer','Judge - Lawyer','Judge – Lawyer','Judge and Lawyer','Judge / Lawyer','Camera','Judge —']){
+ for(const name of ['Judge — Lawyer','Judge - Lawyer','Judge -Lawyer','Judge- Lawyer','Judge – Lawyer','Judge and Lawyer','Judge / Lawyer','Camera','Judge —']){
   assert.throws(()=>parse(scene(name),'full-ai'),e=>e.code==='AMBIGUOUS_CHARACTER'&&e.field==='Character'&&e.scene===1&&e.message.includes('tách lời thoại'));
  }
 });

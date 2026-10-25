@@ -27,9 +27,12 @@ test('Gemini rejects outsiders, oversized/arbitrary input, duplicate request IDs
  const pending=run(session,input);while(!release)await new Promise(r=>setImmediate(r));await assert.rejects(run(session,{...input,request_id:'22222222-2222-4222-8222-222222222222'}),/GEMINI_BUSY/);release();await pending;await assert.rejects(run(session,input),/GEMINI_ALREADY_USED/);assert.equal(calls,1);
 });
 test('Gemini exhaustion is bounded and redacted',async()=>{let calls=0;const run=createGeminiService({config:cfg,store:harness(),request:async()=>{calls++;throw Error('mock upstream secret');}});await assert.rejects(run(session,input),e=>e.code==='GEMINI_EXHAUSTED'&&!e.message.includes('secret'));assert.equal(calls,3);assert.equal(GEMINI_MODEL,'gemini-2.5-flash');assert.equal(geminiRequest('x').generationConfig.temperature,0);});
-test('MainEditor prompt/workflow body is byte-identical outside migrated transport and auth wiring',async()=>{
+test('MainEditor media workflow stays byte-identical outside authorized inline import-error presentation',async()=>{
  const after=await fs.readFile('src/MainEditor.jsx','utf8');
- assert.equal(sha(after.slice(after.indexOf('  const performCutVideo'))),baseline.mainEditorWorkflow);
+ const tail=after.slice(after.indexOf('  const performCutVideo'))
+  .replace("onChange={(e) => {setScript(e.target.value);setImportError('');}}\n              aria-invalid={!!importError}\n              aria-describedby={importError?'script-import-error':undefined}","onChange={(e) => setScript(e.target.value)}")
+  .replace("            {importError && <p id=\"script-import-error\" role=\"alert\" className={cn('text-sm rounded-xl border p-3 whitespace-pre-wrap break-words',darkMode?'text-red-300 border-red-700/50 bg-red-950/30':'text-red-700 border-red-200 bg-red-50')}>{importError}</p>}\n",'');
+ assert.equal(sha(tail),baseline.mainEditorWorkflow);
  assert.ok(!/VITE_GEMINI_KEY|generativelanguage.googleapis.com/.test(after));
 });
 const mini={text:'Exact original text.',voice_id:'Semicook',language_boost:'auto',emotion:'neutral',format:'mp3',sample_rate:32000,bitrate:128000,enable_sync_mode:true};

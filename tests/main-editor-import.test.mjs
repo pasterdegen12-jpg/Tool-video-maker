@@ -54,11 +54,34 @@ test('screenshot import clicks through parser/save/navigation exactly once, with
 test('ambiguous declaration preserves textarea and writes no partial project; corrected retry succeeds',async t=>{
  const invalid=input.replace('Judge — Judge','Judge — Lawyer');const {button,area}=await mount(t,invalid);
  await act(async()=>button.click());assert.equal(writes.length,0);assert.equal(routes.length,0);assert.equal(area.value,invalid);
- assert.match(alerts[0],/scene_1.*Character/);assert.match(alerts[0],/tách lời thoại/);
+ assert.deepEqual(alerts,[]);const error=document.querySelector('[role="alert"]');
+ assert.match(error.textContent,/scene_1.*Character/);assert.match(error.textContent,/Judge — Lawyer/);assert.match(error.textContent,/tách lời thoại/);
+ assert.equal(area.getAttribute('aria-invalid'),'true');
  await act(async()=>{Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype,'value').set.call(area,input);area.dispatchEvent(new window.Event('input',{bubbles:true}));});
  await act(async()=>button.click());assert.equal(writes.length,1);assert.equal(aiCalls,0);
+ assert.equal(document.querySelector('[role="alert"]'),null);
 });
 test('unstructured input still uses existing Gemini fallback and persists once',async t=>{
  const {button}=await mount(t,'INT. ROOM\nMIRA: Hello.');await act(async()=>button.click());
  assert.equal(aiCalls,1);assert.equal(writes.length,1);assert.equal(routes.length,1);
+});
+test('complete MainEditor flow preserves every scene of the real 23-scene script without AI calls',async t=>{
+ const capture=JSON.parse(await fs.readFile(new URL('../docs/phase3a/full-ai.web-http.json',import.meta.url),'utf8'));
+ // HTML textarea normalizes pasted CRLF to LF before React receives input.
+ const script=capture.request.script.replace(/\r\n?/g,'\n'),expected=capture.response.result.web_data;
+ const {button}=await mount(t,script);await act(async()=>button.click());
+ assert.equal(writes.length,1);assert.equal(routes.length,1);assert.equal(aiCalls,0);assert.deepEqual(alerts,[]);
+ const saved=writes[0].data;assert.equal(saved.originalScript,script);assert.equal(saved.data.length,23);
+ for(let i=0;i<23;i++)for(const field of ['scene_n','Character','Dialogue','Translate','Camera','Action','Context','Tone_of_Voice'])assert.equal(saved.data[i][field],expected.scenes[i][field]);
+ assert.deepEqual(saved.characters.map(c=>c.name),expected.characters.map(c=>c.name));
+});
+test('multi-scene UI resolves repeated dash variants together while preserving hyphenated and Unicode names',async t=>{
+ const names=['Judge — Judge','judge-JUDGE','Judge -Judge','Judge- Judge','Ánh Minh — A\u0301nh Minh','Mary-Jane-MARY-JANE'];
+ const script=names.map((name,i)=>`scene_${i+1}\nContext: hook\nCharacter: ${name}\nDialogue: "Exact ${i+1}—unchanged."\nDịch: "Bản dịch ${i+1}."\nAction: Original gesture.\nCamera: Fixed camera.`).join('\n\n');
+ const {button}=await mount(t,script);await act(async()=>button.click());
+ assert.equal(writes.length,1);assert.equal(routes.length,1);assert.equal(aiCalls,0);assert.deepEqual(alerts,[]);
+ const saved=writes[0].data;assert.equal(saved.originalScript,script);assert.equal(saved.data.length,6);
+ assert.deepEqual(saved.characters.map(c=>c.name),['Judge','Ánh Minh','Mary-Jane']);
+ assert.deepEqual(saved.data.map(s=>s.Character),['Judge','Judge','Judge','Judge','Ánh Minh','Mary-Jane']);
+ for(const [i,s]of saved.data.entries()){assert.equal(s.scene_n,i+1);assert.equal(s.Dialogue,`"Exact ${i+1}—unchanged."`);assert.equal(s.Translate,`"Bản dịch ${i+1}."`);}
 });

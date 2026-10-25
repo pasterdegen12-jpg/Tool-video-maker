@@ -9,10 +9,15 @@ const characterKey=value=>value.normalize('NFC').trim().replace(/\s+/gu,' ').toL
 function characterName(value,scene){
   // One speaker per scene in this grammar. Dashes between labels may repeat
   // that same speaker; a hyphen inside a name (Mary-Jane) remains a name.
-  const parts=value.normalize('NFC').trim().split(/\s*[—–]\s*|\s+-\s+/u).map(s=>s.trim().replace(/\s+/gu,' '));
+  const parts=value.normalize('NFC').trim().split(/\s*[—–]\s*|\s+-\s*|\s*-\s+/u).map(s=>s.trim().replace(/\s+/gu,' ')).map(part=>{
+    // An unspaced hyphen can belong to a name. Collapse only demonstrably
+    // equivalent halves, including repeated hyphenated names; never guess roles.
+    for(let i=1;i<part.length-1;i++)if(part[i]==='-'&&characterKey(part.slice(0,i))===characterKey(part.slice(i+1)))return part.slice(0,i);
+    return part;
+  });
   const name=parts[0];
   if(!name||parts.some(part=>characterKey(part)!==characterKey(name))||full.has(key(name))||semi.has(key(name))||!/^\p{L}[\p{L}\p{M}\p{N}_ .'’-]*$/u.test(name)||/\s+(and|và)\s+/i.test(name)){
-    throw Object.assign(new Error(`Kịch bản scene_${scene}: trường Character cần một tên nhân vật rõ ràng. Các nhãn nối bằng dấu gạch phải cùng chỉ một nhân vật; nếu là hai người khác nhau, hãy tách lời thoại thành scene riêng. Không cần Set ID trước khi nhập.`),{code:'AMBIGUOUS_CHARACTER',scene,field:'Character'});
+    throw Object.assign(new Error(`Kịch bản scene_${scene}: Character ${JSON.stringify(value)} chưa xác định được một nhân vật duy nhất. Dùng một tên nhân vật hoặc các nhãn tương đương; nếu là hai người khác nhau, hãy tách lời thoại thành scene riêng. Không cần Set ID trước khi nhập.`),{code:'AMBIGUOUS_CHARACTER',scene,field:'Character',value});
   }
   return name;
 }

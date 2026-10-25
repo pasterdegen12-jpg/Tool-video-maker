@@ -19,6 +19,7 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode }) {
   const {getToken}=useAuth();
 
   const [script, setScript] = useState('');
+  const [importError, setImportError] = useState('');
   const [videoFile, setVideoFile] = useState(null);
   const [localProjectType, setLocalProjectType] = useState('full-ai');
   const [localLanguage, setLocalLanguage] = useState('en');
@@ -45,7 +46,8 @@ export default function MainEditor({ ffmpeg, isFfmpegLoaded, darkMode }) {
 
   const handleFullAIWorkflow = async () => {
     if (fullAIImportRef.current) return;
-    if (!script) return alert("Vui lòng nhập kịch bản!");
+    if (!script.trim()) return setImportError("Vui lòng nhập kịch bản!");
+    setImportError('');
     fullAIImportRef.current = true;
     setIsLocked(true);
     setLoadingStatus('Đang xử lý kịch bản GEN AI...');
@@ -90,12 +92,13 @@ Kịch bản: ${script}`);
       console.error(error);
       fullAIImportRef.current = false;
       setIsLocked(false);
-      alert(error.message || "Đã xảy ra lỗi trong quá trình xử lý!");
+      setImportError(error.message || "Đã xảy ra lỗi trong quá trình xử lý!");
     }
   };
 
   const handleSemiWorkflow = async () => {
-    if (!script) return alert("Vui lòng nhập kịch bản!");
+    if (!script.trim()) return setImportError("Vui lòng nhập kịch bản!");
+    setImportError('');
     if (!videoFile) {
       setShowVideoPopup(true);
       return;
@@ -141,7 +144,7 @@ Kịch bản: ${script}`);
     } catch (error) {
       console.error(error);
       setIsLocked(false);
-      alert(error.message || "Đã xảy ra lỗi khi xử lý kịch bản!");
+      setImportError(error.message || "Đã xảy ra lỗi khi xử lý kịch bản!");
     }
   };
 
@@ -342,7 +345,9 @@ Kịch bản: ${script}`);
             </label>
             <textarea
               value={script}
-              onChange={(e) => setScript(e.target.value)}
+              onChange={(e) => {setScript(e.target.value);setImportError('');}}
+              aria-invalid={!!importError}
+              aria-describedby={importError?'script-import-error':undefined}
               className={cn(
                 'w-full h-[280px] rounded-xl p-5 text-[15px] leading-relaxed',
                 'placeholder:text-slate-500 focus:outline-none resize-none transition-all duration-200',
@@ -353,6 +358,7 @@ Kịch bản: ${script}`);
               )}
               placeholder="Dán kịch bản chi tiết vào đây..."
             />
+            {importError && <p id="script-import-error" role="alert" className={cn('text-sm rounded-xl border p-3 whitespace-pre-wrap break-words',darkMode?'text-red-300 border-red-700/50 bg-red-950/30':'text-red-700 border-red-200 bg-red-50')}>{importError}</p>}
           </div>
 
           {/* RIGHT — Video upload + action buttons */}
