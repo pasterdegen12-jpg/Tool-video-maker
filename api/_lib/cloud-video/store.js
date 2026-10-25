@@ -45,7 +45,7 @@ export function createCloudStore(db){
         const team=(await tx.get(teamRef)).data()||newLedger();
         const result=change(data,team);
         if(result&&typeof result.then==='function')throw new CloudError('INVALID_TRANSACTION',500);
-        requireValue(Buffer.byteLength(JSON.stringify(data))<850000&&Buffer.byteLength(JSON.stringify(team))<850000,'LEDGER_CAPACITY',429);
+        requireValue(Buffer.byteLength(JSON.stringify(data))<850000&&Buffer.byteLength(JSON.stringify(team))<850000,'LEDGER_STORAGE_FULL',503);
         tx.set(ref,data);tx.set(teamRef,team);return result;
       });
     },

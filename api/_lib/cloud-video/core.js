@@ -76,7 +76,8 @@ export function newLedger(){return {version:1,records:{},rates:{},spend:{}};}
 export function rate(ledger,key,now,max){
   const previous=ledger.rates[key]||{start:now,count:0};
   const current=now-previous.start>=60000?{start:now,count:0}:previous;
-  requireValue(current.count<max,'RATE_LIMIT',429);current.count++;ledger.rates[key]=current;
+  if(current.count>=max)throw Object.assign(new CloudError('RATE_LIMIT',429),{retryAfter:Math.max(1,Math.ceil((current.start+60000-now)/1000))});
+  current.count++;ledger.rates[key]=current;
 }
 export function authorizeRecord(ledger,recordId,session,{requireSession=false}={}){
   const record=ledger.records[recordId];requireValue(record,'NOT_FOUND',404);

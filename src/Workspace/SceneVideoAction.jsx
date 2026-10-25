@@ -40,7 +40,7 @@ function Action({scene,projectId,auth,onCompleted,onSaveVideo,outputUrl,recovery
     {recoveryError&&<p role="alert" className="text-xs text-amber-500">{recoveryError}</p>}
     {!auth.isSignedIn&&<p role="alert">Đăng nhập trước khi tạo video.</p>}
     {(failed||state.blocked&&!state.result)&&state.message&&<p role="alert" className="text-sm text-amber-500">{state.message}</p>}
-    {(state.blocked&&state.status!=='completed'||failed)&&<button type="button" disabled={state.busy} onClick={()=>controller.discover(projectId,scene.scene_n,true)} className="text-xs underline">Khôi phục trạng thái</button>}
+    {(state.blocked&&state.status!=='completed'||failed&&state.attemptId)&&<button type="button" disabled={state.busy} onClick={()=>controller.discover(projectId,scene.scene_n,true)} className="text-xs underline">Khôi phục trạng thái</button>}
     {open&&<VideoOptionsModal scene={scene} outputUrl={state.result||outputUrl||scene.videoUrl} savedOptions={scene.videoJob?.options} busy={state.busy} blocked={blocked} message={recoveryError||state.message||label} onGenerate={generate} onClose={()=>setOpen(false)} onSaveVideo={onSaveVideo}/>}
   </section>;
 }

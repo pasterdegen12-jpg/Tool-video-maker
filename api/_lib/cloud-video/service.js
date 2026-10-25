@@ -84,7 +84,9 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       }
       const record={...prepared,id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:prepared.mode==='text_to_video'?'READY':'QUOTED',transitions:[{stage:prepared.mode==='text_to_video'?'READY':'QUOTED',at:now()}]};
       await change(session,(l,team)=>{
-        rate(l,'quote',now(),10);rate(team,'quote',now(),30);requireValue(Object.keys(l.records).length<80,'LEDGER_CAPACITY',429);
+        // History is not admission capacity. Retain all durable paid records;
+        // the store's serialized-byte ceiling protects Firestore document size.
+        rate(l,'quote',now(),10);rate(team,'quote',now(),30);
         requireValue(!Object.values(l.records).some(r=>r.projectId===record.projectId&&String(r.sceneId)===String(record.sceneId)&&['SUBMITTING','UNKNOWN','ACCEPTED','RUNNING'].includes(r.stage)),'UNRESOLVED_ATTEMPT');
         checkAdmission(l,record,now(),config.limits);checkAdmission(team,record,now(),config.teamLimits);
         l.records[attemptId]=record;

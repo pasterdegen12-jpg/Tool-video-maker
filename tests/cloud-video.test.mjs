@@ -38,6 +38,23 @@ test('cloud quote uses saved Character, exact legacy dialogue and preserves comp
   const h=harness(),before=structuredClone(h.projects),q=await h.service().quote(session,h.input);
   assert.match(q.prompt,/CHARACTER:\nconfirmed_character_id/);assert.match(q.prompt,/Exact original words\./);assert.equal(q.cost.usd,'0.1200');assert.deepEqual(h.projects,before);assert.equal(h.calls().posts,0);
 });
+test('80 historical records do not permanently block quotes or consume paid slots, across shared-account sessions',async()=>{
+ const h=harness();const initial=await h.service().quote(session,h.input);const l=h.ledger();
+ delete l.records[initial.quote_id];for(let i=0;i<80;i++)l.records['history_'+i]={id:'history_'+i,stage:'COMPLETED',paidConsent:{at:1},requestHash:'old_'+i,predictionId:'old_'+i,videoUrl:'https://media.example.org/old.mp4'};
+ const before=structuredClone(l.records),spend=structuredClone(l.spend);
+ const a=await h.service().quote(session,h.input),b=await h.service().quote({...session,session:'second-browser'},h.input);
+ assert.notEqual(a.quote_id,b.quote_id);for(const [id,r]of Object.entries(before))assert.deepEqual(h.ledger().records[id],r);
+ assert.deepEqual(h.ledger().spend,spend);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
+ assert.equal(Object.keys(h.ledger().records).length,82);
+});
+test('temporary quote rate rejection supplies Retry-After; next window recovers without provider calls',async()=>{
+ const h=harness();for(let i=0;i<10;i++)await h.service().quote(session,h.input);
+ await assert.rejects(h.service().quote(session,h.input),e=>e.code==='RATE_LIMIT'&&e.status===429&&e.retryAfter===60);
+ h.advance(60000);await h.service().quote(session,h.input);assert.equal(h.calls().posts,0);assert.deepEqual(h.ledger().spend,{});
+ const handler=createVideoHandler({configure:()=>config,authenticate:async()=>session,createService:()=>({quote:async()=>{throw Object.assign(new CloudError('RATE_LIMIT',429),{retryAfter:12});}})});
+ const headers={},res={setHeader(k,v){headers[k]=v;},end(v){this.body=JSON.parse(v);}};await handler({url:'/api/video?action=quote',method:'POST',body:{}},res);
+ assert.equal(res.statusCode,429);assert.equal(headers['Retry-After'],'12');assert.equal(res.body.error.code,'RATE_LIMIT');
+});
 test('client-created prompt/scene/price and wrong project cannot be quoted',async()=>{
   const h=harness();for(const extra of [{prompt:'injected'},{scene:{Dialogue:'changed'}},{cost:1}])await assert.rejects(h.service().quote(session,{...h.input,...extra}),/INVALID_REQUEST/);
   await assert.rejects(h.service().quote(session,{...h.input,project_id:'proj_other'}),/PROJECT_FORBIDDEN/);

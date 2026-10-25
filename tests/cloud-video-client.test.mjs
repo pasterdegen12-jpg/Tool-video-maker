@@ -168,3 +168,15 @@ test('videoMessage returns null for unknown codes (not raw provider detail)',()=
  assert.equal(videoMessage('INTERNAL_PROVIDER_DETAIL'),null);
  assert.equal(videoMessage('SOME_UNRECOGNIZED_ERROR'),null);
 });
+for(const format of ['seconds','date','absent','html'])test('quote 429 '+format+' respects cooldown, preserves input and retries only on manual action',async()=>{
+ let clock=now,calls=0;const states=[],before=structuredClone(payload);
+ const controller=createCloudVideoController({getToken:async()=>'mock',now:()=>clock,onChange:s=>states.push(s),fetchImpl:async(_url,options)=>{
+  calls++;assert.equal(new URL(_url,'https://example.org').searchParams.get('action'),'quote');
+  if(calls===1)return new Response(format==='html'?'Busy':JSON.stringify({error:{code:'RATE_LIMIT'}}),{status:429,headers:{'content-type':format==='html'?'text/html':'application/json',...(format==='absent'?{}:{'retry-after':format==='date'?new Date(now+12000).toUTCString():'12'})}});
+  const q=publicQuote({...prepareQuote({projectType:'full-ai',data:[scene]},JSON.parse(options.body),clock),id,quoteExpires:clock+120000},false);
+  return new Response(JSON.stringify(q),{headers:{'content-type':'application/json'}});
+ }});
+ await controller.generate(payload);assert.equal(calls,1);assert.equal(states.at(-1).blocked,false);assert.match(states.at(-1).message,/tạm thời/);assert.deepEqual(payload,before);
+ if(format!=='absent'){await controller.generate(payload);assert.equal(calls,1);clock+=12000;}
+ await controller.generate(payload);assert.equal(calls,2);assert.match(states.at(-1).message,/tắt tạo video/);assert.deepEqual(payload,before);
+});

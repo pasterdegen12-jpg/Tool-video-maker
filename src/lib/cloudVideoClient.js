@@ -2,14 +2,14 @@ import {sceneCameraFixed} from './sceneCamera.js';
 import {videoMode,composeVideoPrompt,cloudVideoCost} from './cloudVideoOptions.js';
 import {readSceneDuration} from './sceneDuration.js';
 const messages={SCENE_DURATION_MISSING:'Scene chưa lưu thời lượng từ phân tích kịch bản. Cần phân tích lại ở MainEditor; không tự đoán cho dự án cũ.',SCENE_DURATION_INVALID:'Thời lượng scene đã lưu không hợp lệ. Kiểm tra lại bước phân tích kịch bản.',SCENE_DURATION_INCOMPATIBLE:'Thời lượng scene đã lưu vượt hợp đồng chế độ video. Chọn chế độ tương thích hoặc phân tích/chia lại scene ở MainEditor.',SCENE_DURATION_MISMATCH:'Thông số thời lượng không khớp scene đã lưu. Tải lại dữ liệu phân tích kịch bản.',SOURCE_IMAGE_MISSING:'Scene chưa có ảnh INPUT. Chọn ảnh ngay tại scene.',SOURCE_IMAGE_FORBIDDEN:'Ảnh INPUT không thuộc kho ảnh của dự án. Chọn lại ảnh cho scene.',SOURCE_IMAGE_UNAVAILABLE:'Không đọc được ảnh INPUT đã lưu. Chọn lại ảnh cho scene.',SOURCE_IMAGE_INVALID:'Ảnh INPUT không hợp lệ hoặc vượt giới hạn. Chọn PNG/JPEG tối đa 25 MiB / 24 MP.',SOURCE_IMAGE_CHANGED:'Ảnh INPUT đã thay đổi. Tải lại dự án rồi thử lại.',DIALOGUE_DURATION:'Thời lượng scene đã lưu không đủ cho lời thoại theo quy tắc phân tích. Kiểm tra lại hoặc chia scene ở MainEditor; hệ thống không tự cắt nội dung.',IMAGE_INVALID:'Ảnh không hợp lệ. Chọn PNG/JPEG khác.',SESSION_MISMATCH:'Phiên đăng nhập đã thay đổi. Tải lại trang.',UNAUTHORIZED:'Cần đăng nhập lại.',TEAM_FORBIDDEN:'Tài khoản chưa được cấp quyền tạo video của nhóm. Liên hệ quản trị viên.',PROJECT_FORBIDDEN:'Dự án chưa được cấp quyền tạo video cho tài khoản này.',PROJECT_CHANGED:'Nội dung hoặc ảnh của scene đã thay đổi. Tải lại dự án rồi thử lại.',QUOTE_EXPIRED:'Phiên tạo video hết hạn. Vui lòng thử lại.',CONCURRENCY_LIMIT:'Đang có video được xử lý. Chờ video đó hoàn tất rồi thử lại.',SPENDING_LIMIT:'Không đủ hạn mức chi phí ngày hoặc mỗi video. Liên hệ quản trị viên; chưa gửi yêu cầu tính phí.',UNRESOLVED_ATTEMPT:'Scene đang có yêu cầu chưa hoàn thành. Dùng Khôi phục để kiểm tra.',DUPLICATE_INPUT:'Yêu cầu này đã được gửi. Dùng Khôi phục để xem kết quả.',PAID_DISABLED:'Quản trị viên đang tắt tạo video tính phí. Chưa gửi yêu cầu tạo video.',RATE_LIMIT:'Có quá nhiều yêu cầu. Đợi một phút rồi thử lại.',IMAGE_HASH_MISMATCH:'Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.',ARCHIVE_PENDING:'Video đang chờ lưu. Dùng Khôi phục để tiếp tục.',STATUS_UNAVAILABLE:'Chưa đọc được trạng thái. Dùng Khôi phục để kiểm tra.'};
-export const videoMessage=code=>messages[String(code).split(';')[0]]||null;
+export const videoMessage=code=>({LEDGER_STORAGE_FULL:'Kho nhật ký video đã đầy dung lượng. Video cũ vẫn được giữ; cần mở rộng lưu trữ trước khi gửi yêu cầu mới.',LEDGER_CAPACITY:'Nhật ký video đã đạt giới hạn lưu trữ của phiên bản cũ. Chưa gửi yêu cầu tính phí.'}[code]||messages[String(code).split(';')[0]]||null);
 import {estimateCost,safeMediaUrl} from './seedanceContract.js';
 import {imageDimensions,MAX_SELECTED_IMAGE_BYTES} from './seedanceImage.js';
 import {CLOUD_MAX_DURATION} from './cloudVideoContract.js';
 const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const sleep=(ms,signal)=>new Promise((resolve,reject)=>{const stop=()=>{clearTimeout(timer);reject(new Error('CANCELLED'));};const timer=setTimeout(()=>{signal.removeEventListener('abort',stop);resolve();},ms);signal.addEventListener('abort',stop,{once:true});});
 export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,now=Date.now,wait=sleep}){
-  let active=null,consumed=false;
+  let active=null,consumed=false,retryAt=0;
   const emit=(run,value)=>{if(active===run&&!run.signal.aborted)onChange(value);};
   async function request(action,payload,run,query={}){
     const token=await getToken();if(!token)throw new Error('Cần đăng nhập lại.');
@@ -17,6 +17,12 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
     const parameters=new URLSearchParams({action,...query});
     const response=await fetchImpl('/api/video?'+parameters,{method:payload?'POST':'GET',headers:{Authorization:'Bearer '+token,...(payload?{'Content-Type':'application/json'}:{})},
       ...(payload?{body:JSON.stringify(payload)}:{}),signal:AbortSignal.any([run.signal,AbortSignal.timeout(120000)]),credentials:'omit',mode:'same-origin',redirect:'error',cache:'no-store',referrerPolicy:'same-origin'});
+    if(response.status===429){
+      const header=response.headers.get('retry-after');
+      const until=header&&/^\d+$/.test(header)?now()+Number(header)*1000:header?Date.parse(header):NaN;
+      retryAt=Number.isFinite(until)&&until>now()?until:now();
+      throw Object.assign(new Error(`Yêu cầu tạm thời bị giới hạn.${retryAt>now()?' Đợi '+Math.ceil((retryAt-now())/1000)+' giây rồi':''} Bấm Generate Video để thử lại khi sẵn sàng; lựa chọn hiện tại được giữ nguyên.`),{code:'RATE_LIMIT',retryAt});
+    }
     if(!response.headers.get('content-type')?.startsWith('application/json'))throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
     const raw=await response.text();if(raw.length>100000)throw new Error('Phản hồi quá lớn.');
     const value=JSON.parse(raw);if(!response.ok)throw Object.assign(new Error(videoMessage(value.error?.code)||'Không thể tạo video. Liên hệ quản trị viên.'),{code:value.error?.code});return value;
@@ -48,7 +54,9 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
     cancel(notify=true){active?.abort();active=null;consumed=false;if(notify)onChange({status:'stopped',busy:false,message:'Đã dừng chờ. Job đã nhận vẫn có thể tính phí; dùng Khôi phục.'});},
     // Called only by Generate Video inside the options modal. No work on open/change.
     async generate(payload){
-      if(active||consumed)return;const run=new AbortController();active=run;consumed=false;
+      if(active||consumed)return;
+      if(retryAt>now()){onChange({status:'error',busy:false,blocked:false,code:'RATE_LIMIT',message:'Đợi '+Math.ceil((retryAt-now())/1000)+' giây rồi bấm Generate Video để thử lại. Lựa chọn hiện tại được giữ nguyên.'});return;}
+      const run=new AbortController();active=run;consumed=false;
       let attemptId=null;
       try{
         // Step 1: read and hash image bytes locally

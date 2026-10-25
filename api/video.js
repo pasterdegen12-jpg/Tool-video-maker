@@ -29,6 +29,8 @@ export function createVideoHandler({configure=()=>cloudConfig(process.env),authe
       // Never emit raw provider responses, SDK errors, signed URLs or credentials.
       const code=typeof error.code==='string'&&/^[A-Z][A-Z0-9_]{1,70}$/.test(error.code)?error.code:'VIDEO_UNAVAILABLE';
       res.statusCode=error.status||(['UNAUTHORIZED'].includes(code)?401:code==='FORBIDDEN_ORIGIN'?403:503);
+      if(res.statusCode===429&&Number.isSafeInteger(error.retryAfter)&&error.retryAfter>0)res.setHeader('Retry-After',String(error.retryAfter));
+      if(res.statusCode===429||code==='LEDGER_STORAGE_FULL')console.warn(JSON.stringify({event:'video_admission_rejected',code,status:res.statusCode,retryAfter:error.retryAfter||null}));
       res.end(JSON.stringify({error:{code,message:code}}));
     }
   };
