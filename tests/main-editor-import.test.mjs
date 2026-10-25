@@ -85,3 +85,13 @@ test('multi-scene UI resolves repeated dash variants together while preserving h
  assert.deepEqual(saved.data.map(s=>s.Character),['Judge','Judge','Judge','Judge','Ánh Minh','Mary-Jane']);
  for(const [i,s]of saved.data.entries()){assert.equal(s.scene_n,i+1);assert.equal(s.Dialogue,`"Exact ${i+1}—unchanged."`);assert.equal(s.Translate,`"Bản dịch ${i+1}."`);}
 });
+test('real recurring role/name and blank-description syntax reaches save and Workspace without Set ID',async t=>{
+ const names=['Judge — ','Defendant (Mr. Kowalski) — ','Plaintiff (Miss Price) — ','Judge — '];
+ const script=names.map((name,i)=>`scene_${i+1}\nCharacter: ${name}\nDialogue: "Original line ${i+1}."\nDịch: "Bản dịch ${i+1}."`).join('\n\n');
+ const {button}=await mount(t,script);await act(async()=>button.click());
+ assert.deepEqual(alerts,[]);assert.equal(writes.length,1);assert.equal(routes.length,1);assert.equal(aiCalls,0);
+ const saved=writes[0].data;assert.equal(saved.originalScript,script);
+ assert.deepEqual(saved.characters.map(c=>c.name),['Judge','Defendant (Mr. Kowalski)','Plaintiff (Miss Price)']);
+ assert.deepEqual(saved.data.map(s=>s.Character),['Judge','Defendant (Mr. Kowalski)','Plaintiff (Miss Price)','Judge']);
+ assert.ok(saved.characters.every(c=>!c.characterIdentity));
+});

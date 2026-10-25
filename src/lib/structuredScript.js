@@ -15,8 +15,14 @@ function characterName(value,scene){
     for(let i=1;i<part.length-1;i++)if(part[i]==='-'&&characterKey(part.slice(0,i))===characterKey(part.slice(i+1)))return part.slice(0,i);
     return part;
   });
+  // A single terminal separator is an empty optional description, not a
+  // second speaker. Interior/leading empty labels remain invalid.
+  if(parts.length===2&&parts[0]&&parts[1]==='')parts.pop();
   const name=parts[0];
-  if(!name||parts.some(part=>characterKey(part)!==characterKey(name))||full.has(key(name))||semi.has(key(name))||!/^\p{L}[\p{L}\p{M}\p{N}_ .'’-]*$/u.test(name)||/\s+(and|và)\s+/i.test(name)){
+  // Preserve a role/name qualifier as one complete label; do not infer that
+  // e.g. Defendant and Defendant (Mr. Kowalski) are aliases across scenes.
+  const label=/^(\p{L}[\p{L}\p{M}\p{N}_ .'’-]*?)(?:\s+\((\p{L}[\p{L}\p{M}\p{N}_ .'’-]*)\))?$/u.exec(name||'');
+  if(!label||parts.some(part=>characterKey(part)!==characterKey(name))||full.has(key(label[1]))||semi.has(key(label[1]))||/\s+(and|và)\s+/i.test(name)){
     throw Object.assign(new Error(`Kịch bản scene_${scene}: Character ${JSON.stringify(value)} chưa xác định được một nhân vật duy nhất. Dùng một tên nhân vật hoặc các nhãn tương đương; nếu là hai người khác nhau, hãy tách lời thoại thành scene riêng. Không cần Set ID trước khi nhập.`),{code:'AMBIGUOUS_CHARACTER',scene,field:'Character',value});
   }
   return name;

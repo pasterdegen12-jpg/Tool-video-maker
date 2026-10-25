@@ -30,9 +30,19 @@ test('general names, internal hyphens, unicode and whitespace do not hardcode co
 
 test('different speakers stay distinct; unsupported multi-speaker declarations remain actionable errors',()=>{
  assert.deepEqual(parse(scene('Judge')+'\n'+scene('Lawyer',2),'full-ai').characters.map(c=>c.name),['Judge','Lawyer']);
- for(const name of ['Judge — Lawyer','Judge - Lawyer','Judge -Lawyer','Judge- Lawyer','Judge – Lawyer','Judge and Lawyer','Judge / Lawyer','Camera','Judge —']){
+ for(const name of ['Judge — Lawyer','Judge - Lawyer','Judge -Lawyer','Judge- Lawyer','Judge – Lawyer','Judge and Lawyer','Judge / Lawyer','Camera','— Judge','Judge — —','Camera (Judge)','Judge (Lawyer and Defendant)']){
   assert.throws(()=>parse(scene(name),'full-ai'),e=>e.code==='AMBIGUOUS_CHARACTER'&&e.field==='Character'&&e.scene===1&&e.message.includes('tách lời thoại'));
  }
+});
+
+test('real recurring grammar: empty description suffix and role/name qualifier identify one character',()=>{
+ const names=['Judge — ','Defendant (Mr. Kowalski) — ','Judge','Plaintiff (Miss Price) — ','Defendant (Mr. Kowalski)'];
+ const result=parse(names.map((name,i)=>scene(name,i+1)).join('\n'),'full-ai');
+ assert.deepEqual(result.characters.map(c=>c.name),['Judge','Defendant (Mr. Kowalski)','Plaintiff (Miss Price)']);
+ assert.deepEqual(result.scenes.map(s=>s.Character),['Judge','Defendant (Mr. Kowalski)','Judge','Plaintiff (Miss Price)','Defendant (Mr. Kowalski)']);
+ assert.ok(result.scenes.every(s=>s.Dialogue===dialogue));
+ assert.equal(result.sourceMetadata[1].fields.character,names[1]);
+ for(const value of ['Defendant (Mr. Kowalski) — Plaintiff (Miss Price)','Judge — Lawyer'])assert.throws(()=>parse(scene(value),'full-ai'),e=>e.code==='AMBIGUOUS_CHARACTER');
 });
 
 test('controlled 21-scene screenplay keeps all authored fields and three characters',()=>{
