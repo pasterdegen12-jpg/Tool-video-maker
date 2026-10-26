@@ -5,28 +5,6 @@ const full=new Set(['context','character','tone','tone_of_voice','dialogue','voi
 const semi=new Set(['time','time_origin','scene_duration','footage','voiceover','effect','character','translate','tone_of_voice','vo_token_count','vo_target_range','audio_mode','content_function','review_angle']);
 const key=s=>s.normalize('NFC').toLowerCase()==='dịch'?'translate':s.normalize('NFC').toLowerCase();
 const fail=(code,scene,line)=>{throw Object.assign(new Error('Kịch bản '+(scene?'scene_'+scene+': ':'')+code+(line?' (dòng '+line+')':'')),{code});};
-const characterKey=value=>value.normalize('NFC').trim().replace(/\s+/gu,' ').toLowerCase();
-function characterName(value,scene){
-  // One speaker per scene in this grammar. Dashes between labels may repeat
-  // that same speaker; a hyphen inside a name (Mary-Jane) remains a name.
-  const parts=value.normalize('NFC').trim().split(/\s*[—–]\s*|\s+-\s*|\s*-\s+/u).map(s=>s.trim().replace(/\s+/gu,' ')).map(part=>{
-    // An unspaced hyphen can belong to a name. Collapse only demonstrably
-    // equivalent halves, including repeated hyphenated names; never guess roles.
-    for(let i=1;i<part.length-1;i++)if(part[i]==='-'&&characterKey(part.slice(0,i))===characterKey(part.slice(i+1)))return part.slice(0,i);
-    return part;
-  });
-  // A single terminal separator is an empty optional description, not a
-  // second speaker. Interior/leading empty labels remain invalid.
-  if(parts.length===2&&parts[0]&&parts[1]==='')parts.pop();
-  const name=parts[0];
-  // Preserve a role/name qualifier as one complete label; do not infer that
-  // e.g. Defendant and Defendant (Mr. Kowalski) are aliases across scenes.
-  const label=/^(\p{L}[\p{L}\p{M}\p{N}_ .'’-]*?)(?:\s+\((\p{L}[\p{L}\p{M}\p{N}_ .'’-]*)\))?$/u.exec(name||'');
-  if(!label||parts.some(part=>characterKey(part)!==characterKey(name))||full.has(key(label[1]))||semi.has(key(label[1]))||/\s+(and|và)\s+/i.test(name)){
-    throw Object.assign(new Error(`Kịch bản scene_${scene}: Character ${JSON.stringify(value)} chưa xác định được một nhân vật duy nhất. Dùng một tên nhân vật hoặc các nhãn tương đương; nếu là hai người khác nhau, hãy tách lời thoại thành scene riêng. Không cần Set ID trước khi nhập.`),{code:'AMBIGUOUS_CHARACTER',scene,field:'Character',value});
-  }
-  return name;
-}
 export function parseStructuredScript(script,projectType){
   if(!['full-ai','semi'].includes(projectType))throw Error('Unsupported project type');
   if(!/^\s*scene_/im.test(script))return null; // Other formats keep the explicit AI path.
@@ -58,12 +36,13 @@ export function parseStructuredScript(script,projectType){
   for(const {number,fields:f}of blocks){
     const get=k=>f[k]??'';
     if(projectType==='full-ai'){
-      const name=characterName(get('character'),number);
+      // Character is authored text, not a semantic identity or visual ID.
+      const name=get('character').trim();
       if(!get('dialogue').trim()||['""',"''",'“”'].includes(get('dialogue').trim()))fail('MISSING_DIALOGUE',number);
       if(Object.hasOwn(f,'voiceover')&&get('voiceover')!==get('dialogue'))fail('DIALOGUE_VOICEOVER_CONFLICT',number);
-      const id='char_'+Array.from(characterKey(name)).map(c=>c.codePointAt(0).toString(16)).join('_');
-      if(!seen.has(id)){seen.set(id,name);characters.push({id,name,description:'',voiceTone:''});}
-      scenes.push({scene_n:number,Context:get('context'),Camera:get('camera'),Action:get('action'),Character:seen.get(id),Dialogue:get('dialogue'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice')||get('tone'),Word_count:countSpokenWords(get('dialogue')),status:'pending'});
+      const id='char_'+Array.from(name).map(c=>c.codePointAt(0).toString(16)).join('_');
+      if(name&&!seen.has(id)){seen.set(id,name);characters.push({id,name,description:'',voiceTone:''});}
+      scenes.push({scene_n:number,Context:get('context'),Camera:get('camera'),Action:get('action'),Character:name,Dialogue:get('dialogue'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice')||get('tone'),Word_count:countSpokenWords(get('dialogue')),status:'pending'});
     }else{
       validateTime(get('time_origin'),number);if(get('time'))validateTime(get('time'),number);
       scenes.push({scene_n:number,time_origin:get('time_origin'),Footage:get('footage'),Effect:get('effect'),Character:get('character'),Voiceover:get('voiceover'),Translate:get('translate'),Tone_of_Voice:get('tone_of_voice'),Word_count:countSpokenWords(get('voiceover')),status:'pending'});

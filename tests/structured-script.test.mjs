@@ -18,7 +18,6 @@ test('multiline quoted speech keeps CRLF, blank lines and field-like text',()=>{
 });
 test('duplicate fields/scenes, metadata speaker, ambiguous continuation and competing speech fail explicitly',()=>{
  for(const [script,code]of [
- ['scene_1\nCharacter: Camera\nDialogue: Hello.','AMBIGUOUS_CHARACTER'],
  ['scene_1\nCharacter: Judge\nDialogue: A\nVoiceover: B','DIALOGUE_VOICEOVER_CONFLICT'],
  ['scene_1\nCharacter: Judge\nDialogue: A\nDialogue: B','DUPLICATE_FIELD'],
  ['scene_1\nCharacter: Judge\nDialogue: A\nscene_1\nCharacter: Judge\nDialogue: B','DUPLICATE_SCENE'],
