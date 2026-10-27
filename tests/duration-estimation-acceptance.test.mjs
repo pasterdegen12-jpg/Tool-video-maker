@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {estimateSceneDuration,resolveProviderRequestDuration,readSceneDuration} from '../src/lib/sceneDuration.js';
+import {estimateSceneDuration,resolveProviderRequestDuration} from '../src/lib/sceneDuration.js';
 import {sceneVideoPlan} from '../src/lib/cloudVideoContract.js';
-import {prepareQuote,publicQuote} from '../api/_lib/cloud-video/core.js';
+import {prepareQuote} from '../api/_lib/cloud-video/core.js';
 import {providerVideoPayload,cloudVideoCost} from '../src/lib/cloudVideoOptions.js';
 
 const baseScene={scene_n:1,Character:'Judge',Dialogue:'Brief words.',Action:'Sits.',Camera:'Static.',Context:'Court.'};
@@ -23,118 +23,48 @@ const legacyScene1={
 const now=Date.parse('2026-10-19T12:00:00Z');
 const mockImage={mime:'image/png',size:100,width:32,height:32,sha256:'a'.repeat(64)};
 
-test('A. Scene estimated at 5 seconds: generation works with valid supported duration',()=>{
-  const scene={...baseScene,duration_seconds:5};
-  const plan=sceneVideoPlan(scene);
-  assert.equal(plan.settings.duration,5);
-  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,5);
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,5);
-});
 
-test('B. Scene estimated at 12 seconds: generation works with valid supported duration',()=>{
-  const scene={...baseScene,duration_seconds:12};
-  const plan=sceneVideoPlan(scene);
-  assert.equal(plan.settings.duration,12);
-  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,12);
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,12);
+test('integer endpoint mapping: estimates below minimum, every supported value, and long estimates',()=>{
+ for(const mode of ['start_frame_to_video','text_to_video','references_to_video'])for(const estimate of [2,4,5,6,7,8,9,10,11,12,15,20,25]){
+  assert.equal(resolveProviderRequestDuration(estimate,mode),Math.max(4,Math.min(10,estimate)));
+ }
 });
-
-test('C. Scene estimated at 15 seconds: generation is NOT locked, converts to provider max 12s',()=>{
-  const scene={...baseScene,duration_seconds:15};
-  assert.equal(estimateSceneDuration(scene),15);
-  assert.equal(resolveProviderRequestDuration(scene,'start_frame_to_video'),12);
-  assert.equal(resolveProviderRequestDuration(scene,'text_to_video'),12);
-  assert.equal(resolveProviderRequestDuration(scene,'references_to_video'),15);
-  const plan=sceneVideoPlan(scene,'start_frame_to_video');
-  assert.equal(plan.settings.duration,12);
-  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,12);
-  assert.equal(q.canonicalDuration,15); // Canonical estimate preserved
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,12);
+test('discrete contracts use only supported intersection, nearest rounding with longer tie',async()=>{
+ const {selectRequestDuration,allowedRequestDurations}=await import('../src/lib/generationDurationPolicy.js');
+ assert.deepEqual(allowedRequestDurations([3,5,8,12]),[5,8]);
+ assert.equal(selectRequestDuration(12,[3,5,8,12]),8);assert.equal(selectRequestDuration(6,[4,8,12]),8);
+ assert.throws(()=>selectRequestDuration(10,[12,15]));
 });
-
-test('D. Scene estimated at 25 seconds: generation is NOT locked, converts to provider max 12s',()=>{
-  const scene={...baseScene,duration_seconds:25};
-  assert.equal(estimateSceneDuration(scene),25);
-  assert.equal(resolveProviderRequestDuration(scene,'start_frame_to_video'),12);
-  assert.equal(resolveProviderRequestDuration(scene,'references_to_video'),15);
-  const plan=sceneVideoPlan(scene,'start_frame_to_video');
-  assert.equal(plan.settings.duration,12);
-  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,12);
-  assert.equal(q.canonicalDuration,25); // Canonical estimate preserved
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,12);
+test('all modes: quote, immutable attempt, cost and provider JSON use one new duration; original remains exact',()=>{
+ for(const mode of ['start_frame_to_video','text_to_video','references_to_video'])for(const [words,expected] of [[2,4],[16,5],[20,6],[23,7],[26,8],[28,9],[32,10],[80,10]]){
+  const scene={...baseScene,Dialogue:Array(words).fill('word').join(' '),duration_seconds:12},before=structuredClone(scene),plan=sceneVideoPlan(scene,mode);
+  assert.equal(plan.settings.duration,expected);
+  const input={project_id:'proj_test',scene_id:1,mode,settings:plan.settings,...(mode==='text_to_video'?{}:mode==='references_to_video'?{images:[mockImage]}:{image:mockImage})};
+  const q=prepareQuote({projectType:'full-ai',data:[scene]},input,now),payload=providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png',uploadedImages:[{url:'https://storage.org/1.png'}]});
+  assert.equal(q.canonicalDuration,12);assert.equal(q.settings.duration,expected);assert.equal(payload.duration,expected);assert.equal(q.generationEstimate,estimateSceneDuration(scene));
+  assert.deepEqual(q.cost,cloudVideoCost(plan.settings,mode,now));assert.ok(payload.prompt.includes(scene.Dialogue));assert.match(payload.prompt,/SPEECH DELIVERY:.*brisk/s);
+  assert.equal(payload.speech_rate,undefined);assert.equal(payload.speaking_speed,undefined);assert.deepEqual(scene,before);
+  for(const duration of [11,12,15])assert.throws(()=>prepareQuote({projectType:'full-ai',data:[scene]},{...input,settings:{...plan.settings,duration}},now));
+ }
 });
-
-test('E. Scene estimated below provider minimum: converts to 4s without locking',()=>{
-  const scene2={...baseScene,duration_seconds:2};
-  const scene3={...baseScene,duration_seconds:3};
-  assert.equal(resolveProviderRequestDuration(scene2,'start_frame_to_video'),4);
-  assert.equal(resolveProviderRequestDuration(scene3,'start_frame_to_video'),4);
-  const plan=sceneVideoPlan(scene3);
+test('real legacy Scene 1 reaches nine-second quote with exact text, not old twelve seconds',()=>{
+ const before=structuredClone(legacyScene1),plan=sceneVideoPlan(legacyScene1);
+ assert.equal(plan.settings.duration,9);
+ const q=prepareQuote({projectType:'full-ai',data:[legacyScene1]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
+ assert.equal(q.settings.duration,9);assert.equal(q.cost.usd,'0.2160');assert.ok(q.prompt.includes(legacyScene1.Voiceover));assert.deepEqual(legacyScene1,before);
+});
+test('missing metadata, excessive saved duration, translations and Custom Prompt do not control speech estimate',()=>{
+ for(const duration_seconds of [undefined,12,25]){
+  const scene={...baseScene,duration_seconds,Translate:'translation '.repeat(80)},plan=sceneVideoPlan(scene);
   assert.equal(plan.settings.duration,4);
-  const q=prepareQuote({projectType:'full-ai',data:[scene3]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,4);
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,4);
+  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage,additional_prompt:'A long thirty-second cinematic shot.'},now);
+  assert.equal(q.settings.duration,4);assert.ok(!q.prompt.includes(scene.Translate));
+ }
 });
-
-test('F. Legacy scene missing duration_seconds: resolves estimate and remains usable',()=>{
-  const legacy={...baseScene};
-  delete legacy.duration_seconds;
-  const estimate=estimateSceneDuration(legacy);
-  assert.ok(Number.isInteger(estimate)&&estimate>=4);
-  const plan=sceneVideoPlan(legacy);
-  assert.equal(plan.settings.duration,4);
-  const q=prepareQuote({projectType:'full-ai',data:[legacy]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,4);
-  assert.equal(q.canonicalDuration,undefined);
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,4);
-});
-
-test('G. Scene 1 of project proj_1792167327214: resolves duration and reaches valid quote state',()=>{
-  const estimate=estimateSceneDuration(legacyScene1);
-  assert.equal(estimate,12); // 28 words -> 12s
-  const requestDuration=resolveProviderRequestDuration(legacyScene1,'start_frame_to_video');
-  assert.equal(requestDuration,12);
-  const plan=sceneVideoPlan(legacyScene1,'start_frame_to_video');
-  assert.equal(plan.settings.duration,12);
-  const q=prepareQuote({projectType:'full-ai',data:[legacyScene1]},{project_id:'proj_1792167327214',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,12);
-  assert.equal(q.canonicalDuration,undefined); // Legacy scene has no stored duration_seconds
-  assert.ok(q.prompt.includes('Let me get this straight'));
-  assert.equal(providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'}).duration,12);
-});
-
-test('H. Each scene resolves its own estimate and provider request duration',()=>{
-  const sceneA={...baseScene,scene_n:1,duration_seconds:5};
-  const sceneB={...baseScene,scene_n:2,duration_seconds:18};
-  const sceneC={...baseScene,scene_n:3,duration_seconds:3};
-  assert.equal(resolveProviderRequestDuration(sceneA),5);
-  assert.equal(resolveProviderRequestDuration(sceneB),12);
-  assert.equal(resolveProviderRequestDuration(sceneC),4);
-});
-
-test('I. The quote and prediction request use the SAME valid duration',()=>{
-  const scene={...baseScene,duration_seconds:20};
-  const requestDuration=resolveProviderRequestDuration(scene);
-  assert.equal(requestDuration,12);
-  const plan=sceneVideoPlan(scene);
-  const q=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  assert.equal(q.settings.duration,12);
-  const payload=providerVideoPayload({...q,downloadUrl:'https://storage.org/1.png'});
-  assert.equal(payload.duration,q.settings.duration);
-  assert.equal(cloudVideoCost(plan.settings,'start_frame_to_video',now).microUsd,q.cost.microUsd);
-});
-
-test('P. Custom Prompt does not modify scene duration',()=>{
-  const scene={...baseScene,duration_seconds:8};
-  const plan=sceneVideoPlan(scene);
-  const q1=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage},now);
-  const q2=prepareQuote({projectType:'full-ai',data:[scene]},{project_id:'proj_test',scene_id:1,settings:plan.settings,image:mockImage,additional_prompt:'Cinematic lighting, 8k, slow motion.'},now);
-  assert.equal(q1.settings.duration,8);
-  assert.equal(q2.settings.duration,8);
-  assert.equal(q1.settings.duration,q2.settings.duration);
-  assert.ok(q2.prompt.includes('Cinematic lighting'));
+test('Vietnamese syllables and CJK characters have separate deterministic rates; authored slow speech preserved',async()=>{
+ const {speechEstimate,speechDelivery}=await import('../src/lib/speechDelivery.js');
+ const vi=speechEstimate({...baseScene,Dialogue:'Tôi đang nói chuyện với mọi người.'});assert.equal(vi.unit,'vi-syllable');assert.equal(vi.rate,270);
+ const cn=speechEstimate({...baseScene,Dialogue:'这是一个测试句子'});assert.equal(cn.units,8);assert.equal(cn.rate,300);
+ const slow={...baseScene,Tone_of_Voice:'Speak slowly with long pauses.'};assert.equal(speechEstimate(slow).rate,140);assert.ok(!speechDelivery(slow).includes('brisk'));
+ const silent={...baseScene,Dialogue:''};assert.equal(speechDelivery(silent),'');assert.equal(speechEstimate(silent).seconds,0);
 });

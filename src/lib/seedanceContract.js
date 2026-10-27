@@ -13,7 +13,7 @@ export function exactKeys(value, keys) {
 export function fail(message) { throw new Error(message); }
 export function validateSettings(s, maxDuration=9) {
   if (!exactKeys(s,Object.keys(DEFAULT_SETTINGS)) || Object.keys(s).length!==Object.keys(DEFAULT_SETTINGS).length ||
-      !Number.isInteger(s.duration)||s.duration<4||s.duration>maxDuration ||
+      !Number.isInteger(s.duration)||s.duration<4||s.duration>Math.min(maxDuration,10) ||
       !['480p','720p'].includes(s.resolution)||!ASPECTS.includes(s.aspect_ratio) ||
       typeof s.generate_audio!=='boolean'||typeof s.camera_fixed!=='boolean' ||
       !Number.isSafeInteger(s.seed)||s.seed < -1||s.seed>2147483647) fail('Thông số video không được hỗ trợ.');

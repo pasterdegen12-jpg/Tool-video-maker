@@ -1,3 +1,4 @@
+import {validNewRequestDuration} from '../../../src/lib/generationDurationPolicy.js';
 import {providerVideoPayload} from '../../../src/lib/cloudVideoOptions.js';
 import {Buffer} from 'node:buffer';
 import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,checkAdmission,requireValue,CloudError,sourceDigest,sceneSnapshot,canonical} from './core.js';
@@ -24,7 +25,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
   }
   const validQuote=(r,session,requestHash)=>{
     requireValue(r.sessionHash===sessionOf(session),'SESSION_MISMATCH',403);
-    requireValue(r.quoteExpires>now(),'QUOTE_EXPIRED',410);
+    requireValue(r.quoteExpires>now()&&validNewRequestDuration(r.settings.duration),'QUOTE_EXPIRED',410);
     requireValue(r.requestHash===requestHash,'QUOTE_MISMATCH');
   };
   const transition=(r,stage)=>{if(r.stage===stage)return;r.stage=stage;r.updatedAt=now();r.transitions.push({stage,at:r.updatedAt});};

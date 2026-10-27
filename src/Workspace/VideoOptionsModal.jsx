@@ -25,7 +25,7 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
   const sourceImage=image?.dataUrl||scene.startFrameUrl||scene.imageUrl;
   const cap=videoMode(mode);
   let issue='',duration,warnings=[];
-  try{duration=readSceneDuration(scene,cap.maxDuration);}catch(e){issue=e.message;}
+  try{duration=readSceneDuration(scene,mode);}catch(e){issue=e.message;}
   const settings={...options,duration,camera_fixed:sceneCameraFixed(scene,mode,options.camera_fixed)};
   try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);
     warnings=prompt.warnings;

@@ -63,7 +63,7 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
         const modern=Object.hasOwn(payload,'mode'),mode=payload.mode||'start_frame_to_video';
         const cap=videoMode(mode),local=composeVideoPrompt(payload.scene,payload.additional_prompt||'');
         payload={...payload,settings:{...payload.settings,camera_fixed:sceneCameraFixed(payload.scene,mode,payload.settings?.camera_fixed)}};
-        if(payload.settings?.duration!==readSceneDuration(payload.scene,cap.maxDuration))throw Error('Thời lượng request không khớp thời lượng scene đã lưu. Tải lại dữ liệu phân tích kịch bản.');
+        if(payload.settings?.duration!==readSceneDuration(payload.scene,mode))throw Error('Thời lượng request không khớp ước tính lời thoại hiện tại. Đóng và mở lại tùy chọn video để chuẩn bị yêu cầu mới.');
         const media=[];
         if(mode==='start_frame_to_video'){
         emit(run,{status:'quoting',busy:true,message:'Đang chuẩn bị...'});

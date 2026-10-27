@@ -35,7 +35,7 @@ test('all three final payloads equal server snapshot and preserve duration, audi
  for(const mode of ['start_frame_to_video','text_to_video','references_to_video']){
  const settings=sceneVideoPlan(base,mode).settings,q=prepareQuote(project,{project_id:'p',scene_id:1,mode,settings,...(mode==='text_to_video'?{}:mode==='references_to_video'?{images:[image]}:{image})},now);
  const p=providerVideoPayload({...q,downloadUrl:'https://example.org/a.jpg',uploadedImages:[{url:'https://example.org/a.jpg'}]});
- assert.equal(p.prompt,q.prompt);assert.equal(p.prompt,composeVideoPrompt(base).prompt);assert.equal(p.duration,8);assert.equal(p.generate_audio,true);assert.equal(p.aspect_ratio,settings.aspect_ratio);assert.equal(p.resolution,settings.resolution);assert.equal(p.camera_fixed,mode==='references_to_video'?undefined:true);assert.deepEqual(q.cost,cloudVideoCost(settings,mode,now));
+ assert.equal(p.prompt,q.prompt);assert.equal(p.prompt,composeVideoPrompt(base).prompt);assert.equal(p.duration,4);assert.equal(p.generate_audio,true);assert.equal(p.aspect_ratio,settings.aspect_ratio);assert.equal(p.resolution,settings.resolution);assert.equal(p.camera_fixed,mode==='references_to_video'?undefined:true);assert.deepEqual(q.cost,cloudVideoCost(settings,mode,now));
  for(const key of ['negative_prompt','subtitles','disable_subtitles'])assert.ok(!(key in p));}
  assert.equal(sceneSnapshot(project,1),digest);assert.deepEqual(project,before);
 });

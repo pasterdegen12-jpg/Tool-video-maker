@@ -8,7 +8,7 @@ import {DEFAULT_SETTINGS,videoVisible} from '../src/lib/seedanceContract.js';
 const fixture=JSON.parse(await fs.readFile(new URL('./support/visual-fixture.json',import.meta.url)));
 const bytes=Buffer.from(fixture.image_base64,'base64'),now=Date.parse('2026-10-17T00:00:00Z'),id='c'.repeat(48);
 const scene={scene_n:3,duration_seconds:5,Character:'confirmed_character_id',Dialogue:'Exact original words.',Action:'Sits.',Camera:'Static.',Context:'Court.'};
-const payload={project_id:'proj_test',scene,settings:{...DEFAULT_SETTINGS},assumptions:{wordsPerMinute:150,pauseSeconds:.8},image_base64:fixture.image_base64,mime_type:'image/png'};
+const payload={project_id:'proj_test',scene,settings:{...DEFAULT_SETTINGS,duration:4},assumptions:{wordsPerMinute:150,pauseSeconds:.8},image_base64:fixture.image_base64,mime_type:'image/png'};
 function harness({paid=true,putStatus=200,mismatch=false,quoteFails=false}={}){
  const calls=[],states=[];let quote;
  const json=value=>new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}});

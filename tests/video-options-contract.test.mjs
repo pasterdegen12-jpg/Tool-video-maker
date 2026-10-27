@@ -14,7 +14,7 @@ test('additional direction is appended after canonical outbound prompt; original
 test('every allowed model uses its own provider endpoint and validates returned model on POST/GET',async()=>{
   for(const {model} of Object.values(VIDEO_MODES)){
     const calls=[];const provider=createProvider({apiKey:'test-only',paidEnabled:true},{checkUrl:async()=>{},request:async(url,options)=>{calls.push({url,options});return {status:200,body:JSON.stringify({code:200,data:{id:'prediction',model,status:'queued',outputs:[]}})};}});
-    await provider.submit({prompt:'test'},()=>{},model);await provider.get('prediction',model);
+    await provider.submit({prompt:'test',duration:4},()=>{},model);await provider.get('prediction',model);
     assert.equal(calls[0].url,'https://api.wavespeed.ai/api/v3/'+model);assert.match(calls[1].url,/predictions\/prediction\/result$/);
     await assert.rejects(provider.submit({},()=>{},'invented/model'),/INVALID_PROVIDER_MODEL/);assert.equal(calls.length,2);
   }

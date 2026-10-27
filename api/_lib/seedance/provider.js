@@ -1,3 +1,4 @@
+import {validNewRequestDuration} from '../../../src/lib/generationDurationPolicy.js';
 import {VIDEO_MODES} from '../../../src/lib/cloudVideoOptions.js';
 import { MODEL } from '../../../src/lib/seedanceContract.js';
 import { requestHttps, publicAddress } from './transport.js';
@@ -100,6 +101,7 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
     async submit(payload,onAccepted=()=>{},model=MODEL){
       checkedModel(model);
       paid();
+      if(!validNewRequestDuration(payload.duration))throw new VideoError('INVALID_PROVIDER_DURATION');
       const body=JSON.stringify(payload),requestId=randomUUID();
       const emit=event=>{try{diagnostics(event);}catch{/* Observability must never retry or block a billable request. */}};
       // Allowlisted scalar diagnostics of the exact serialized request. Never log

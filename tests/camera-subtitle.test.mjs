@@ -18,6 +18,6 @@ test('server overrides stale or custom camera choice before quote snapshot and f
 });
 test('visual instruction preserves exact dialogue, physical writing, custom addition and source',()=>{
  const before=structuredClone(base),p=composeVideoPrompt(base,'Warm light.').prompt;
- for(const text of [base.Dialogue,base.Camera,base.Action,base.Context,'No dialogue captions, subtitles or overlays','Preserve physical writing','do not freeze acting'])assert.ok(p.includes(text),text);
+ for(const text of [base.Dialogue,base.Camera,base.Action,base.Context,'No dialogue captions, subtitles or overlays','Preserve physical writing','natural character performance'])assert.ok(p.includes(text),text);
  assert.ok(p.endsWith('Warm light.'));assert.deepEqual(base,before);
 });

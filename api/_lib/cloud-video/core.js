@@ -1,10 +1,11 @@
+import {GENERATION_DURATION_VERSION} from '../../../src/lib/generationDurationPolicy.js';
 import {sceneCameraFixed} from '../../../src/lib/sceneCamera.js';
 import {videoMode,validateCloudSettings,composeVideoPrompt,cloudVideoCost} from '../../../src/lib/cloudVideoOptions.js';
 import {createHash,randomBytes} from 'node:crypto';
 import {composeScene,estimateCost,validateSettings,MODEL} from '../../../src/lib/seedanceContract.js';
 import {MAX_SELECTED_IMAGE_BYTES,MAX_SELECTED_IMAGE_PIXELS} from '../../../src/lib/seedanceImage.js';
 import {CLOUD_MAX_DURATION} from '../../../src/lib/cloudVideoContract.js';
-import {readSceneDuration} from '../../../src/lib/sceneDuration.js';
+import {readSceneDuration,estimateSceneDuration} from '../../../src/lib/sceneDuration.js';
 
 export const canonical=value=>JSON.stringify(value,(_key,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 export const hash=value=>createHash('sha256').update(typeof value==='string'||value instanceof Uint8Array?value:canonical(value)).digest('hex');
@@ -42,7 +43,7 @@ export function prepareQuote(project,input,now){
   const scenes=project.data?.filter(s=>String(s.scene_n)===String(input.scene_id));
   requireValue(scenes?.length===1,'SCENE_NOT_FOUND',404);
   const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'');
-  const requestDuration=readSceneDuration(scenes[0],cap.maxDuration);
+  const requestDuration=readSceneDuration(scenes[0],mode);
   requireValue(input.settings?.duration===requestDuration,'SCENE_DURATION_MISMATCH');
   const validated=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION);
   const settings={...validated,camera_fixed:sceneCameraFixed(scenes[0],mode,validated.camera_fixed)};
@@ -55,6 +56,7 @@ export function prepareQuote(project,input,now){
   const canonicalDuration=scenes[0].duration_seconds;
   const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,
     ...(canonicalDuration!==undefined?{canonicalDuration}:{}),
+    durationPolicy:GENERATION_DURATION_VERSION,generationEstimate:estimateSceneDuration(scenes[0]),
     snapshotVersion:2,sceneDigest:sceneSnapshot(project,composed.sceneId),storedImage:input.stored_image===true,
     ...(modern?{mode,images,additionalPrompt:input.additional_prompt||'',attemptKey:input.attempt_key||null,model:cap.model}:{})};
   return {...payload,model:cap.model,promptHash:hash(composed.prompt),settingsHash:hash(settings),requestHash:hash(payload)};

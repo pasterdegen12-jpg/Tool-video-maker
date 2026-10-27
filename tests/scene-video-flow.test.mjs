@@ -87,7 +87,7 @@ test('scene click opens centered dark dialog, existing Start Frame, all three mo
 test('one explicit Generate click reaches submit and output stays only in correct scene box',async t=>{
  const {container}=await mount(t);await click(actionButtons(container)[0]);await click(primary());await settle();
  assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);const body=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
- assert.equal(body.scene_id,1);assert.equal(body.settings.duration,6);assert.equal(body.mode,'start_frame_to_video');assert.equal(body.settings.aspect_ratio,'9:16');
+ assert.equal(body.scene_id,1);assert.equal(body.settings.duration,4);assert.equal(body.mode,'start_frame_to_video');assert.equal(body.settings.aspect_ratio,'9:16');
  const card=container.querySelector('[data-scene-id="1"]');assert.ok(card.querySelector('video[aria-label="Output scene 1"][src$="result-1.mp4"]'));assert.equal(card.querySelectorAll('video').length,1);
  assert.equal(card.querySelector('[aria-label="Video scene 1"] video'),null);
 });
@@ -101,6 +101,14 @@ test('mode, ratio, resolution and custom prompt changes are nonbillable and reac
 });
 test('double Generate click cannot duplicate paid submit',async t=>{
  const {container}=await mount(t);await click(actionButtons(container)[1]);const b=primary();await act(async()=>{b.click();b.click();});await settle();assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
+});
+test('long actual speech keeps Generate usable and submits ten seconds with exact text in mocks',async t=>{
+ const original=structuredClone(scenes[0]);scenes[0]={...original,Voiceover:Array(80).fill('word').join(' '),duration_seconds:25};
+ t.after(()=>{scenes[0]=original;});
+ const {container}=await mount(t);await click(actionButtons(container)[0]);assert.equal(primary().disabled,false);
+ assert.equal(modal().querySelectorAll('select').length,2);assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,0);
+ await click(primary());await settle();const q=[...quotes.values()][0];assert.equal(q.settings.duration,10);assert.ok(q.prompt.includes(scenes[0].Voiceover));
+ assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
 test('missing image can be supplied and selection alone never transfers',async t=>{
  const {container}=await mount(t,{parsedData:[{...scenes[0],startFrameUrl:''}]});await click(actionButtons(container)[0]);assert.equal(primary().disabled,true);
@@ -135,11 +143,11 @@ test('existing completed output is immediate after F5; modal can reopen without 
 test('sign-out cannot send source, quote, upload or prediction',async t=>{
  const saved=auth;auth={...auth,isSignedIn:false};t.after(()=>auth=saved);const {container}=await mount(t);await click(actionButtons(container)[0]);await settle();assert.equal(calls.length,0);assert.equal(modal(),null);
 });
-test('actual 28-word Scene 1 still uses 12 seconds and preserves exact dialogue',async()=>{
+test('actual legacy 28-word Scene 1 now uses 9 seconds and preserves exact dialogue',async()=>{
  const {sceneVideoPlan}=await import('../src/lib/cloudVideoContract.js');const Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
- const resolved=sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:12});assert.equal(resolved.settings.duration,12);assert.ok(resolved.composed.prompt.includes(Voiceover));
- assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:13}).settings.duration,12);
- assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:25}).settings.duration,12);
+ const resolved=sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:12});assert.equal(resolved.settings.duration,9);assert.ok(resolved.composed.prompt.includes(Voiceover));
+ assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:13}).settings.duration,9);
+ assert.equal(sceneVideoPlan({...scenes[0],Voiceover,duration_seconds:25}).settings.duration,9);
 });
 
 test('newer manually saved output replaces cached generation preview without another prediction',async t=>{
@@ -162,14 +170,14 @@ test('legacy scene missing duration_seconds resolves estimate and enables Genera
  await click(primary());await settle();
  assert.equal(calls.filter(c=>c.url.includes('action=submit')).length,1);
 });
-test('scenes with estimate 15s or 25s convert to provider max 12s without locking generation',async t=>{
+test('legacy saved estimates 15s or 25s re-estimate current speech without locking generation',async t=>{
  const scene15={...scenes[0],duration_seconds:15},scene25={...scenes[1],duration_seconds:25};
  const {container}=await mount(t,{parsedData:[scene15,scene25]});
  await click(actionButtons(container)[0]);
  assert.equal(primary().disabled,false);
  await click(primary());await settle();
  const quote1=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
- assert.equal(quote1.settings.duration,12);
+ assert.equal(quote1.settings.duration,4);
 });
 test('scene estimated below provider min converts to 4s without locking generation',async t=>{
  const scene3={...scenes[1],duration_seconds:3};

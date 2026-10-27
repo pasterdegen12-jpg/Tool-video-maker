@@ -1,10 +1,11 @@
+import {speechDelivery} from './speechDelivery.js';
 import {ASPECTS,MODEL,composeScene,validateSettings,MAX_PROMPT_CHARS} from './seedanceContract.js';
 import {cameraIntent,sceneCameraFixed} from './sceneCamera.js';
 
 export const VIDEO_MODES=Object.freeze({
-  start_frame_to_video:{label:'Start Frame → Video',model:MODEL,name:'Seedance 1.5 Pro',maxImages:1,maxDuration:12},
-  text_to_video:{label:'Text → Video',model:'bytedance/seedance-v1.5-pro/text-to-video',name:'Seedance 1.5 Pro',maxImages:0,maxDuration:12},
-  references_to_video:{label:'References → Video',model:'bytedance/seedance-2.0-mini/text-to-video',name:'Seedance 2.0 Mini · ảnh tham chiếu',maxImages:9,maxDuration:15},
+  start_frame_to_video:{label:'Start Frame → Video',model:MODEL,name:'Seedance 1.5 Pro',maxImages:1,maxDuration:10,durations:{min:4,max:12}},
+  text_to_video:{label:'Text → Video',model:'bytedance/seedance-v1.5-pro/text-to-video',name:'Seedance 1.5 Pro',maxImages:0,maxDuration:10,durations:{min:4,max:12}},
+  references_to_video:{label:'References → Video',model:'bytedance/seedance-2.0-mini/text-to-video',name:'Seedance 2.0 Mini · ảnh tham chiếu',maxImages:9,maxDuration:10,durations:{min:4,max:15}},
 });
 export const VIDEO_RESOLUTIONS=['480p','720p','1080p'];
 export {ASPECTS};
@@ -38,7 +39,8 @@ export function composeVideoPrompt(scene,additional=''){
   const lock=fixed?([...base+fullLock+extra].length<=MAX_PROMPT_CHARS?fullLock:shortLock):'';
   const original=base+lock+extra;
   if([...original].length>MAX_PROMPT_CHARS)throw Error('Tổng prompt vượt '+MAX_PROMPT_CHARS+' ký tự; hãy rút ngắn phần bổ sung. Kịch bản gốc không bị cắt.');
-  const delivery=composed.dialogue.trim()?'\n\nPERFORMANCE: Follow authored pace and pauses first. Otherwise speak naturally with clear articulation and short pauses; preserve words, language and emotion. Camera constraints do not freeze acting.':'';
+  const fullDelivery=speechDelivery(scene),shortDelivery=speechDelivery(scene,true);
+  const delivery=[...original+fullDelivery].length<=MAX_PROMPT_CHARS?fullDelivery:shortDelivery;
   const prompt=[...original+delivery].length<=MAX_PROMPT_CHARS?base+lock+delivery+extra:original;
   const camera=cameraIntent(scene.Camera),conflict=camera.fixed&&(camera.moving||cameraIntent(scene.Action).moving||cameraIntent(additional).moving);
   return {...composed,prompt,warnings:[...videoPromptWarnings(additional),...(conflict?['Camera gốc yêu cầu cố định nhưng Camera, Action hoặc Custom prompt có chỉ dẫn di chuyển/zoom. Nội dung gốc được giữ nguyên; hãy kiểm tra ý định trước khi tạo.']:[])]};

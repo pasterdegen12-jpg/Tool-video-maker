@@ -26,7 +26,7 @@ function harness(overrides={}){
   const provider={submit:async(_p,accepted)=>{posts++;await accepted('prediction_one');return {id:'prediction_one',state:'queued',url:null};},get:async()=>{gets++;return {id:'prediction_one',state:'completed',url:'https://storage.example.org/result.mp4'};},...overrides.provider};
   const options={config:{...config,...overrides.config},store,upload,provider,archive:async()=> 'https://media.example.org/persisted.mp4',now:()=>clock,...overrides.options};
   const service=()=>createCloudVideoService(options);
-  const input={project_id:'proj_test',scene_id:3,settings:{...DEFAULT_SETTINGS},assumptions:{wordsPerMinute:150,pauseSeconds:.8},image:{sha256:'a'.repeat(64),size:1234,mime:'image/jpeg',width:100,height:100}};
+  const input={project_id:'proj_test',scene_id:3,settings:{...DEFAULT_SETTINGS,duration:4},assumptions:{wordsPerMinute:150,pauseSeconds:.8},image:{sha256:'a'.repeat(64),size:1234,mime:'image/jpeg',width:100,height:100}};
   const ledger=()=>ledgers.get(ownerOf(session,config.issuer));
   async function ready(s=service()){
     const quote=await s.quote(session,input);await s.ticket(session,{quote_id:quote.quote_id,request_hash:quote.request_hash,transfer_consent:true});await s.verify(session,{attempt_id:quote.quote_id,request_hash:quote.request_hash});
@@ -36,7 +36,7 @@ function harness(overrides={}){
 }
 test('cloud quote uses saved Character, exact legacy dialogue and preserves complete scene',async()=>{
   const h=harness(),before=structuredClone(h.projects),q=await h.service().quote(session,h.input);
-  assert.match(q.prompt,/CHARACTER:\nconfirmed_character_id/);assert.match(q.prompt,/Exact original words\./);assert.equal(q.cost.usd,'0.1200');assert.deepEqual(h.projects,before);assert.equal(h.calls().posts,0);
+  assert.match(q.prompt,/CHARACTER:\nconfirmed_character_id/);assert.match(q.prompt,/Exact original words\./);assert.equal(q.cost.usd,'0.0960');assert.deepEqual(h.projects,before);assert.equal(h.calls().posts,0);
 });
 test('80 historical records do not permanently block quotes or consume paid slots, across shared-account sessions',async()=>{
  const h=harness();const initial=await h.service().quote(session,h.input);const l=h.ledger();
@@ -104,7 +104,7 @@ test('commit failure before provider submit results in zero POST',async()=>{
   const h=harness(),{s,body}=await h.ready();const original=h.options.store.transact;h.options.store.transact=async(owner,fn)=>original(owner,(l,team)=>{fn(l,team);throw new Error('durable unavailable');});await assert.rejects(s.submit(session,body),/durable unavailable/);assert.equal(h.calls().posts,0);
 });
 test('spend/concurrency reservations are durable and conservative',async()=>{
-  const h=harness({config:{limits:{concurrent:1,daily:100000,perRequest:500000}}});await assert.rejects(h.service().quote(session,h.input),/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
+  const h=harness({config:{limits:{concurrent:1,daily:90000,perRequest:500000}}});await assert.rejects(h.service().quote(session,h.input),/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);assert.equal(h.calls().tickets,0);
 });
 test('full admission stays at 25 MiB and 24 MP; request contains declaration only',()=>{
   assert.equal(declaration({sha256:'a'.repeat(64),size:25*1024*1024,mime:'image/png',width:6000,height:4000}).size,25*1024*1024);
@@ -129,7 +129,7 @@ test('binary hash uses original bytes rather than JSON serialization',()=>{asser
 test('team concurrency and budget reservations block another member before provider POST',async()=>{
  for(const mode of ['concurrent','budget']){const h=harness(),{s,body}=await h.ready();const team=newLedger();if(mode==='concurrent')team.records.other={id:'other',stage:'UNKNOWN',owner:'another-member'};else team.spend['2026-10-17']=499999;h.setTeam(team);await assert.rejects(s.submit(session,body),mode==='concurrent'?/CONCURRENCY_LIMIT/:/SPENDING_LIMIT/);assert.equal(h.calls().posts,0);assert.deepEqual(h.ledger().spend,{});}
 });
-test('completed video updates shared team state and retains daily cost reservation',async()=>{const h=harness(),{s,body}=await h.ready();await s.submit(session,body);assert.equal(h.team().records[body.attempt_id].stage,'ACCEPTED');await s.poll(session,body.attempt_id);assert.equal(h.team().records[body.attempt_id].stage,'COMPLETED');assert.equal(h.team().spend['2026-10-17'],120000);});
+test('completed video updates shared team state and retains daily cost reservation',async()=>{const h=harness(),{s,body}=await h.ready();await s.submit(session,body);assert.equal(h.team().records[body.attempt_id].stage,'ACCEPTED');await s.poll(session,body.attempt_id);assert.equal(h.team().records[body.attempt_id].stage,'COMPLETED');assert.equal(h.team().spend['2026-10-17'],96000);});
 
 test('legitimate project media and another scene edit do not revoke grant or change selected attempt',async()=>{
  const h=harness(),{s,body}=await h.ready();h.projects.proj_test.generatedAudios={3:'new.mp3'};h.projects.proj_test.data[0].videoUrl='https://media.example.org/new.mp4';h.projects.proj_test.data.push({scene_n:9,Dialogue:'Other scene edit.'});
@@ -139,10 +139,10 @@ test('editing selected prompt or INPUT invalidates only old quote; fresh quote u
  for(const field of ['Dialogue','Character','startFrameUrl']){const h=harness(),{s,body}=await h.ready();if(field==='Dialogue'){delete h.projects.proj_test.data[0].Voiceover;h.projects.proj_test.data[0].Dialogue='New words.';}else h.projects.proj_test.data[0][field]=field==='startFrameUrl'?'https://media.example.org/new.png':'new_confirmed_character';
  await assert.rejects(s.submit(session,body),/PROJECT_CHANGED/);assert.equal(h.calls().posts,0);await s.quote(session,h.input);}
 });
-test('actual Scene 1 twelve-second speech is accepted; longer than provider limit is rejected without truncation',async()=>{
+test('actual legacy Scene 1 is re-estimated to nine seconds with exact dialogue',async()=>{
  const h=harness();h.projects.proj_test.data[0].Voiceover='Let me get this straight. Your school board spent thousands of taxpayer dollars on legal fees... to prosecute a cafeteria worker over thirty-five dollars worth of chicken nuggets?';
  h.projects.proj_test.data[0].duration_seconds=12;
- const q=await h.service().quote(session,{...h.input,settings:{...h.input.settings,duration:12}});assert.equal(q.cost.usd,'0.2880');assert.ok(q.prompt.includes(h.projects.proj_test.data[0].Voiceover));
+ const q=await h.service().quote(session,{...h.input,settings:{...h.input.settings,duration:9}});assert.equal(q.cost.usd,'0.2160');assert.ok(q.prompt.includes(h.projects.proj_test.data[0].Voiceover));
  await assert.rejects(h.service().quote(session,h.input),/SCENE_DURATION_MISMATCH/);assert.equal(h.calls().posts,0);
 });
 test('source endpoint rejects browser-supplied URL and wrong project before fetching image',async()=>{
@@ -182,8 +182,8 @@ test('mode/options/custom text affect idempotency; no authored source mutation',
  for(const changes of [{mode:'invented_mode'},{mode:''},{mode:null},{additional_prompt:false},{additional_prompt:0},{settings:{...base.settings,resolution:'4k'}},{additional_prompt:'x'.repeat(1001)},{images:[base.image]}])await assert.rejects(s.quote(session,{...base,...changes}));
 });
 test('current per-request ceiling still rejects high cost before image transfer or prediction; no invented daily limit',async()=>{
- const h=harness({config:{limits:{concurrent:1,daily:0,perRequest:500000},teamLimits:{concurrent:1,daily:0,perRequest:500000}}});h.advance(2*86400000);
- await assert.rejects(h.service().quote(session,{...h.input,mode:'start_frame_to_video',settings:{...h.input.settings,resolution:'1080p',duration:5}}),/SPENDING_LIMIT/);assert.deepEqual(h.calls(),{posts:0,gets:0,tickets:0});
+ const h=harness({config:{limits:{concurrent:1,daily:0,perRequest:500000},teamLimits:{concurrent:1,daily:0,perRequest:500000}}});h.advance(2*86400000);h.projects.proj_test.data[0].Voiceover=Array(32).fill('word').join(' ');
+ await assert.rejects(h.service().quote(session,{...h.input,mode:'start_frame_to_video',settings:{...h.input.settings,resolution:'1080p',duration:10}}),/SPENDING_LIMIT/);assert.deepEqual(h.calls(),{posts:0,gets:0,tickets:0});
 });
 
 test('missing duration_seconds quotes with estimated duration; changing saved duration invalidates attempt',async()=>{
@@ -233,6 +233,24 @@ test('canonical Camera reaches actual provider submit despite stale false client
  h.projects.proj_test.data[0].Camera='Máy quay cố định. Không di chuyển máy quay.';const before=structuredClone(h.projects);
  const {s,quote,body}=await h.ready();assert.equal(quote.settings.camera_fixed,true);assert.equal(payload,undefined);
  await s.submit(session,body);assert.equal(payload.camera_fixed,true);assert.equal(payload.duration,quote.settings.duration);assert.equal(payload.prompt,quote.prompt);assert.deepEqual(h.projects,before);
+});
+
+test('stale pre-release twelve-second quote requires fresh quote before spending or provider calls',async()=>{
+ const h=harness(),{s,quote,body}=await h.ready();
+ const r=h.ledger().records[quote.quote_id];r.settings.duration=12;delete r.durationPolicy;
+ const before=structuredClone(r);
+ await assert.rejects(s.submit(session,body),e=>e.code==='QUOTE_EXPIRED');
+ assert.deepEqual(h.ledger().records[r.id],before);assert.deepEqual(h.ledger().spend,{});assert.equal(h.calls().posts,0);
+ const fresh=await s.quote(session,h.input);assert.equal(fresh.settings.duration,4);
+});
+test('completed and in-flight historical twelve-second jobs keep immutable settings and recover without new POST',async()=>{
+ for(const stage of ['COMPLETED','ACCEPTED']){
+  const h=harness(),{s,quote}=await h.ready(),r=h.ledger().records[quote.quote_id];
+  r.settings.duration=12;r.stage=stage;r.predictionId='old_prediction';r.videoUrl='https://media.example.org/old.mp4';r.cost={...r.cost,microUsd:288000,usd:'0.2880'};
+  const settings=structuredClone(r.settings),cost=structuredClone(r.cost);
+  const out=await s.poll(session,r.id);assert.equal(out.state,'completed');
+  assert.deepEqual(h.ledger().records[r.id].settings,settings);assert.deepEqual(h.ledger().records[r.id].cost,cost);assert.equal(h.calls().posts,0);
+ }
 });
 
 test('real service submit boundary sends one spoken block, no translation and exact durable quote',async()=>{
