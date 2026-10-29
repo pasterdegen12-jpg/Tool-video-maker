@@ -1,4 +1,5 @@
 import {requestHttps} from '../seedance/transport.js';
+import {Buffer} from 'node:buffer';
 import {validateImage} from '../seedance/images.js';
 import {imageDimensions,MAX_SELECTED_IMAGE_BYTES} from '../../../src/lib/seedanceImage.js';
 import {safeMediaUrl} from '../../../src/lib/seedanceContract.js';
@@ -18,7 +19,7 @@ export function storedImageUrl(project,projectId,sceneId,origin){
   return value;
 }
 export function createSourceImageReader(origin,{request=requestHttps}={}){
-  return async(project,projectId,sceneId)=>{
+  return async(project,projectId,sceneId,{includeBytes=false}={})=>{
     const url=storedImageUrl(project,projectId,sceneId,origin);
     let raw;
     try{raw=await request(url,{binary:true,maxBytes:MAX_SELECTED_IMAGE_BYTES,timeoutMs:45000});}
@@ -29,7 +30,7 @@ export function createSourceImageReader(origin,{request=requestHttps}={}){
     try{
       checked=validateImage(raw.body.toString('base64'),mime);
       const image=declaration({mime,size:checked.bytes.length,sha256:checked.sha256,...imageDimensions(checked.bytes,mime)});
-      return {scene_id:sceneId,url,image};
+      return {scene_id:sceneId,url,image,...(includeBytes?{bytes:Buffer.from(checked.bytes)}:{})};
     }catch{requireValue(false,'SOURCE_IMAGE_INVALID',422);}
     finally{checked?.bytes.fill(0);raw.body.fill(0);}
   };

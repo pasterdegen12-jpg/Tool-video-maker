@@ -8,6 +8,7 @@ import { FileText, AlignLeft, Mic, Merge, LayoutDashboard, Sliders, X, CheckSqua
 
 import SetupTab from './SetupTab.jsx';
 import StoryboardTab from './StoryboardTab.jsx';
+import VideoBatchPanel from './VideoBatchPanel.jsx';
 import {applySceneVideoOutput} from '../lib/sceneVideoOutput.js';
 import FullDialogueField from './FullDialogueField.jsx';
 import { readSpokenText } from '../lib/spokenText.js';
@@ -128,6 +129,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   const [batchMergeProgress, setBatchMergeProgress] = useState({ current: 0, total: 0 });
 
   const [isBatchVideoGenerating, setIsBatchVideoGenerating] = useState(false);
+  const [videoBatchOpen,setVideoBatchOpen]=useState(false);
+  const [videoBatchStates,setVideoBatchStates]=useState({});
 
   const fileInputRef = useRef(null);
   const frameInputRef = useRef(null);
@@ -415,7 +418,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
   };
 
   const handleBatchGenVideo = async () => {
-    if (!isSemi) return alert("Phase 5A chỉ hỗ trợ một scene từ Storyboard. Gen All Video chưa được hỗ trợ.");
+    if (!isSemi) {setVideoBatchOpen(true);return;}
     const scenesToGen = parsedData.filter(s => s.startFrameUrl || videoGenOptions.mode !== 'start_frame_to_video');
     if (scenesToGen.length === 0) return alert("Không có scene nào đủ điều kiện gen video (Hãy kiểm tra lại Start Frame).");
     if (!window.confirm(`Bạn chuẩn bị Gen Video bằng AI cho ${scenesToGen.length} Scene. Quá trình xử lý song song 3 video/lần. Tiếp tục?`)) return;
@@ -1131,6 +1134,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
         )}
         {activeTab === 'storyboard' && (
           <StoryboardTab
+            videoBatchStates={videoBatchStates}
             projectId={projectId}
             parsedData={parsedData}
             projectCharacters={projectCharacters}
@@ -1197,7 +1201,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
           <button
             onClick={handleBatchGenVideo}
-            disabled={!isSemi || isBatchVideoGenerating}
+            disabled={isBatchVideoGenerating}
             className={cn(
               "w-full h-10 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50",
               isBatchVideoGenerating
@@ -1936,6 +1940,8 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
       )}
 
     </div>
+    {!isSemi&&<VideoBatchPanel projectId={projectId} open={videoBatchOpen} onClose={()=>setVideoBatchOpen(false)} onStates={setVideoBatchStates}
+      onOutputs={(sceneId,output)=>setParsedData(previous=>previous.map(scene=>String(scene.scene_n)===String(sceneId)?applySceneVideoOutput(scene,output):scene))}/>}
     </VisualProfilesProvider>
   );
 }

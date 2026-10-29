@@ -16,7 +16,7 @@ export default function StoryboardTab({
   setActiveVideoGenModal,
   setActiveGenModal,
   handleDeleteScene, globalMixVol, setSingleMixVol, setActiveMergeModal, forceDownloadVideo,
-  projectType, projectId, darkMode, onVideoCompleted, onSaveVideo,
+  projectType, projectId, darkMode, onVideoCompleted, onSaveVideo,videoBatchStates={},
   activeVideoScene,
   setActiveVideoScene
 }) {
@@ -229,7 +229,7 @@ export default function StoryboardTab({
                         <ImageIcon size={14} /> Tải Nền
                     </button>
                     
-                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} onCompleted={completed} onSaveVideo={onSaveVideo} outputUrl={outputVideoUrl} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
+                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} batchStatus={videoBatchStates[sceneKey]} onCompleted={completed} onSaveVideo={onSaveVideo} outputUrl={outputVideoUrl} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
                     <button 
                       onClick={() => localVideo ? setVideoScene(String(scene.scene_n)) : setActiveVideoGenModal(scene)} 
                       className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-emerald-500/60 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}

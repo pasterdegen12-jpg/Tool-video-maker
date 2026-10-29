@@ -10,8 +10,28 @@ import {createCloudStore} from '../../api/_lib/cloud-video/store.js';
 import {sourceDigest} from '../../api/_lib/cloud-video/core.js';
 import {queueStore} from '../../api/_lib/qwen/store.js';
 import {blank,enqueue,claim} from '../../api/_lib/qwen/queue.js';
+import {createVideoBatchService} from '../../api/_lib/cloud-video/batch.js';
+import {ownerOf,sceneSnapshot} from '../../api/_lib/cloud-video/core.js';
 const rules=await fs.readFile(new URL('./firestore.rules',import.meta.url),'utf8');
 const env=await initializeTestEnvironment({projectId:'demo-webai-production',firestore:{host:'127.0.0.1',port:8187,rules}});
+test('durable batch deduplicates concurrent creation across fresh Admin stores; concurrent outputs preserve neighbors and history',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'batch-emulator'),db=getFirestore(app);
+ try{
+  const session={subject:'batch-admin',session:'browser-one'},config={issuer:'mock-emulator',paidEnabled:true,limits:{concurrent:2},teamLimits:{concurrent:2}},owner=ownerOf(session,config.issuer);
+  const project={projectType:'full-ai',data:[1,2,3].map(n=>({scene_n:n,Character:'char_'+n,Dialogue:'Exact original '+n,Camera:'Fixed.',startFrameUrl:'https://media.example.org/'+n+'.png'}))};
+  await db.doc('projects/proj_batch_emulator').set(project);await db.doc('_video_ledgers/'+owner).delete();
+  const first=createCloudStore(db),second=createCloudStore(db),make=store=>createVideoBatchService({config,store,now:()=>Date.parse('2026-10-29')});
+  const plan=await make(first).batch_plan(session,{project_id:'proj_batch_emulator'});
+  const request={project_id:'proj_batch_emulator',confirm:true,idempotency_key:'c'.repeat(36),scenes:plan.scenes.slice(0,2).map(s=>({scene_id:s.scene_id,digest:s.digest}))};
+  await Promise.all([make(first).batch_create(session,request),make(second).batch_create({...session,session:'browser-two'},request)]);
+  const reloaded=await make(createCloudStore(db)).batch_list(session,{project_id:request.project_id});assert.equal(reloaded.batches.length,1);assert.equal(reloaded.batches[0].counts.queued,2);
+  const records=[1,2].map(n=>({id:String(n).repeat(48),projectId:request.project_id,sceneId:n,stage:'COMPLETED',snapshotVersion:2,sceneDigest:sceneSnapshot(project,n),videoUrl:'https://media.example.org/result-'+n+'.mp4',predictionId:'mock-'+n,createdAt:20}));
+  await Promise.all([second.publishVideo(owner,records[1]),first.publishVideo(owner,records[0])]);await first.publishVideo(owner,records[0]);
+  const saved=(await db.doc('projects/'+request.project_id).get()).data();assert.equal(saved.data.filter(s=>s.videoUrl).length,2);assert.equal(saved.data[0].videoUrl,records[0].videoUrl);assert.equal(saved.data[1].videoUrl,records[1].videoUrl);assert.deepEqual(saved.data[2],project.data[2]);
+  for(let n=0;n<3;n++){assert.equal(saved.data[n].Dialogue,project.data[n].Dialogue);assert.equal(saved.data[n].Character,project.data[n].Character);assert.equal(saved.data[n].startFrameUrl,project.data[n].startFrameUrl);}
+  await assert.rejects(first.publishVideo(owner,{...records[0],id:'9'.repeat(48),createdAt:1,videoUrl:'https://media.example.org/older.mp4'}),/OUTPUT_SUPERSEDED/);assert.equal((await first.project(owner,request.project_id)).data[0].videoUrl,records[0].videoUrl);
+ }finally{await db.terminate();await deleteApp(app);}
+});
 test.after(()=>env.cleanup());
 test('Qwen Admin durable queue serializes competing claims and survives a fresh store instance',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'qwen-emulator'),db=getFirestore(app);

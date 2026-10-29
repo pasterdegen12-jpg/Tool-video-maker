@@ -70,6 +70,7 @@ export function publicQuote(record,paidEnabled){
 export function publicJob(record){
   const states={QUOTED:'quoted',TICKETING:'uploading',UPLOADING:'uploading',VERIFYING:'uploading',READY:'ready',SUBMITTING:'admission_unknown',UNKNOWN:'admission_unknown',ACCEPTED:'queued',RUNNING:'running',COMPLETED:'completed',FAILED:'failed'};
   return {job_id:record.id,scene_id:record.sceneId,state:states[record.stage],stage:record.stage,
+    ...(record.batchId?{batch_id:record.batchId}:{}),
     created_at:new Date(record.createdAt).toISOString(),prediction_id:record.predictionId||null,video_url:record.stage==='COMPLETED'?record.videoUrl:null,
     settings:record.settings,mode:record.mode||'start_frame_to_video',additional_prompt:record.additionalPrompt||'',model:record.model||MODEL,
     message:record.failure||'',speech_review:'unverified',expires_at:new Date(record.createdAt+30*86400000).toISOString()};

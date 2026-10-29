@@ -8,6 +8,7 @@ import {createProvider} from './_lib/seedance/provider.js';
 import {requireValue} from './_lib/cloud-video/core.js';
 import {createVideoArchive} from './_lib/cloud-video/archive.js';
 import {createSourceImageReader} from './_lib/cloud-video/source-image.js';
+import {createVideoBatchService} from './_lib/cloud-video/batch.js';
 
 export const config={maxDuration:120};
 export function createVideoHandler({configure=()=>cloudConfig(process.env),authenticate=authenticateSession,createService}={}){
@@ -16,12 +17,15 @@ export function createVideoHandler({configure=()=>cloudConfig(process.env),authe
     try{
       const settings=configure(),session=await authenticate(req,settings);
       const url=new URL(req.url,settings.origin),action=url.searchParams.get('action');
-      requireValue(['source','quote','ticket','verify','submit','list','job','health'].includes(action),'NOT_FOUND',404);
-      requireValue(req.method===(['list','job','health'].includes(action)?'GET':'POST'),'METHOD_NOT_ALLOWED',405);
-      const service=createService?createService(settings):createCloudVideoService({config:settings,store:createCloudStore(cloudDatabase(process.env)),upload:createCloudUpload(settings.apiKey),provider:createProvider(settings),archive:createVideoArchive(process.env),sourceImage:createSourceImageReader(process.env.R2_PUBLIC_ORIGIN)});
+      requireValue(['source','quote','ticket','verify','submit','list','job','health','batch_plan','batch_create','batch_list','batch_tick','batch_cancel'].includes(action),'NOT_FOUND',404);
+      requireValue(req.method===(['list','job','health','batch_list'].includes(action)?'GET':'POST'),'METHOD_NOT_ALLOWED',405);
+      let service;
+      if(createService)service=createService(settings);
+      else{const dependencies={config:settings,store:createCloudStore(cloudDatabase(process.env)),upload:createCloudUpload(settings.apiKey),provider:createProvider(settings),archive:createVideoArchive(process.env),sourceImage:createSourceImageReader(process.env.R2_PUBLIC_ORIGIN)};const video=createCloudVideoService(dependencies);service={...video,...createVideoBatchService({...dependencies,video})};}
       let output;
       if(action==='health')output={enabled:true,paid_enabled:settings.paidEnabled,storage:'firestore',model:'bytedance/seedance-v1.5-pro/image-to-video'};
       else if(action==='list')output=await service.list(session,{project_id:url.searchParams.get('project_id'),scene_id:url.searchParams.get('scene_id')});
+      else if(action==='batch_list')output=await service.batch_list(session,{project_id:url.searchParams.get('project_id')});
       else if(action==='job')output=await service.poll(session,url.searchParams.get('id'));
       else output=await service[action](session,await readCloudBody(req));
       res.statusCode=200;res.end(JSON.stringify(output));

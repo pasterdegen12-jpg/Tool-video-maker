@@ -3,9 +3,17 @@ import {requestHttps,publicAddress} from '../seedance/transport.js';
 import {validateImage} from '../seedance/images.js';
 import {imageDimensions,MAX_SELECTED_IMAGE_BYTES} from '../../../src/lib/seedanceImage.js';
 import {requireValue} from './core.js';
+import {hash} from './core.js';
 
 export function createCloudUpload(apiKey,{request=requestHttps,checkUrl=publicAddress,now=Date.now}={}){
   return {
+    async transfer(ticket,bytes,image){
+      requireValue(bytes&&bytes.length===image.size&&hash(bytes)===image.sha256,'IMAGE_HASH_MISMATCH');
+      requireValue(ticket.upload.method==='PUT'&&Date.parse(ticket.upload.expires_at)>now(),'UPLOAD_EXPIRED');
+      await checkUrl(ticket.upload.url);
+      const result=await request(ticket.upload.url,{method:'PUT',headers:ticket.upload.headers,body:bytes,timeoutMs:45000});
+      requireValue(result.status>=200&&result.status<300,'UPLOAD_FAILED',502);
+    },
     async ticket(image){
       const raw=await request(API+'/media/uploads',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json'},
         body:JSON.stringify({filename:image.mime==='image/png'?'reference.png':'reference.jpg',size:image.size,content_type:image.mime})});

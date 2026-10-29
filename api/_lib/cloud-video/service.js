@@ -1,4 +1,5 @@
 import {validNewRequestDuration} from '../../../src/lib/generationDurationPolicy.js';
+import {batchReserves} from './batch.js';
 import {providerVideoPayload} from '../../../src/lib/cloudVideoOptions.js';
 import {Buffer} from 'node:buffer';
 import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,checkAdmission,requireValue,CloudError,sourceDigest,sceneSnapshot,canonical} from './core.js';
@@ -75,16 +76,19 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       requireValue(sourceImage,'SOURCE_IMAGE_UNAVAILABLE',503);
       return sourceImage(current,input.project_id,input.scene_id);
     },
-    async quote(session,input){
+    async quote(session,input,batchContext=null){
       const source=await project(session,input?.project_id);
-      const prepared=prepareQuote(source,input,now()),attemptId=id();
+      const prepared=prepareQuote(source,input,now()),attemptId=batchContext?.attemptId||id();
       if(input.stored_image){
         requireValue(sourceImage,'SOURCE_IMAGE_UNAVAILABLE',503);
         const selected=await sourceImage(source,input.project_id,input.scene_id);
         requireValue(canonical(selected.image)===canonical(prepared.image),'SOURCE_IMAGE_CHANGED');
       }
-      const record={...prepared,id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:prepared.mode==='text_to_video'?'READY':'QUOTED',transitions:[{stage:prepared.mode==='text_to_video'?'READY':'QUOTED',at:now()}]};
+      const record={...prepared,...(batchContext?{batchId:batchContext.batchId}:{}),id:attemptId,sessionHash:sessionOf(session),createdAt:now(),updatedAt:now(),quoteExpires:now()+120000,stage:prepared.mode==='text_to_video'?'READY':'QUOTED',transitions:[{stage:prepared.mode==='text_to_video'?'READY':'QUOTED',at:now()}]};
       await change(session,(l,team)=>{
+        requireValue(!batchReserves(l,record.projectId,record.sceneId,record.batchId),'BATCH_SCENE_RESERVED');
+        if(batchContext){const b=l.batches?.[record.batchId];requireValue(b&&!b.cancelledAt&&b.items.some(i=>i.attemptId===record.id&&i.state!=='cancelled'),'BATCH_CANCELLED');}
+        requireValue(!l.records[attemptId],'ALREADY_USED');
         // History is not admission capacity. Retain all durable paid records;
         // the store's serialized-byte ceiling protects Firestore document size.
         rate(l,'quote',now(),10);rate(team,'quote',now(),30);
@@ -127,6 +131,8 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       requireValue(input&&Object.keys(input).sort().join(',')==='attempt_id,confirm,cost_micro_usd,request_hash'&&input.confirm===true);
       const record=await owned(session,input.attempt_id,true);await unchanged(session,record);
       await change(session,(l,team)=>{const r=authorizeRecord(l,record.id,session);validQuote(r,session,input.request_hash);
+        requireValue(!batchReserves(l,r.projectId,r.sceneId,r.batchId),'BATCH_SCENE_RESERVED');
+        if(r.batchId){const b=l.batches?.[r.batchId];requireValue(b&&!b.cancelledAt&&b.items.some(i=>i.attemptId===r.id&&i.state!=='cancelled'),'BATCH_CANCELLED');}
         requireValue(r.stage==='READY'&&(r.mode==='text_to_video'||r.verifiedAt&&r.transferConsent&&(!r.mode||(r.uploadedImages?.length||0)===r.images.length)),'NOT_READY');
         requireValue(input.cost_micro_usd===r.cost.microUsd,'COST_MISMATCH');
         reserve(l,r,now(),config.limits);reserve(team,r,now(),config.teamLimits);r.paidConsent={at:now(),requestHash:r.requestHash,costMicroUsd:r.cost.microUsd,sessionHash:r.sessionHash};
