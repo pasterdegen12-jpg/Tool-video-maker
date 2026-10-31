@@ -11,6 +11,48 @@ export function cloudDatabase(env){
   return getFirestore(app);
 }
 import {completedSceneData} from './publish.js';
+const persistedPages=new WeakMap();
+// Bounded private pages avoid both the single-document ceiling and one Firestore
+// read per historical attempt on every poll. The root remains the lock/manifest.
+function ledgerPages(entries={}){
+  const pages=[];let page={},size=2;
+  for(const [key,value]of Object.entries(entries)){
+    requireValue(/^[A-Za-z0-9_-]{1,150}$/.test(key),'INVALID_LEDGER_KEY',500);
+    const bytes=Buffer.byteLength(JSON.stringify({[key]:value}));
+    requireValue(bytes<850000,'LEDGER_ENTRY_TOO_LARGE',503);
+    if(size+bytes>200000&&Object.keys(page).length){pages.push(page);page={};size=2;}
+    page[key]=value;size+=bytes;
+  }
+  if(Object.keys(page).length)pages.push(page);return pages;
+}
+async function loadLedger(tx,ref){
+  const root=(await tx.get(ref)).data()||newLedger();
+  if(root.storageVersion!==2)return root;
+  const data={...root,records:{},batches:{}};
+  const stored={records:[],batches:[]};
+  for(const kind of ['records','batches']){
+    const count=root.storagePages?.[kind]||0;
+    for(let n=0;n<count;n++){
+      const page=(await tx.get(ref.collection(kind+'Pages').doc(String(n).padStart(6,'0')))).data();
+      requireValue(page?.entries,'LEDGER_PAGE_MISSING',503);stored[kind].push(page.entries);Object.assign(data[kind],page.entries);
+    }
+  }
+  persistedPages.set(data,stored);return data;
+}
+function saveLedger(tx,ref,data,before){
+  const root={...data,storageVersion:2,storagePages:{}};delete root.records;delete root.batches;
+  const bounded=value=>requireValue(Buffer.byteLength(JSON.stringify(value))<850000,'LEDGER_ENTRY_TOO_LARGE',503);
+  bounded(root);
+  for(const kind of ['records','batches']){
+    // Never prune paid history as a side effect of admission or migration.
+    for(const key of Object.keys(before[kind]||{}))requireValue(Object.hasOwn(data[kind]||{},key),'LEDGER_HISTORY_REMOVAL',500);
+    const pages=ledgerPages(data[kind]),previous=persistedPages.get(data)?.[kind]||[];root.storagePages[kind]=pages.length;
+    for(let n=0;n<pages.length;n++){
+      if(JSON.stringify(pages[n])!==JSON.stringify(previous[n]))tx.set(ref.collection(kind+'Pages').doc(String(n).padStart(6,'0')),{entries:pages[n]});
+    }
+  }
+  tx.set(ref,root);
+}
 export function createCloudStore(db){
   return {
     async project(owner,projectId){
@@ -37,16 +79,16 @@ export function createCloudStore(db){
         if(data)tx.update(ref,{data});
       });
     },
-    async read(owner){return (await db.doc('_video_ledgers/'+owner).get()).data()||newLedger();},
+    async read(owner){return db.runTransaction(tx=>loadLedger(tx,db.doc('_video_ledgers/'+owner)),{readOnly:true});},
     async transact(owner,change){
       const ref=db.doc('_video_ledgers/'+owner),teamRef=db.doc('_video_ledgers/team-shared-v1');
       return db.runTransaction(async tx=>{
-        const data=(await tx.get(ref)).data()||newLedger();
-        const team=(await tx.get(teamRef)).data()||newLedger();
+        const data=await loadLedger(tx,ref);
+        const team=await loadLedger(tx,teamRef);
+        const before=structuredClone(data),teamBefore=structuredClone(team);
         const result=change(data,team);
         if(result&&typeof result.then==='function')throw new CloudError('INVALID_TRANSACTION',500);
-        requireValue(Buffer.byteLength(JSON.stringify(data))<850000&&Buffer.byteLength(JSON.stringify(team))<850000,'LEDGER_STORAGE_FULL',503);
-        tx.set(ref,data);tx.set(teamRef,team);return result;
+        saveLedger(tx,ref,data,before);saveLedger(tx,teamRef,team,teamBefore);return result;
       });
     },
   };

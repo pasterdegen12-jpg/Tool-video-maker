@@ -33,6 +33,19 @@ test('durable batch deduplicates concurrent creation across fresh Admin stores; 
  }finally{await db.terminate();await deleteApp(app);}
 });
 test.after(()=>env.cleanup());
+test('legacy near-full history migrates atomically without loss; new attempts exceed old aggregate ceiling safely',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'ledger-size-emulator'),db=getFirestore(app);
+ try{
+  const owner='size-regression',ref=db.doc('_video_ledgers/'+owner),records={};for(let n=0;n<160;n++)records['r'+n]={id:'r'+n,stage:'COMPLETED',prompt:'x'.repeat(5200),predictionId:'prediction-'+n,paidConsent:{at:n}};
+  const legacy={version:1,records,rates:{quote:{start:1,count:2}},spend:{day:123},batches:{old:{id:'old',items:[{sceneId:1,state:'completed'}]}}};await ref.set(legacy);
+  const store=createCloudStore(db);assert.deepEqual(await store.read(owner),legacy);
+  await store.transact(owner,l=>{l.records.new={id:'new',stage:'QUOTED',prompt:'y'.repeat(20000)};});
+  const migrated=await store.read(owner);for(const [id,r]of Object.entries(records))assert.deepEqual(migrated.records[id],r);assert.deepEqual(migrated.batches,legacy.batches);assert.deepEqual(migrated.spend,legacy.spend);assert.ok(Buffer.byteLength(JSON.stringify(migrated))>850000);assert.ok(Buffer.byteLength(JSON.stringify((await ref.get()).data()))<2000);
+  await Promise.all([store.transact(owner,l=>{l.records.a={id:'a'};}),createCloudStore(db).transact(owner,l=>{l.records.b={id:'b'};})]);const reread=await store.read(owner);assert.ok(reread.records.a&&reread.records.b);assert.equal(Object.keys(reread.records).length,163);
+  await assert.rejects(store.transact(owner,l=>{delete l.records.r1;}),/LEDGER_HISTORY_REMOVAL/);assert.ok((await store.read(owner)).records.r1);
+  await assert.rejects(store.transact(owner,l=>{l.records.huge={prompt:'z'.repeat(850001)};}),/LEDGER_ENTRY_TOO_LARGE/);assert.equal((await store.read(owner)).records.huge,undefined);
+ }finally{await db.terminate();await deleteApp(app);}
+});
 test('Qwen Admin durable queue serializes competing claims and survives a fresh store instance',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'qwen-emulator'),db=getFirestore(app);
  try{
