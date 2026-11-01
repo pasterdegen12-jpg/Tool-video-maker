@@ -55,6 +55,8 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
     // Called only by Generate Video inside the options modal. No work on open/change.
     async generate(payload){
       if(active||consumed)return;
+      const trace=(stage,extra={})=>{try{console.info(JSON.stringify({event:'video_client_trace',stage,at:new Date().toISOString(),projectId:payload.project_id,sceneId:payload.scene?.scene_n,...extra}));}catch{/* Non-blocking diagnostics. */}};
+      trace('MODAL_CONFIRMED');
       if(retryAt>now()){onChange({status:'error',busy:false,blocked:false,code:'RATE_LIMIT',message:'Đợi '+Math.ceil((retryAt-now())/1000)+' giây rồi bấm Generate Video để thử lại. Lựa chọn hiện tại được giữ nguyên.'});return;}
       const run=new AbortController();active=run;consumed=false;
       let attemptId=null;
@@ -85,6 +87,7 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
             media.push({bytes,image:{mime,size:bytes.length,sha256:await digest(bytes),...imageDimensions(bytes,mime)}});}
         }
         const image=media[0]?.image;
+        trace('SOURCE_VALIDATED');
         // Step 2: quote (server validates scene, image, settings, budget policy)
         emit(run,{status:'quoting',busy:true,message:'Đang chuẩn bị video...'});
         const q=await request('quote',{project_id:payload.project_id,scene_id:local.sceneId,...(mode==='text_to_video'?{}:mode==='references_to_video'?{images:media.map(m=>m.image)}:{image}),settings:payload.settings,assumptions:payload.assumptions,...(payload.stored_image&&mode==='start_frame_to_video'?{stored_image:true}:{}),...(modern?{mode,additional_prompt:payload.additional_prompt||'',attempt_key:payload.attempt_key||crypto.randomUUID()}:{} )},run);
@@ -95,15 +98,20 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
         if(modern&&(q.mode!==mode||JSON.stringify(q.image_sha256s)!==JSON.stringify(media.map(m=>m.image.sha256))))throw Error('Thông số media không khớp.');
         if(!q.paid_enabled)throw new Error(videoMessage('PAID_DISABLED'));
         attemptId=q.quote_id;
+        trace('QUOTE_CREATED',{attemptId});
         // Step 3: upload image via signed URL (required: image bytes cannot pass through Vercel body limit)
         emit(run,{status:'uploading',busy:true,attemptId,message:'Đang tải ảnh...'});
         for(let i=0;i<media.length;i++)await transferImage(q,media[i].bytes,media[i].image,run,mode==='references_to_video'?i:undefined);
+        trace('MEDIA_VERIFIED',{attemptId});
         // Step 4: submit (server enforces budget, concurrency, idempotency, durable reservation)
         emit(run,{status:'submitting',busy:true,attemptId,message:'Đang tạo video...'});
         consumed=true;
+        trace('SUBMIT_SENT',{attemptId});
         const value=await request('submit',{attempt_id:q.quote_id,request_hash:q.request_hash,confirm:true,cost_micro_usd:q.cost.microUsd},run);
+        trace('SUBMIT_RESPONSE',{attemptId,state:value.state});
         await track(value,q.quote_id,q.scene_id,run);
       }catch(e){
+        trace('GENERATE_STOPPED',{attemptId,code:/^[A-Z_]{2,70}$/.test(e.code||'')?e.code:'CLIENT_REQUEST_FAILED'});
         if(e.message==='CANCELLED'){emit(run,{status:'stopped',busy:false,attemptId,message:'Đã dừng chờ. Job đã nhận vẫn có thể tính phí; dùng Khôi phục.'});}
         else{emit(run,{status:'error',busy:false,attemptId,blocked:consumed,code:e.code,message:videoMessage(e.message)||e.message||'Không thể tạo video.'});}
       }finally{if(active===run)active=null;}

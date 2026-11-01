@@ -5,6 +5,7 @@ import { requestHttps, publicAddress } from './transport.js';
 import { VideoError } from './errors.js';
 import {annotateFailure,diagnosticError,storageFailureReason} from './diagnostics.js';
 import {createHash,randomUUID} from 'node:crypto';
+import {videoTrace} from '../cloud-video/trace.js';
 export const API='https://api.wavespeed.ai/api/v3';
 const terminals=['completed','failed','cancelled','timeout','deleted'];
 export function retrySeconds(value,now=Date.now()){
@@ -98,7 +99,7 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
       paid();
       return uploader.upload(image);
     },
-    async submit(payload,onAccepted=()=>{},model=MODEL){
+    async submit(payload,onAccepted=()=>{},model=MODEL,context={}){
       checkedModel(model);
       paid();
       if(!validNewRequestDuration(payload.duration))throw new VideoError('INVALID_PROVIDER_DURATION');
@@ -111,7 +112,9 @@ export function createProvider(config,{request=requestHttps,checkUrl=publicAddre
         promptSha256:createHash('sha256').update(serialized.prompt||'').digest('hex'),promptChars:[...(serialized.prompt||'')].length,
         cameraFixed:serialized.camera_fixed??null,duration:serialized.duration,resolution:serialized.resolution,aspectRatio:serialized.aspect_ratio,
         generateAudio:serialized.generate_audio,seed:serialized.seed??null,hasImage:!!serialized.image,hasLastImage:!!serialized.last_image,referenceImageCount:serialized.reference_images?.length||0});
+      videoTrace('PROVIDER_REQUEST_SENT',context,diagnostics);
       const raw=await request(API+'/'+model,{method:'POST',headers:apiHeaders,body});
+      videoTrace('PROVIDER_RESPONSE_RECEIVED',{...context,httpStatus:raw.status},diagnostics);
       if([400,401,402,403,404,422].includes(raw.status))throw new VideoError('SUBMISSION_REJECTED');
       const task=data(raw);
       if(task.model===model&&typeof task.id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(task.id)){

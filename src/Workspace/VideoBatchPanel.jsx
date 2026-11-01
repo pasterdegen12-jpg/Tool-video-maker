@@ -9,10 +9,11 @@ const button='rounded-lg border border-slate-600 px-3 py-2 text-sm disabled:opac
 export default function VideoBatchPanel(props){const auth=useAuth();return <Panel key={props.projectId+':'+auth.userId} {...props} auth={auth}/>;}
 function Panel({projectId,open,onClose,onOutputs,onStates,auth}){
  const [client]=useState(()=>createVideoBatchClient({getToken:auth.getToken}));
- const [plan,setPlan]=useState(null),[selected,setSelected]=useState({}),[batches,setBatches]=useState([]),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [plan,setPlan]=useState(null),[selected,setSelected]=useState({}),[batches,setBatches]=useState([]),[error,setError]=useState(''),[busy,setBusy]=useState(false),[serverQueue,setServerQueue]=useState(false);
  const clicked=useRef(false),key=useRef(null),delivered=useRef(new Set()),callbacks=useRef({onOutputs,onStates});
  useEffect(()=>{callbacks.current={onOutputs,onStates};},[onOutputs,onStates]);
  function accept(result){
+  setServerQueue(result.continuation==='server');
   setBatches(result.batches);const states={};
   for(const b of result.batches)for(const i of b.items){states[String(i.scene_id)]??=i;
    if(i.state==='completed'&&i.job?.video_url&&!delivered.current.has(i.job.job_id)){delivered.current.add(i.job.job_id);callbacks.current.onOutputs?.(i.scene_id,{url:i.job.video_url,id:i.job.job_id,predictionId:i.job.prediction_id,createdAt:Date.parse(i.job.created_at),options:{mode:i.job.mode,settings:i.job.settings,additional_prompt:i.job.additional_prompt}});}}
@@ -23,7 +24,7 @@ function Panel({projectId,open,onClose,onOutputs,onStates,auth}){
   async function refresh(){
    let delay=15000;
    try{const result=await client.list(projectId);if(!live)return;accept(result);retries=0;
-    if(result.batches.some(b=>b.status==='running')){const progressed=await client.tick(projectId);if(!live)return;accept(progressed);delay=6000;}
+    if(result.continuation!=='server'&&result.batches.some(b=>b.status==='running')){const progressed=await client.tick(projectId);if(!live)return;accept(progressed);delay=6000;}
    }catch(e){if(!live)return;setError(e.message);retries++;delay=Math.max(15000,Math.min(300000,(e.retryAfter||2**Math.min(retries,6)*5)*1000));}
    if(live)timer=setTimeout(refresh,delay);
   }
@@ -47,13 +48,13 @@ function Panel({projectId,open,onClose,onOutputs,onStates,auth}){
     <details><summary className="cursor-pointer text-emerald-400">Trạng thái từng scene</summary>{b.items.map(i=><p key={i.scene_id}>Scene {i.scene_id}: {BATCH_LABELS[i.state]||i.state}{i.error?' · '+i.error:''}</p>)}</details>
     {b.status==='running'&&<button className={button+' mt-2'} onClick={()=>client.cancel(projectId,b.batch_id).then(accept).catch(e=>setError(e.message))}>Dừng các scene chưa gửi</button>}
    </div>)}
-   {running.length>0&&<p className="text-xs text-slate-400">Giữ dự án mở để tiếp tục hàng đợi. Nếu đóng hết trình duyệt, job đã gửi vẫn chạy; scene chờ sẽ tiếp tục khi mở lại. Dừng hàng đợi không hủy job đã gửi.</p>}
+   {running.length>0&&<p className="text-xs text-slate-400">{serverQueue?'Hàng đợi tiếp tục trên máy chủ kể cả khi đóng trang.':'Giữ dự án mở để tiếp tục hàng đợi. Nếu đóng hết trình duyệt, job đã gửi vẫn chạy; scene chờ sẽ tiếp tục khi mở lại.'} Dừng hàng đợi không hủy job đã gửi.</p>}
    {error&&<p role="status" className="text-amber-300">{error}</p>}
   </section>}
   {open&&createPortal(<div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
    <section role="dialog" aria-modal="true" aria-label="Gen All Video" className="max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-700 bg-slate-900 p-5 text-slate-100 shadow-2xl">
     <h2 className="text-lg font-bold">Gen All Video</h2><p className="mt-2 text-sm text-slate-400">Chọn scene cần tạo. Giữ nguyên thiết lập từng scene; ảnh và OUTPUT cũ không bị thay đổi khi chọn.</p>
-    <p className="my-2 text-xs text-slate-400">Hàng đợi tiếp tục khi dự án mở. Tối đa {plan?.concurrency||1} job đang tạo theo cấu hình hiện tại.</p>
+    <p className="my-2 text-xs text-slate-400">Tối đa {plan?.concurrency||1} job đang tạo theo cấu hình hiện tại.</p>
     <div className="flex gap-2 my-4"><button className={button} disabled={busy} onClick={()=>{key.current=null;setSelected(Object.fromEntries((plan?.scenes||[]).filter(s=>s.eligible).map(s=>[s.scene_id,true])));}}>Chọn tất cả đủ điều kiện</button><button className={button} disabled={busy} onClick={()=>{key.current=null;setSelected({});}}>Bỏ chọn tất cả</button></div>
     <div className="space-y-2">{plan?.scenes.map(s=><label key={s.scene_id} className="flex gap-3 rounded-xl border border-slate-800 p-3">
      <input type="checkbox" aria-label={'Chọn Scene '+s.scene_id} checked={!!selected[s.scene_id]} disabled={busy||!s.eligible} onChange={e=>{key.current=null;setSelected(v=>({...v,[s.scene_id]:e.target.checked}));}}/>

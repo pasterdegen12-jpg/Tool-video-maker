@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    {"source":"/api/get-upload-url","destination":"/api/video?action=legacy_upload"},
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
@@ -27,6 +28,10 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
+    "api/video-consumer.js": {
+      "maxDuration": 120,
+      "experimentalTriggers": [{"type":"queue/v2beta","topic":"video-continuation"}]
+    },
     "api/video.js": {
       "maxDuration": 120
     },

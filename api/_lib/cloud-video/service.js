@@ -2,6 +2,7 @@ import {validNewRequestDuration} from '../../../src/lib/generationDurationPolicy
 import {batchReserves} from './batch.js';
 import {providerVideoPayload} from '../../../src/lib/cloudVideoOptions.js';
 import {Buffer} from 'node:buffer';
+import {videoTrace,recordTrace} from './trace.js';
 import {id,ownerOf,sessionOf,prepareQuote,publicQuote,publicJob,authorizeRecord,rate,reserve,checkAdmission,requireValue,CloudError,sourceDigest,sceneSnapshot,canonical} from './core.js';
 
 // Each provider operation is separated by a committed transaction. A cold start
@@ -34,7 +35,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
     await change(session,l=>{const r=authorizeRecord(l,attemptId,session);if(['TICKETING','UPLOADING','VERIFYING'].includes(r.stage)){r.failure=code;transition(r,'FAILED');}});
   }
   async function finishJob(session,record){
-    if(record.stage==='COMPLETED')await store.publishVideo(owner(session),record);
+    if(record.stage==='COMPLETED'){await store.publishVideo(owner(session),record);videoTrace('OUTPUT_PERSISTED',recordTrace(record));}
     return publicJob(record);
   }
   async function poll(session,attemptId){
@@ -47,6 +48,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       r.pollToken=ticket;r.pollUntil=now()+30000;r.nextPoll=now()+3000;return true;
     });
     if(!claimed)return publicJob(record);
+    videoTrace('POLLING_STARTED',recordTrace(record));
     let result;
     try{result=await provider.get(record.predictionId,record.model);}catch{
       await change(session,l=>{const r=l.records[attemptId];if(r.pollToken===ticket){r.pollUntil=0;r.failure='STATUS_UNAVAILABLE; use recovery, do not resubmit';}});
@@ -96,7 +98,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
         checkAdmission(l,record,now(),config.limits);checkAdmission(team,record,now(),config.teamLimits);
         l.records[attemptId]=record;
       });
-      return publicQuote(record,config.paidEnabled);
+      videoTrace('QUOTE_CREATED',recordTrace(record));return publicQuote(record,config.paidEnabled);
     },
     async ticket(session,input){
       requireValue(input?.transfer_consent===true&&['quote_id,request_hash,transfer_consent','image_index,quote_id,request_hash,transfer_consent'].includes(Object.keys(input).sort().join(',')));
@@ -130,6 +132,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
       requireValue(config.paidEnabled,'PAID_DISABLED',403);
       requireValue(input&&Object.keys(input).sort().join(',')==='attempt_id,confirm,cost_micro_usd,request_hash'&&input.confirm===true);
       const record=await owned(session,input.attempt_id,true);await unchanged(session,record);
+      videoTrace('SUBMIT_RECEIVED',recordTrace(record));
       await change(session,(l,team)=>{const r=authorizeRecord(l,record.id,session);validQuote(r,session,input.request_hash);
         requireValue(!batchReserves(l,r.projectId,r.sceneId,r.batchId),'BATCH_SCENE_RESERVED');
         if(r.batchId){const b=l.batches?.[r.batchId];requireValue(b&&!b.cancelledAt&&b.items.some(i=>i.attemptId===r.id&&i.state!=='cancelled'),'BATCH_CANCELLED');}
@@ -137,17 +140,21 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
         requireValue(input.cost_micro_usd===r.cost.microUsd,'COST_MISMATCH');
         reserve(l,r,now(),config.limits);reserve(team,r,now(),config.teamLimits);r.paidConsent={at:now(),requestHash:r.requestHash,costMicroUsd:r.cost.microUsd,sessionHash:r.sessionHash};
         transition(r,'SUBMITTING');});
+      videoTrace('ADMISSION_ACCEPTED',{...recordTrace(record),state:'SUBMITTING'});
       // Never place this POST inside a transaction callback or retry loop.
       try{
+        videoTrace('DISPATCH_STARTED',recordTrace(record));
         const result=await provider.submit(providerVideoPayload(record),async predictionId=>{
           await change(session,l=>{const r=l.records[record.id];r.predictionId=predictionId;transition(r,'ACCEPTED');});
-        },record.model);
+          videoTrace('PREDICTION_CREATED',{...recordTrace(record),predictionId,state:'ACCEPTED'});
+        },record.model,recordTrace(record));
         const archived=result.state==='completed'?await archive(result.url,owner(session),{...record,predictionId:result.id}):null;
         await change(session,l=>{const r=l.records[record.id];requireValue(r.predictionId===result.id,'PREDICTION_MISMATCH');
           if(result.state==='completed'){r.providerUrl=result.url;r.videoUrl=archived;transition(r,'COMPLETED');}
           else if(['failed','cancelled','timeout','deleted'].includes(result.state)){r.failure='PROVIDER_'+result.state.toUpperCase();transition(r,'FAILED');}
         });
       }catch(e){
+        videoTrace('DISPATCH_FAILED',{...recordTrace(record),code:e.code||'SUBMISSION_UNKNOWN'});
         await change(session,l=>{const r=l.records[record.id];
           if(r.predictionId){r.failure='RESPONSE_INCOMPLETE; recover saved prediction';return;}
           r.failure=e.code==='SUBMISSION_REJECTED'?'SUBMISSION_REJECTED':'SUBMISSION_UNKNOWN; do not resubmit';

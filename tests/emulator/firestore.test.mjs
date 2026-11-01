@@ -11,7 +11,8 @@ import {sourceDigest} from '../../api/_lib/cloud-video/core.js';
 import {queueStore} from '../../api/_lib/qwen/store.js';
 import {blank,enqueue,claim} from '../../api/_lib/qwen/queue.js';
 import {createVideoBatchService} from '../../api/_lib/cloud-video/batch.js';
-import {ownerOf,sceneSnapshot} from '../../api/_lib/cloud-video/core.js';
+import {ownerOf,sceneSnapshot,hash} from '../../api/_lib/cloud-video/core.js';
+import {createCloudVideoService} from '../../api/_lib/cloud-video/service.js';
 const rules=await fs.readFile(new URL('./firestore.rules',import.meta.url),'utf8');
 const env=await initializeTestEnvironment({projectId:'demo-webai-production',firestore:{host:'127.0.0.1',port:8187,rules}});
 test('durable batch deduplicates concurrent creation across fresh Admin stores; concurrent outputs preserve neighbors and history',async()=>{
@@ -33,6 +34,23 @@ test('durable batch deduplicates concurrent creation across fresh Admin stores; 
  }finally{await db.terminate();await deleteApp(app);}
 });
 test.after(()=>env.cleanup());
+test('paged ledger persists nested attempt and batch mutations through actual dispatch and output',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'paged-dispatch'),db=getFirestore(app);
+ try{
+  let clock=Date.parse('2026-11-01'),posts=0;const s={subject:'paged-dispatch',session:'real-test-context'},config={issuer:'mock-emulator',paidEnabled:true,limits:{concurrent:1,daily:0,perRequest:500000},teamLimits:{concurrent:1,daily:0,perRequest:500000}},owner=ownerOf(s,config.issuer),store=createCloudStore(db);
+  await db.doc('_video_ledgers/team-shared-v1').set({version:1,records:{},rates:{},spend:{}});
+  await db.doc('projects/proj_paged_dispatch').set({projectType:'full-ai',data:[1,2].map(n=>({scene_n:n,Character:'Judge',Dialogue:'Exact words '+n,Camera:'Fixed.',startFrameUrl:'https://media.example.org/input.png',videoJob:{options:{mode:n===1?'text_to_video':'start_frame_to_video'}}}))});
+  const sourceImage=async()=>({image:{mime:'image/png',size:5,sha256:hash(Buffer.from('image')),width:32,height:32},bytes:Buffer.from('image')});
+  const upload={ticket:async()=>({download_url:'https://media.example.org/upload.png',upload:{expires_at:new Date(clock+600000).toISOString()}}),transfer:async()=>{},verify:async()=>{}};
+  const dependencies={config,store,sourceImage,upload,now:()=>clock,provider:{submit:async(payload,accepted)=>{posts++;await accepted('mock-paged-'+posts);return{id:'mock-paged-'+posts,state:'queued'};},get:async id=>({id,state:'completed',url:'https://media.example.org/'+id+'.mp4'})},archive:async u=>u};
+  const make=()=>{const video=createCloudVideoService(dependencies);return createVideoBatchService({...dependencies,video});};
+  const plan=await make().batch_plan(s,{project_id:'proj_paged_dispatch'});await make().batch_create(s,{project_id:'proj_paged_dispatch',confirm:true,idempotency_key:'d'.repeat(36),scenes:plan.scenes.map(x=>({scene_id:x.scene_id,digest:x.digest}))});
+  for(let n=0;n<10;n++){clock+=10000;await make().batch_tick(s,{project_id:'proj_paged_dispatch'});}
+  const result=await make().batch_list(s,{project_id:'proj_paged_dispatch'});assert.equal(result.batches[0].counts.completed,2,JSON.stringify(result.batches[0].items.map(i=>({state:i.state,error:i.error,jobState:i.job?.state}))));assert.equal(posts,2);
+  const saved=await store.read(owner);assert.ok(Object.values(saved.records).every(r=>r.stage==='COMPLETED'&&r.predictionId));assert.ok(Object.values((await store.read('team-shared-v1')).records).every(r=>r.stage==='COMPLETED'));
+  const project=await store.project(owner,'proj_paged_dispatch');assert.equal(project.data.filter(x=>x.videoUrl).length,2);assert.equal(project.data[0].Dialogue,'Exact words 1');
+ }finally{await db.terminate();await deleteApp(app);}
+});
 test('legacy near-full history migrates atomically without loss; new attempts exceed old aggregate ceiling safely',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'ledger-size-emulator'),db=getFirestore(app);
  try{

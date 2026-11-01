@@ -1,5 +1,6 @@
 import {id,hash,canonical,ownerOf,sceneSnapshot,requireValue,publicJob} from './core.js';
 import {batchSceneOptions,batchCounts,BATCH_TERMINAL} from '../../../src/lib/videoBatchPlan.js';
+import {videoTrace} from './trace.js';
 
 const activeStages=['SUBMITTING','UNKNOWN','ACCEPTED','RUNNING'];
 export function batchReserves(ledger,projectId,sceneId,except){
@@ -82,6 +83,7 @@ export function createVideoBatchService({config,store,video,sourceImage,upload,n
    });
    if(!claim)return list(s,input.project_id);
    const {batch:b,item:i}=claim,a=actor(s,b);
+   videoTrace('DISPATCH_CLAIMED',{projectId:b.projectId,sceneId:i.sceneId,attemptId:i.attemptId,batchId:b.id,state:i.state});
    let state=i.state,error='',nextAt=0,tries=i.tries;
    try{
     let l=await store.read(owner(s)),r=l.records[i.attemptId];

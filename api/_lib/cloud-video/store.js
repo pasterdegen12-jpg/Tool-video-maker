@@ -34,7 +34,9 @@ async function loadLedger(tx,ref){
     const count=root.storagePages?.[kind]||0;
     for(let n=0;n<count;n++){
       const page=(await tx.get(ref.collection(kind+'Pages').doc(String(n).padStart(6,'0')))).data();
-      requireValue(page?.entries,'LEDGER_PAGE_MISSING',503);stored[kind].push(page.entries);Object.assign(data[kind],page.entries);
+      requireValue(page?.entries,'LEDGER_PAGE_MISSING',503);
+      // Comparison snapshots must never share mutable records with the caller.
+      stored[kind].push(structuredClone(page.entries));Object.assign(data[kind],page.entries);
     }
   }
   persistedPages.set(data,stored);return data;

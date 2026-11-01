@@ -19,6 +19,6 @@ test('quote and exact HTTP serializer preserve camera and log only redacted corr
  const payload=providerVideoPayload({...q,downloadUrl:'https://example.org/private.jpg',uploadedImages:[{url:'https://example.org/private.jpg'}]}),events=[];let sent;
  const p=createProvider({apiKey:'DO_NOT_LOG_SECRET',paidEnabled:true},{diagnostics:e=>events.push(e),request:async(url,o)=>{sent=JSON.parse(o.body);return{status:200,body:JSON.stringify({code:200,data:{id:'test_prediction',model:q.model,status:'queued',outputs:[]}})};}});
  await p.submit(payload,()=>{},q.model);assert.equal(sent.camera_fixed,mode==='references_to_video'?undefined:true);assert.equal(sent.duration,q.settings.duration);assert.equal(sent.prompt,q.prompt);assert.equal(sent.generate_audio,true);assert.ok(!sent.prompt.includes(scene.Translate));assert.equal(sent.prompt.split(scene.Dialogue).length-1,1);
- assert.equal(events[0].cameraFixed,mode==='references_to_video'?null:true);assert.equal(events[0].requestId,events[1].requestId);assert.equal(events[1].predictionId,'test_prediction');for(const secret of ['DO_NOT_LOG_SECRET',scene.Dialogue,'private.jpg'])assert.ok(!JSON.stringify(events).includes(secret));
+ const accepted=events.find(e=>e.event==='video_provider_accepted');assert.equal(events[0].cameraFixed,mode==='references_to_video'?null:true);assert.equal(events[0].requestId,accepted.requestId);assert.equal(accepted.predictionId,'test_prediction');for(const secret of ['DO_NOT_LOG_SECRET',scene.Dialogue,'private.jpg'])assert.ok(!JSON.stringify(events).includes(secret));
  }
 });
