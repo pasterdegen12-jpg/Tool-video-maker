@@ -123,7 +123,7 @@ export default function StoryboardTab({
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className={`text-[9px] font-bold uppercase tracking-widest ${darkMode ? 'text-purple-400' : 'text-purple-600'}`}>Nhân vật</span>
-                      <span className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-zinc-800'}`}>{scene.Character}</span>
+                      <span className={`text-xs font-bold truncate ${darkMode ? 'text-slate-200' : 'text-zinc-800'}`}>{characterInfo.name || 'Nhân vật'}</span>
                     </div>
                   </div>
                 )}

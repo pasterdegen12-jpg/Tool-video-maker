@@ -33,19 +33,19 @@ test('malformed/plain text/missing attributes/unsupported identification never f
 for(const subjectStatus of ['ambiguous','no_subject'])test(subjectStatus+' yields no approvable ID',()=>assert.equal(parseMolmoOutputs([{...molmoOutput,subjectStatus,visualId:''}]).visual_id,''));
 test('duplicate clicks across sessions create one prediction; resume polls only',async()=>{
  const h=molmoHarness(),jobs=await Promise.all([h.create(),h.create(),h.create()]);assert.equal(h.posts,1);assert.equal(new Set(jobs.map(j=>j.id)).size,1);
- const j=await h.statusJob();assert.equal(j.state,'proposal_ready');assert.equal(h.posts,1);assert.equal(h.polls,1);assert.ok(j.predictionId);
+ const j=await h.statusJob();assert.equal(j.state,'confirmed');assert.equal(h.posts,1);assert.equal(h.polls,1);assert.ok(j.predictionId);
 });
 test('uncertain submit and crashed reservation are never automatically recharged',async()=>{
  const h=molmoHarness();h.fail(true);const first=await h.create();assert.equal(first.state,'unknown');await h.create();await h.statusJob();assert.equal(h.posts,1);
 });
 test('approval persists only character overlay; reload resolves every scene without remapping',async()=>{
- const h=molmoHarness(),before=structuredClone(h.project);await h.create();const j=await h.statusJob();assert.deepEqual(h.project,before);await h.confirm(j);
+ const h=molmoHarness(),before=structuredClone(h.project);await h.create();const j=await h.statusJob();assert.equal(j.identity.confirmedId,molmoOutput.visualId);
  assert.deepEqual(h.project.data,before.data);assert.equal(h.project.characters[0].id,'judge_1');assert.equal(h.project.characters[0].voiceId,'voice_unchanged');
  const p=JSON.parse(JSON.stringify(h.project)),appearance=approvedAppearance(p.data[0],p.characters,p.id);
  assert.equal(appearance.visualId,molmoOutput.visualId);assert.ok(composeVideoPrompt(p.data[0],'',appearance).prompt.includes(molmoOutput.visualId));assert.deepEqual(reconcileCharacterScenes(p.data,p.characters,p.id),p.data);
 });
 test('failed regeneration and changed reference preserve previously approved identity',async()=>{
- const h=molmoHarness();await h.create();await h.confirm(await h.statusJob());const saved=structuredClone(h.project.characters[0]);
+ const h=molmoHarness();await h.create();await h.statusJob();const saved=structuredClone(h.project.characters[0]);
  h.status('failed');await h.create();await h.statusJob();assert.deepEqual(h.project.characters[0],saved);
  h.project.characters[0].imageUrl+='new';assert.equal(approvedAppearance(h.project.data[0],h.project.characters,h.project.id),null);
 });
@@ -54,5 +54,30 @@ for(const status of ['failed','cancelled','timeout','deleted'])test('terminal '+
 });
 test('foreign owner, changed character and invalid confirm cannot write',async()=>{
  const h=molmoHarness();await assert.rejects(h.service.user({subject:'other'},'create',{...h.input,requestKey:crypto.randomUUID()}),/PROJECT_FORBIDDEN/);assert.equal(h.posts,0);
- await h.create();const j=await h.statusJob();h.project.characters[0].name='Changed';await assert.rejects(h.confirm(j),/CHARACTER_CHANGED/);assert.equal(h.project.characters[0].characterIdentity,undefined);
+ await h.create();h.project.characters[0].name='Changed';assert.equal((await h.statusJob()).state,'failed');assert.equal(h.project.characters[0].characterIdentity,undefined);
+});
+test('a fresh explicit click replaces saved appearance only after a valid result commits',async()=>{
+ const h=molmoHarness();await h.create();await h.statusJob();const old=h.project.characters[0].characterIdentity;
+ h.output({...molmoOutput,visualId:'person_black_suit'});await h.create();assert.deepEqual(h.project.characters[0].characterIdentity,old);
+ const result=await h.statusJob();assert.equal(result.identity.confirmedId,'person_black_suit');assert.equal(h.posts,2);
+});
+test('expired image content, superseded request and invalid output never overwrite a saved identity',async()=>{
+ for(const reason of ['bytes','superseded','malformed','ambiguous']){
+  const h=molmoHarness();await h.create();await h.statusJob();const saved=structuredClone(h.project.characters[0]);
+  const next=await h.create();
+  if(reason==='bytes')h.image.sha256='b'.repeat(64);
+  if(reason==='superseded'){h.image.sha256='b'.repeat(64);await h.create();h.image.sha256='a'.repeat(64);}
+  if(reason==='malformed')h.output('bad json');
+  if(reason==='ambiguous')h.output({...molmoOutput,subjectStatus:'ambiguous',visualId:''});
+  assert.equal((await h.statusJob(next.id)).state,'failed');assert.deepEqual(h.project.characters[0],saved);
+ }
+});
+test('deleted character cannot be restored by a late prediction',async()=>{
+ const h=molmoHarness();await h.create();h.project.characters=[];await assert.rejects(h.statusJob(),/CHARACTER_NOT_FOUND/);assert.deepEqual(h.project.characters,[]);
+});
+test('failed Firestore commit exposes no new identity and status recovery uses same prediction',async()=>{
+ const h=molmoHarness();await h.create();await h.statusJob();const old=structuredClone(h.project.characters[0]);await h.create();
+ const original=h.store.transact;h.store.transact=(k,p,change)=>original(k,p,(s,project)=>{const out=change(s,project);if(out.characters)throw Error('WRITE_FAILED');return out;});
+ await assert.rejects(h.statusJob(),/WRITE_FAILED/);assert.deepEqual(h.project.characters[0],old);
+ h.store.transact=original;h.advance(31000);assert.equal((await h.statusJob()).state,'confirmed');assert.equal(h.posts,2);
 });

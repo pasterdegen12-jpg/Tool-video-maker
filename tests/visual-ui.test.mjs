@@ -35,7 +35,7 @@ const click=async b=>{assert.ok(b);await act(async()=>b.click());};
 const flush=()=>act(async()=>new Promise(r=>setImmediate(r)));
 function Tree({projectId='proj_molmo',projectType='full-ai',chars=h.project.characters}={}){
  const [saved,setSaved]=React.useState(null);const characters=saved?.characters||chars;
- return React.createElement(visual.VisualProfilesProvider,{projectId,projectType,characters,onConfirmed:setSaved},
+ return React.createElement(visual.VisualProfilesProvider,{projectId,projectType,characters,onConfirmed:identity=>setSaved({characters:characters.map(c=>c.id===identity.characterId?{...c,characterIdentity:identity}:c)})},
  React.createElement(Setup,{projectCharacters:characters,parsedData:h.project.data,darkMode:true}),
  React.createElement(Storyboard,{parsedData:h.project.data,projectCharacters:characters,projectId,generatedAudios:{},isGenerating:{},mergingScenes:{},mergedVideos:{},projectType,darkMode:true}));
 }
@@ -53,13 +53,13 @@ test('actual Setup hosted approval preserves every original scene and stable cha
  t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container,calls}=await mount(t);const before=structuredClone(h.project);
  assert.equal(h.posts,0);assert.ok(calls.every(a=>a==='molmo_status'));
  const panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');await detect(t,panel);assert.equal(h.posts,1);assert.equal(panel.querySelector('input[type=file]'),null);
- await click(find(panel,'Xác nhận Visual ID và lưu'));assert.deepEqual(h.project.data,before.data);assert.deepEqual(h.project.characters.map(c=>[c.id,c.name,c.imageUrl]),before.characters.map(c=>[c.id,c.name,c.imageUrl]));
+ assert.equal(find(panel,'Xác nhận Visual ID và lưu'),undefined);assert.deepEqual(h.project.data,before.data);assert.deepEqual(h.project.characters.map(c=>[c.id,c.name,c.imageUrl]),before.characters.map(c=>[c.id,c.name,c.imageUrl]));
  assert.equal(container.querySelectorAll('[data-visual-status=confirmed]').length,5);
 });
-test('cancel candidate and failed regeneration preserve approved identity',async t=>{
+test('automatic save and failed regeneration preserve approved identity',async t=>{
  t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container}=await mount(t),panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');
- await detect(t,panel);await click(find(panel,'Xác nhận Visual ID và lưu'));const saved=structuredClone(h.project.characters);
- await detect(t,panel);await click(find(panel,'Hủy đề xuất'));assert.deepEqual(h.project.characters,saved);
+ await detect(t,panel);assert.equal(find(panel,'Xác nhận Visual ID và lưu'),undefined);const saved=structuredClone(h.project.characters);
+ assert.equal(panel.querySelectorAll('button').length,1);assert.equal(panel.querySelector('img'),null);
  h.status('failed');await detect(t,panel);assert.deepEqual(h.project.characters,saved);
 });
 for(const subjectStatus of ['ambiguous','no_subject'])test(subjectStatus+' has no approval action',async t=>{
@@ -83,7 +83,7 @@ test('Semi hides Set ID; hosted Set ID does not require Qwen flags; signed-out c
  auth={...auth,isSignedIn:false};await render({});assert.equal(find(container,'✦ Set ID').disabled,true);
 });
 test('saved IDs hydrate after remount without a paid request or changed scene mappings',async t=>{
- t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container,render}=await mount(t);const panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');await detect(t,panel);await click(find(panel,'Xác nhận Visual ID và lưu'));
+ t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container,render}=await mount(t);const panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');await detect(t,panel);assert.equal(find(panel,'Xác nhận Visual ID và lưu'),undefined);
  const saved=JSON.parse(JSON.stringify(h.project.characters)),before=JSON.stringify(h.project.data),posts=h.posts;
  await render({projectType:'semi'});await render({chars:saved});assert.equal(container.querySelectorAll('[data-approved-visual-id]').length,1);assert.equal(h.posts,posts);assert.equal(JSON.stringify(h.project.data),before);
 });

@@ -45,9 +45,8 @@ test('hosted visual prediction survives new store and concurrent cloud video pub
   const make=()=>molmoService({store:molmoStore(db),issuer,provider,readImage:async()=>({url:p.characters[0].imageUrl,sha256:'c'.repeat(64),mime:'image/png'})});
   const base={projectId,characterId:'judge_1'},input={...base,requestKey:'d'.repeat(36)};
   await Promise.all([make().user(session,'create',input),make().user(session,'create',input)]);assert.equal(posts,1);
-  const proposal=await make().user(session,'status',base);assert.equal(proposal.state,'proposal_ready');assert.equal(proposal.predictionId,'mock_molmo_prediction');
   const record={id:'e'.repeat(48),projectId,sceneId:1,stage:'COMPLETED',snapshotVersion:2,sceneDigest:sceneSnapshot(p,1),videoUrl:'https://media.example.org/new.mp4',predictionId:'mock_video',createdAt:1};
-  await Promise.all([make().user(session,'confirm',{...base,jobId:proposal.id,confirm:true,confirmedId:proposal.profile.visual_id}),createCloudStore(db).publishVideo(owner,record)]);
+  const [proposal]=await Promise.all([make().user(session,'status',base),createCloudStore(db).publishVideo(owner,record)]);
   const saved=(await db.doc('projects/'+projectId).get()).data();assert.equal(saved.data[0].videoUrl,record.videoUrl);assert.equal(saved.data[0].Character,'judge_1');assert.equal(saved.data[0].Dialogue,p.data[0].Dialogue);assert.equal(saved.data[0].videoHistory[0].url,p.data[0].videoUrl);assert.equal(saved.characters[0].voiceId,'preserved');assert.equal(saved.characters[0].characterIdentity.confirmedId,proposal.profile.visual_id);
   assert.equal((await make().user(session,'status',base)).state,'confirmed');assert.equal(posts,1);
  }finally{await db.terminate();await deleteApp(app);}

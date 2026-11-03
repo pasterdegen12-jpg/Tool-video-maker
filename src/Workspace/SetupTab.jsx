@@ -1,12 +1,18 @@
 import { SetIdPanel } from './VisualProfiles.jsx';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as ImageIcon, Music } from 'lucide-react';
 
-export default function SetupTab({ 
-  projectCharacters, setProjectCharacters, 
-  parsedData, setParsedData, 
+function Avatar({url}){
+  const [failed,setFailed]=useState(false);
+  return failed?<Camera size={20} aria-label="Ảnh không khả dụng"/>:
+    <img src={url} className="w-full h-full object-cover" alt="avatar" onError={()=>setFailed(true)}/>;
+}
+
+export default function SetupTab({
+  projectCharacters,
+  parsedData,
   handleSaveSetupData, // 🚀 NHẬN HÀM LƯU FIREBASE TỪ WORKSPACE
-  handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode 
+  handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode
 }) {
   const [isEditing, setIsEditing] = useState({});
   const [tempData, setTempData] = useState({});
@@ -22,9 +28,9 @@ export default function SetupTab({
 
   const saveEdit = (id) => {
     const updatedChar = tempData[id];
-    
+
     // Tạo mảng Characters mới
-    const newCharacters = projectCharacters.map(c => c.id === id ? updatedChar : c);
+    const newCharacters = projectCharacters.map(c => c.id === id ? {...c,name:updatedChar.name,voiceTone:updatedChar.voiceTone,description:updatedChar.description} : c);
     let newParsedData = null;
 
     // Cập nhật tên Character & Tone giọng trong các Scene liên quan
@@ -54,8 +60,8 @@ export default function SetupTab({
         const currentData = editing ? tempData[char.id] : char;
 
         return (
-          <div key={char.id} className={`border rounded-2xl p-6 shadow-xl flex flex-col gap-5 relative transition-all group ${darkMode ? 'bg-slate-900/70 backdrop-blur-sm border-white/[0.07] hover:border-amber-500/20 hover:bg-slate-900/90' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
-            
+          <div key={char.id} className={`border rounded-2xl p-4 shadow-xl flex flex-col gap-3 relative transition-all group ${darkMode ? 'bg-slate-900/70 backdrop-blur-sm border-white/[0.07] hover:border-amber-500/20 hover:bg-slate-900/90' : 'bg-white border-zinc-200 hover:border-zinc-300'}`}>
+
             {!editing ? (
               <div className="absolute top-5 right-5 flex gap-2">
                 <button onClick={() => toggleEdit(char)} className={`p-2 rounded-lg transition-colors border shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-amber-500/40 ${darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-400 hover:text-white border-white/[0.07]' : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 border-zinc-200'}`} title="Sửa thông tin">
@@ -79,15 +85,14 @@ export default function SetupTab({
             <div className="flex gap-5 items-start">
               <div className={`w-20 h-20 rounded-full border flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08]' : 'bg-zinc-100 border-zinc-200'}`}>
                 {char.imageUrl ? (
-                  <img src={char.imageUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="avatar" />
+                  <Avatar key={char.imageUrl} url={char.imageUrl}/>
                 ) : (
                   <Camera size={20} className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} />
                 )}
               </div>
 
               <div className="flex-1 min-w-0 pr-20">
-                <div className={`text-[10px] font-bold px-2.5 py-0.5 rounded border inline-block mb-2 ${darkMode ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-purple-700 bg-purple-50 border-purple-200'}`}>ID: {char.id}</div>
-                
+
                 {editing ? (
                   <>
                     <input type="text" value={currentData.name || ''} onChange={(e) => handleChange(char.id, 'name', e.target.value)} className={`w-full border text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/50 rounded-lg px-3 py-1.5 mb-2 transition-all ${darkMode ? 'bg-slate-950/80 border-white/[0.08] text-white' : 'bg-white border-zinc-300 text-zinc-900 shadow-sm'}`} placeholder="Tên nhân vật..." autoFocus />
@@ -110,7 +115,7 @@ export default function SetupTab({
             {editing ? (
               <textarea value={currentData.description || ''} onChange={(e) => handleChange(char.id, 'description', e.target.value)} className={`w-full h-24 border rounded-xl p-3.5 text-[13px] focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500/50 custom-scrollbar resize-none leading-relaxed transition-all ${darkMode ? 'bg-slate-950/80 border-white/[0.08] text-slate-200' : 'bg-white border-zinc-300 text-zinc-800 shadow-sm'}`} placeholder="Mô tả ngoại hình, tính cách..."></textarea>
             ) : (
-              <div className={`w-full h-24 border rounded-xl p-3.5 text-[13px] overflow-y-auto custom-scrollbar leading-relaxed shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08] text-slate-400' : 'bg-zinc-50 border-zinc-200 text-zinc-700'}`}>
+              <div className={`w-full max-h-24 border rounded-xl p-2 text-[13px] overflow-y-auto custom-scrollbar leading-relaxed shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08] text-slate-400' : 'bg-zinc-50 border-zinc-200 text-zinc-700'}`}>
                 {char.description || "Chưa có mô tả chi tiết."}
               </div>
             )}
@@ -138,7 +143,7 @@ export default function SetupTab({
           </div>
         );
       })}
-      
+
       {projectCharacters.length === 0 && (
         <div className={`col-span-full text-center py-16 text-sm border border-dashed rounded-2xl ${darkMode ? 'text-zinc-500 border-white/[0.07] bg-slate-950/50' : 'text-zinc-500 border-zinc-300 bg-zinc-50'}`}>
           Chưa có nhân vật nào trong dự án.
@@ -146,4 +151,4 @@ export default function SetupTab({
       )}
     </div>
   );
-}
+}

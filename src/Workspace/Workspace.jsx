@@ -946,7 +946,11 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
   return (
     <VisualProfilesProvider projectId={projectId} projectType={projectType} characters={projectCharacters}
-      onConfirmed={saved=>{setProjectCharacters(saved.characters);setParsedData(saved.data);}}>
+      onConfirmed={identity=>setProjectCharacters(previous=>{
+       const current=previous.find(c=>c.id===identity.characterId);
+       if(!current||current.imageUrl!==identity.sourceImageUrl||current.characterIdentity?.jobId===identity.jobId||current.characterIdentity?.confirmedAt>identity.confirmedAt)return previous;
+       return previous.map(c=>c===current?{...c,characterIdentity:identity}:c);
+      })}>
     <div
       className={cn(
         "h-screen w-full font-sans p-4 lg:p-6 overflow-y-auto relative custom-scrollbar transition-colors duration-300",
