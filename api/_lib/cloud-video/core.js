@@ -1,4 +1,5 @@
 import {GENERATION_DURATION_VERSION} from '../../../src/lib/generationDurationPolicy.js';
+import {approvedAppearance} from '../../../src/lib/visualProfile.js';
 import {sceneCameraFixed} from '../../../src/lib/sceneCamera.js';
 import {videoMode,validateCloudSettings,composeVideoPrompt,cloudVideoCost} from '../../../src/lib/cloudVideoOptions.js';
 import {createHash,randomBytes} from 'node:crypto';
@@ -42,7 +43,8 @@ export function prepareQuote(project,input,now){
   if(Object.hasOwn(input,'stored_image'))requireValue(input.stored_image===true);
   const scenes=project.data?.filter(s=>String(s.scene_n)===String(input.scene_id));
   requireValue(scenes?.length===1,'SCENE_NOT_FOUND',404);
-  const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'');
+  const appearance=approvedAppearance(scenes[0],project.characters,input.project_id);
+  const composed=composeVideoPrompt(scenes[0],input.additional_prompt||'',appearance);
   const requestDuration=readSceneDuration(scenes[0],mode);
   requireValue(input.settings?.duration===requestDuration,'SCENE_DURATION_MISMATCH');
   const validated=modern?validateCloudSettings(input.settings,mode):validateSettings(input.settings,CLOUD_MAX_DURATION);
@@ -54,7 +56,7 @@ export function prepareQuote(project,input,now){
   const image=images[0]||null,cost=modern?cloudVideoCost(settings,mode,now):estimateCost(settings,now,CLOUD_MAX_DURATION);
   requireValue(cost,'PRICE_UNAVAILABLE');
   const canonicalDuration=scenes[0].duration_seconds;
-  const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,
+  const payload={projectId:input.project_id,sceneId:composed.sceneId,prompt:composed.prompt,settings,image,cost,appearanceDigest:hash(appearance),
     ...(canonicalDuration!==undefined?{canonicalDuration}:{}),
     durationPolicy:GENERATION_DURATION_VERSION,generationEstimate:estimateSceneDuration(scenes[0]),
     snapshotVersion:2,sceneDigest:sceneSnapshot(project,composed.sceneId),storedImage:input.stored_image===true,

@@ -188,4 +188,10 @@ test('scene estimated below provider min converts to 4s without locking generati
  const quote=JSON.parse(calls.find(c=>c.url.includes('action=quote')).options.body);
  assert.equal(quote.settings.duration,4);
 });
+test('completed OUTPUT survives historical QUOTE_EXPIRED on initial hydration and rerender',async t=>{
+ const saved={...scenes[0],videoUrl:'https://media.example.org/saved.mp4',videoJob:{id:'f'.repeat(48),state:'completed'}};
+ const {container,render}=await mount(t,{parsedData:[saved],videoBatchStates:{1:{state:'failed',error:'QUOTE_EXPIRED'}}});await settle();
+ assert.equal(container.querySelector('video').getAttribute('src'),saved.videoUrl);assert.ok(!container.textContent.includes('QUOTE_EXPIRED'));
+ await render({parsedData:[structuredClone(saved)],videoBatchStates:{1:{state:'failed',error:'QUOTE_EXPIRED'}}});await click(actionButtons(container)[0]);assert.equal(primary().disabled,false);assert.equal(calls.filter(c=>c.options.method==='POST').length,0);
+});
 

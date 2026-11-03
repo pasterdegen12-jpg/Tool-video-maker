@@ -13,6 +13,8 @@ import {blank,enqueue,claim} from '../../api/_lib/qwen/queue.js';
 import {createVideoBatchService} from '../../api/_lib/cloud-video/batch.js';
 import {ownerOf,sceneSnapshot,hash} from '../../api/_lib/cloud-video/core.js';
 import {createCloudVideoService} from '../../api/_lib/cloud-video/service.js';
+import {molmoService} from '../../api/_lib/molmo/service.js';
+import {molmoStore} from '../../api/_lib/molmo/store.js';
 const rules=await fs.readFile(new URL('./firestore.rules',import.meta.url),'utf8');
 const env=await initializeTestEnvironment({projectId:'demo-webai-production',firestore:{host:'127.0.0.1',port:8187,rules}});
 test('durable batch deduplicates concurrent creation across fresh Admin stores; concurrent outputs preserve neighbors and history',async()=>{
@@ -34,6 +36,22 @@ test('durable batch deduplicates concurrent creation across fresh Admin stores; 
  }finally{await db.terminate();await deleteApp(app);}
 });
 test.after(()=>env.cleanup());
+test('hosted visual prediction survives new store and concurrent cloud video publication; approval never rewrites scenes',async()=>{
+ const app=initializeApp({projectId:'demo-webai-production'},'molmo-emulator'),db=getFirestore(app);
+ try{
+  const session={subject:'molmo-user',session:'mock'},issuer='mock-issuer',owner=ownerOf(session,issuer),projectId='proj_molmo_emulator';
+  const p={id:projectId,owner,projectType:'full-ai',characters:[{id:'judge_1',name:'Judge',imageUrl:'https://media.example.org/project_'+projectId+'/judge.png',voiceId:'preserved'}],data:[{scene_n:1,Character:'judge_1',Dialogue:'Exact words.',videoUrl:'https://media.example.org/old.mp4'}]};await db.doc('projects/'+projectId).set(p);
+  let posts=0;const provider={submit:async()=>{posts++;return{id:'mock_molmo_prediction'};},get:async()=>({id:'mock_molmo_prediction',status:'completed',outputs:[{subjectStatus:'clear',visualId:'person_black_hair_glasses',visualDescription:'A person with black hair wearing glasses.',hair:'Black hair',facialHair:'',clothing:'',accessories:['Glasses']}]})};
+  const make=()=>molmoService({store:molmoStore(db),issuer,provider,readImage:async()=>({url:p.characters[0].imageUrl,sha256:'c'.repeat(64),mime:'image/png'})});
+  const base={projectId,characterId:'judge_1'},input={...base,requestKey:'d'.repeat(36)};
+  await Promise.all([make().user(session,'create',input),make().user(session,'create',input)]);assert.equal(posts,1);
+  const proposal=await make().user(session,'status',base);assert.equal(proposal.state,'proposal_ready');assert.equal(proposal.predictionId,'mock_molmo_prediction');
+  const record={id:'e'.repeat(48),projectId,sceneId:1,stage:'COMPLETED',snapshotVersion:2,sceneDigest:sceneSnapshot(p,1),videoUrl:'https://media.example.org/new.mp4',predictionId:'mock_video',createdAt:1};
+  await Promise.all([make().user(session,'confirm',{...base,jobId:proposal.id,confirm:true,confirmedId:proposal.profile.visual_id}),createCloudStore(db).publishVideo(owner,record)]);
+  const saved=(await db.doc('projects/'+projectId).get()).data();assert.equal(saved.data[0].videoUrl,record.videoUrl);assert.equal(saved.data[0].Character,'judge_1');assert.equal(saved.data[0].Dialogue,p.data[0].Dialogue);assert.equal(saved.data[0].videoHistory[0].url,p.data[0].videoUrl);assert.equal(saved.characters[0].voiceId,'preserved');assert.equal(saved.characters[0].characterIdentity.confirmedId,proposal.profile.visual_id);
+  assert.equal((await make().user(session,'status',base)).state,'confirmed');assert.equal(posts,1);
+ }finally{await db.terminate();await deleteApp(app);}
+});
 test('paged ledger persists nested attempt and batch mutations through actual dispatch and output',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'paged-dispatch'),db=getFirestore(app);
  try{

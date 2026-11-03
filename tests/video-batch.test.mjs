@@ -80,3 +80,13 @@ test('all batch routes reject missing real authentication before service constru
 test('paid-disabled rejects final batch creation while read-only plan still works',async()=>{
  const h=batchHarness(1,{config:{paidEnabled:false}});assert.equal((await h.plan()).scenes[0].eligible,true);await assert.rejects(h.create([1]),/PAID_DISABLED/);assert.equal(h.calls.length,0);
 });
+test('expired unsubmitted batch quote renews to a new attempt and preserves old history',async()=>{
+ const h=batchHarness(1);await h.create([1]);await h.tick();
+ const old=structuredClone(Object.values(h.ledger().records)[0]);h.advance(120001);await h.tick();
+ const item=Object.values(h.ledger().batches)[0].items[0];assert.notEqual(item.attemptId,old.id);assert.equal(item.state,'pending');assert.deepEqual(h.ledger().records[old.id],old);assert.deepEqual(item.previousAttemptIds,[old.id]);
+ assert.equal(h.calls.filter(c=>c.kind==='post').length,0);await h.finish();assert.equal(h.calls.filter(c=>c.kind==='post').length,1);assert.equal(Object.keys(h.ledger().records).length,2);
+});
+test('expired clock never renews an ambiguous paid batch reservation',async()=>{
+ const h=batchHarness(1,{unknown:true});await h.create([1]);for(let i=0;i<3;i++)await h.tick();const before=structuredClone(h.ledger());h.advance(300000);await h.tick();
+ assert.equal(h.calls.filter(c=>c.kind==='post').length,1);assert.deepEqual(Object.keys(h.ledger().records),Object.keys(before.records));assert.deepEqual(h.ledger().spend,before.spend);
+});

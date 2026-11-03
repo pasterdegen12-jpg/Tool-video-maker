@@ -180,3 +180,14 @@ for(const format of ['seconds','date','absent','html'])test('quote 429 '+format+
  if(format!=='absent'){await controller.generate(payload);assert.equal(calls,1);clock+=12000;}
  await controller.generate(payload);assert.equal(calls,2);assert.match(states.at(-1).message,/tắt tạo video/);assert.deepEqual(payload,before);
 });
+test('explicit QUOTE_EXPIRED before admission permits a fresh quote on next user click only',async()=>{
+ let submits=0,quoteCount=0;const states=[];
+ const controller=createCloudVideoController({getToken:async()=>'mock',now:()=>now,onChange:s=>states.push(s),fetchImpl:async(url,options)=>{
+  const action=new URL(url,'https://example.org').searchParams.get('action');
+  if(action==='quote'){quoteCount++;const body=JSON.parse(options.body),q=publicQuote({...prepareQuote({projectType:'full-ai',data:[scene]},body,now),id:String(quoteCount).repeat(48),quoteExpires:now+120000},true);return new Response(JSON.stringify(q),{headers:{'content-type':'application/json'}});}
+  if(action==='ticket')return new Response(JSON.stringify({error:{code:'QUOTE_EXPIRED'}}),{status:410,headers:{'content-type':'application/json'}});
+  if(action==='submit')submits++;throw Error('Unexpected '+action);
+ }});
+ await controller.generate(payload);assert.equal(states.at(-1).blocked,false);assert.equal(quoteCount,1);assert.equal(submits,0);
+ await controller.generate(payload);assert.equal(quoteCount,2);assert.equal(submits,0);
+});

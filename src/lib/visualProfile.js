@@ -7,7 +7,7 @@ export function validVisualProposal(value) {
       !['detected', 'ambiguous', 'no_human'].includes(value.status) ||
       typeof value.visual_id !== 'string' || typeof value.visual_description !== 'string') return false;
   if (value.status !== 'detected') return value.visual_id === '' && value.visual_description === '';
-  return value.visual_id.length <= 100 && /^[a-z]+(?:_[a-z]+){1,15}$/.test(value.visual_id) &&
+  return value.visual_id.length <= 100 && /^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(value.visual_id) &&
     value.visual_description.length <= 600 && !!value.visual_description.trim() && ![...value.visual_description].some(c => c.charCodeAt(0) < 32);
 }
 export function visualProfilesVisible(env, location) {
@@ -17,6 +17,10 @@ export function visualProfilesVisible(env, location) {
 export function characterBinding(character) {
   return JSON.stringify([character?.id, character?.name, character?.imageUrl ?? '']);
 }
+export function approvedAppearance(scene,characters,projectId){
+  const resolved=resolveSceneCharacterProfile(scene,characters||[],'full-ai',projectId);
+  return ['approved','confirmed'].includes(resolved.status)?{visualId:resolved.profile.visualId,visualDescription:resolved.profile.visualDescription}:null;
+}
 export function resolveSceneCharacterProfile(scene, characters, projectType = 'full-ai', projectId) {
   if (projectType !== 'full-ai') return { status: 'not_applicable', profile: null };
   const reference = typeof scene?.Character === 'string' ? scene.Character.trim() : '';
@@ -24,7 +28,7 @@ export function resolveSceneCharacterProfile(scene, characters, projectType = 'f
   if(projectId){
     let match;try{match=resolveCharacterReference(reference,characters,projectId);}catch{return {status:'ambiguous',profile:null};}
     const identity=confirmedIdentity(match,projectId);
-    if(identity)return {status:'confirmed',characterId:match.id,identity,profile:{visualId:identity.confirmedId,visualDescription:identity.proposal.visual_description,referenceImage:identity.referenceImage}};
+    if(identity)return {status:'confirmed',characterId:match.id,identity,profile:{visualId:identity.confirmedId,visualDescription:identity.proposal?.visual_description||'',referenceImage:identity.referenceImage}};
   }
   const matches = characters.filter(c => typeof c.id === 'string' && c.id &&
     (c.id === reference || (typeof c.name === 'string' && c.name.trim() === reference)));

@@ -10,7 +10,7 @@ export default function SceneVideoAction(props){
   const auth=useAuth();
   return <Action key={JSON.stringify([props.projectId,props.scene,auth.userId,auth.sessionId])} {...props} auth={auth}/>;
 }
-function Action({scene,projectId,auth,onCompleted,onSaveVideo,outputUrl,recoveryReady=false,recoveryError='',recoveryJob,batchStatus}){
+function Action({scene,projectId,auth,onCompleted,onSaveVideo,outputUrl,recoveryReady=false,recoveryError='',recoveryJob,batchStatus,appearance}){
   const saved=scene.videoJob?.state==='completed'&&safeMediaUrl(scene.videoUrl);
   const recoveryId=recoveryJob?.job_id,delivered=useRef(null),clicked=useRef(false);
   const [state,setState]=useState(()=>saved?{status:'completed',busy:false}:{status:'idle',busy:false});
@@ -28,7 +28,7 @@ function Action({scene,projectId,auth,onCompleted,onSaveVideo,outputUrl,recovery
   async function generate(options){
     if(clicked.current||state.busy||blocked)return;
     clicked.current=true;
-    try{await controller.generate({project_id:projectId,scene,...options,attempt_key:crypto.randomUUID()});}
+    try{await controller.generate({project_id:projectId,scene,appearance,...options,attempt_key:crypto.randomUUID()});}
     finally{clicked.current=false;}
   }
   const failed=state.status==='error'||state.status==='failed';
@@ -39,11 +39,11 @@ function Action({scene,projectId,auth,onCompleted,onSaveVideo,outputUrl,recovery
       {state.busy?<Loader2 size={14} className="animate-spin"/>:<Play size={14}/>}Gen Video AI
     </button>
     {label&&<span role="status" className="text-xs text-emerald-400">{label}</span>}
-    {batchStatus&&<span role="status" className="text-xs text-emerald-400">{BATCH_LABELS[batchStatus.state]||batchStatus.state}{batchStatus.error?' · '+batchStatus.error:''}</span>}
+    {batchStatus&&(batchActive||state.status==='idle'&&!safeMediaUrl(outputUrl||scene.videoUrl)&&batchStatus.error!=='QUOTE_EXPIRED')&&<span role="status" className="text-xs text-emerald-400">{BATCH_LABELS[batchStatus.state]||batchStatus.state}{batchStatus.error?' · '+batchStatus.error:''}</span>}
     {recoveryError&&<p role="alert" className="text-xs text-amber-500">{recoveryError}</p>}
     {!auth.isSignedIn&&<p role="alert">Đăng nhập trước khi tạo video.</p>}
     {(failed||state.blocked&&!state.result)&&state.message&&<p role="alert" className="text-sm text-amber-500">{state.message}</p>}
     {(state.blocked&&state.status!=='completed'||failed&&state.attemptId)&&<button type="button" disabled={state.busy} onClick={()=>controller.discover(projectId,scene.scene_n,true)} className="text-xs underline">Khôi phục trạng thái</button>}
-    {open&&<VideoOptionsModal scene={scene} outputUrl={state.result||outputUrl||scene.videoUrl} savedOptions={scene.videoJob?.options} busy={state.busy} blocked={blocked} message={recoveryError||state.message||label} onGenerate={generate} onClose={()=>setOpen(false)} onSaveVideo={onSaveVideo}/>}
+    {open&&<VideoOptionsModal appearance={appearance} scene={scene} outputUrl={state.result||outputUrl||scene.videoUrl} savedOptions={scene.videoJob?.options} busy={state.busy} blocked={blocked} message={recoveryError||state.message||label} onGenerate={generate} onClose={()=>setOpen(false)} onSaveVideo={onSaveVideo}/>}
   </section>;
 }

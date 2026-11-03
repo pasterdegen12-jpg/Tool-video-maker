@@ -20,7 +20,7 @@ export function validateCloudSettings(settings,mode='start_frame_to_video'){
   if(mode==='references_to_video'&&(settings.camera_fixed!==false||settings.seed!==-1))throw Error('Chế độ References không hỗ trợ camera_fixed/seed; hướng camera lấy từ kịch bản.');
   return {...settings};
 }
-export function composeVideoPrompt(scene,additional=''){
+export function composeVideoPrompt(scene,additional='',appearance=null){
   const composed=composeScene(scene);
   if(typeof additional!=='string'||additional.length>1000||[...additional].some(c=>{const n=c.charCodeAt(0);return n<32&&![9,10,13].includes(n)||n===127;}))throw Error('Custom prompt không hợp lệ (tối đa 1000 ký tự).');
   const extra=additional.trim()?'\n\nADDITIONAL (subordinate to Dialogue, Character, Camera and Action):\n'+additional:'';
@@ -43,7 +43,9 @@ export function composeVideoPrompt(scene,additional=''){
   const delivery=[...original+fullDelivery].length<=MAX_PROMPT_CHARS?fullDelivery:shortDelivery;
   const prompt=[...original+delivery].length<=MAX_PROMPT_CHARS?base+lock+delivery+extra:original;
   const camera=cameraIntent(scene.Camera),conflict=camera.fixed&&(camera.moving||cameraIntent(scene.Action).moving||cameraIntent(additional).moving);
-  return {...composed,prompt,warnings:[...videoPromptWarnings(additional),...(conflict?['Camera gốc yêu cầu cố định nhưng Camera, Action hoặc Custom prompt có chỉ dẫn di chuyển/zoom. Nội dung gốc được giữ nguyên; hãy kiểm tra ý định trước khi tạo.']:[])]};
+  const rendered=prompt+(appearance?'\n\nAPPROVED CHARACTER APPEARANCE:\n'+appearance.visualId+'\n'+appearance.visualDescription:'');
+  if([...rendered].length>MAX_PROMPT_CHARS)throw Error('Prompt cùng Visual ID vượt giới hạn provider. Kiểm tra nội dung scene; không tự cắt lời thoại.');
+  return {...composed,prompt:rendered,warnings:[...videoPromptWarnings(additional),...(conflict?['Camera gốc yêu cầu cố định nhưng Camera, Action hoặc Custom prompt có chỉ dẫn di chuyển/zoom. Nội dung gốc được giữ nguyên; hãy kiểm tra ý định trước khi tạo.']:[])]};
 }
 // Report explicit additive requests without deleting user direction or adding a
 // confirmation gate. This narrow language check is not a semantic classifier.

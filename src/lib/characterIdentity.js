@@ -1,6 +1,7 @@
 import {validVisualProposal} from './visualProfile.js';
 
 export const validCharacterId = value => typeof value === 'string' && value.length <= 100 && /^[A-Za-z]+(?:_[A-Za-z]+){1,15}$/.test(value);
+export const validVisualId = value => typeof value==='string'&&value.length>=3&&value.length<=100&&/^[a-z0-9]+(?:_[a-z0-9]+)*$/.test(value);
 export function canonicalIdentity(value) {
   if (Array.isArray(value)) return '[' + value.map(canonicalIdentity).join(',') + ']';
   if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k)+':'+canonicalIdentity(value[k])).join(',') + '}';
@@ -9,7 +10,7 @@ export function canonicalIdentity(value) {
 export function confirmedIdentity(character, projectId, ownerHash) {
   const p=character?.characterIdentity;
   return p?.version===1 && p.status==='confirmed' && p.characterId===character.id && p.projectId===projectId &&
-    (!ownerHash || p.ownerHash===ownerHash) && validCharacterId(p.confirmedId) && /^[a-f0-9]{64}$/.test(p.referenceImage?.sha256) ? p : null;
+    (!ownerHash || p.ownerHash===ownerHash) && (!p.sourceImageUrl || p.sourceImageUrl===character.imageUrl) && (p.sourceImageUrl?validVisualId(p.confirmedId):validCharacterId(p.confirmedId)) && /^[a-f0-9]{64}$/.test(p.referenceImage?.sha256) ? p : null;
 }
 function aliases(c, projectId, ownerHash) {
   const p=confirmedIdentity(c,projectId,ownerHash);
@@ -36,7 +37,7 @@ export function mapCharacterReferences(value, characters, projectId, replacement
 }
 export function reconcileCharacterScenes(scenes,characters,projectId,projectType='full-ai') {
   if(projectType!=='full-ai')return scenes;
-  return scenes.map(s=>!Object.hasOwn(s,'Character')?s:{...s,Character:mapCharacterReferences(s.Character,characters,projectId,(c,original)=>confirmedIdentity(c,projectId)?.confirmedId||original)});
+  return scenes.map(s=>!Object.hasOwn(s,'Character')?s:{...s,Character:mapCharacterReferences(s.Character,characters,projectId,(c,original)=>c.characterIdentity?.sourceImageUrl?original:confirmedIdentity(c,projectId)?.confirmedId||original)});
 }
 export function migrateCharacterIdentity(project,{projectId,ownerHash,characterId,proposal,confirmedId,referenceImage,confirmedAt,jobId,expectedPreviousId}) {
   if(project.projectType!=='full-ai'||project.id!==projectId||!Array.isArray(project.data)||!Array.isArray(project.characters))throw Error('Chỉ hỗ trợ project Full AI xác định.');

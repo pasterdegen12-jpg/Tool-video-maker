@@ -30,11 +30,11 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
   function checkedJob(value,id,sceneId){
     if(value.job_id!==id||String(value.scene_id)!==String(sceneId)||!['quoted','ready','uploading','admission_unknown','queued','running','completed','failed'].includes(value.state)||
       value.state==='completed'&&!safeMediaUrl(value.video_url))throw new Error('Tạo video thất bại. Thử lại hoặc liên hệ quản trị viên.');
-    return {status:value.state,busy:['queued','running'].includes(value.state),attemptId:id,result:value.video_url,message:videoMessage(value.message)||(value.state==='admission_unknown'?'Yêu cầu chưa rõ kết quả. Chỉ khôi phục, không gửi lại.':''),options:value.settings?{settings:value.settings,mode:value.mode||'start_frame_to_video',additional_prompt:value.additional_prompt||''}:undefined,predictionId:value.prediction_id,createdAt:Date.parse(value.created_at)||0,blocked:true};
+    return {status:value.state,busy:['queued','running'].includes(value.state),attemptId:id,result:value.video_url,message:videoMessage(value.message)||(value.state==='admission_unknown'?'Yêu cầu chưa rõ kết quả. Chỉ khôi phục, không gửi lại.':''),options:value.settings?{settings:value.settings,mode:value.mode||'start_frame_to_video',additional_prompt:value.additional_prompt||''}:undefined,predictionId:value.prediction_id,createdAt:Date.parse(value.created_at)||0,blocked:!['completed','failed'].includes(value.state)};
   }
   async function track(value,id,sceneId,run){
     for(let count=0;count<180;count++){
-      const state=checkedJob(value,id,sceneId);emit(run,state);if(!state.busy){if(state.status==='completed')consumed=false;return;}
+      const state=checkedJob(value,id,sceneId);emit(run,state);if(!state.busy){if(['completed','failed'].includes(state.status))consumed=false;return;}
       await wait(5000,run.signal);value=await request('job',null,run,{id});
     }
     emit(run,{status:'stopped',busy:false,attemptId:id,message:'Job đã lưu. Dùng Khôi phục để tiếp tục; không gửi lại.'});
@@ -63,7 +63,7 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
       try{
         // Step 1: read and hash image bytes locally
         const modern=Object.hasOwn(payload,'mode'),mode=payload.mode||'start_frame_to_video';
-        const cap=videoMode(mode),local=composeVideoPrompt(payload.scene,payload.additional_prompt||'');
+        const cap=videoMode(mode),local=composeVideoPrompt(payload.scene,payload.additional_prompt||'',payload.appearance);
         payload={...payload,settings:{...payload.settings,camera_fixed:sceneCameraFixed(payload.scene,mode,payload.settings?.camera_fixed)}};
         if(payload.settings?.duration!==readSceneDuration(payload.scene,mode))throw Error('Thời lượng request không khớp ước tính lời thoại hiện tại. Đóng và mở lại tùy chọn video để chuẩn bị yêu cầu mới.');
         const media=[];
@@ -111,6 +111,9 @@ export function createCloudVideoController({getToken,onChange,fetchImpl=fetch,no
         trace('SUBMIT_RESPONSE',{attemptId,state:value.state});
         await track(value,q.quote_id,q.scene_id,run);
       }catch(e){
+        // An explicit pre-admission expiry is safe to retry via a NEW quote.
+        // Network/unknown submission outcomes remain blocked for recovery.
+        if(e.code==='QUOTE_EXPIRED')consumed=false;
         trace('GENERATE_STOPPED',{attemptId,code:/^[A-Z_]{2,70}$/.test(e.code||'')?e.code:'CLIENT_REQUEST_FAILED'});
         if(e.message==='CANCELLED'){emit(run,{status:'stopped',busy:false,attemptId,message:'Đã dừng chờ. Job đã nhận vẫn có thể tính phí; dùng Khôi phục.'});}
         else{emit(run,{status:'error',busy:false,attemptId,blocked:consumed,code:e.code,message:videoMessage(e.message)||e.message||'Không thể tạo video.'});}

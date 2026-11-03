@@ -1,4 +1,6 @@
 import {validNewRequestDuration} from '../../../src/lib/generationDurationPolicy.js';
+import {approvedAppearance} from '../../../src/lib/visualProfile.js';
+import {hash} from './core.js';
 import {batchReserves} from './batch.js';
 import {providerVideoPayload} from '../../../src/lib/cloudVideoOptions.js';
 import {Buffer} from 'node:buffer';
@@ -22,6 +24,7 @@ export function createCloudVideoService({config,store,upload,provider,archive,so
   }
   async function unchanged(session,r){
     const current=await project(session,r.projectId);
+    if(r.appearanceDigest)requireValue(hash(approvedAppearance(current.data.find(s=>String(s.scene_n)===String(r.sceneId)),current.characters,r.projectId))===r.appearanceDigest,'PROJECT_CHANGED');
     requireValue(r.snapshotVersion===2?sceneSnapshot(current,r.sceneId)===r.sceneDigest:sourceDigest(current)===r.sourceDigest,'PROJECT_CHANGED');
     if(r.canonicalDuration!==undefined)requireValue(current.data.find(s=>String(s.scene_n)===String(r.sceneId))?.duration_seconds===r.canonicalDuration,'PROJECT_CHANGED');
   }

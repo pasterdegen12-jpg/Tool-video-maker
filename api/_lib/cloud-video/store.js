@@ -30,10 +30,12 @@ async function loadLedger(tx,ref){
   if(root.storageVersion!==2)return root;
   const data={...root,records:{},batches:{}};
   const stored={records:[],batches:[]};
-  for(const kind of ['records','batches']){
-    const count=root.storagePages?.[kind]||0;
-    for(let n=0;n<count;n++){
-      const page=(await tx.get(ref.collection(kind+'Pages').doc(String(n).padStart(6,'0')))).data();
+  const pending=['records','batches'].flatMap(kind=>Array.from({length:root.storagePages?.[kind]||0},(_,n)=>({kind,n})));
+  for(let offset=0;offset<pending.length;offset+=8){
+    const chunk=pending.slice(offset,offset+8);
+    const pages=await Promise.all(chunk.map(({kind,n})=>tx.get(ref.collection(kind+'Pages').doc(String(n).padStart(6,'0')))));
+    for(let index=0;index<pages.length;index++){
+      const {kind}=chunk[index],page=pages[index].data();
       requireValue(page?.entries,'LEDGER_PAGE_MISSING',503);
       // Comparison snapshots must never share mutable records with the caller.
       stored[kind].push(structuredClone(page.entries));Object.assign(data[kind],page.entries);
@@ -59,9 +61,10 @@ export function createCloudStore(db){
   return {
     async project(owner,projectId){
       requireValue(/^proj_[A-Za-z0-9_-]{1,100}$/.test(projectId),'INVALID_PROJECT');
-      const project=(await db.doc('projects/'+projectId).get()).data();
+      const [projectDoc,grantDoc]=await Promise.all([db.doc('projects/'+projectId).get(),db.doc('_video_projects/'+projectId).get()]);
+      const project=projectDoc.data();
       requireValue(project,'PROJECT_NOT_FOUND',404);
-      const grant=(await db.doc('_video_projects/'+projectId).get()).data();
+      const grant=grantDoc.data();
       if(grant&&grant.enabled===false)throw new CloudError('PROJECT_FORBIDDEN',403);
       if(project.owner&&project.owner!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
       if(project.userId&&project.userId!==owner)throw new CloudError('PROJECT_FORBIDDEN',403);
@@ -85,8 +88,7 @@ export function createCloudStore(db){
     async transact(owner,change){
       const ref=db.doc('_video_ledgers/'+owner),teamRef=db.doc('_video_ledgers/team-shared-v1');
       return db.runTransaction(async tx=>{
-        const data=await loadLedger(tx,ref);
-        const team=await loadLedger(tx,teamRef);
+        const [data,team]=await Promise.all([loadLedger(tx,ref),loadLedger(tx,teamRef)]);
         const before=structuredClone(data),teamBefore=structuredClone(team);
         const result=change(data,team);
         if(result&&typeof result.then==='function')throw new CloudError('INVALID_TRANSACTION',500);

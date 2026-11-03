@@ -24,6 +24,7 @@ function Panel({projectId,open,onClose,onOutputs,onStates,auth}){
   async function refresh(){
    let delay=15000;
    try{const result=await client.list(projectId);if(!live)return;accept(result);retries=0;
+    if(!result.batches.some(b=>b.status==='running'))delay=60000;
     if(result.continuation!=='server'&&result.batches.some(b=>b.status==='running')){const progressed=await client.tick(projectId);if(!live)return;accept(progressed);delay=6000;}
    }catch(e){if(!live)return;setError(e.message);retries++;delay=Math.max(15000,Math.min(300000,(e.retryAfter||2**Math.min(retries,6)*5)*1000));}
    if(live)timer=setTimeout(refresh,delay);

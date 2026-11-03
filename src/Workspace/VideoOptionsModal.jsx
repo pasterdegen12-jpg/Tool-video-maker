@@ -9,7 +9,7 @@ import VideoTrimEditor from './VideoTrimEditor.jsx';
 
 const field='w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500';
 const secondary='inline-flex items-center justify-center gap-2 rounded-lg border border-slate-600 px-3 py-2 text-xs font-semibold hover:bg-slate-800 disabled:opacity-40';
-export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,onGenerate,onClose,onSaveVideo,savedOptions}){
+export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,onGenerate,onClose,onSaveVideo,savedOptions,appearance}){
   const [mode,setMode]=useState(savedOptions?.mode||'start_frame_to_video');
   const [options,setSettings]=useState(()=>Object.fromEntries(Object.entries({resolution:'480p',aspect_ratio:'9:16',generate_audio:true,camera_fixed:false,seed:-1}).map(([key,value])=>[key,savedOptions?.settings?.[key]??value])));
   const [additional,setAdditional]=useState(savedOptions?.additional_prompt||'');
@@ -27,7 +27,7 @@ export default function VideoOptionsModal({scene,outputUrl,busy,blocked,message,
   let issue='',duration,warnings=[];
   try{duration=readSceneDuration(scene,mode);}catch(e){issue=e.message;}
   const settings={...options,duration,camera_fixed:sceneCameraFixed(scene,mode,options.camera_fixed)};
-  try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional);
+  try{if(!issue)validateCloudSettings(settings,mode);const prompt=composeVideoPrompt(scene,additional,appearance);
     warnings=prompt.warnings;
     if(!prompt.prompt)issue='Scene không có prompt.';
   }catch(e){issue=e.message;}

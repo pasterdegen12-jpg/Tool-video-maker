@@ -1,3 +1,5 @@
+import OutputVideo from './OutputVideo.jsx';
+import {approvedAppearance} from '../lib/visualProfile.js';
 import { SceneVisualProfile } from './VisualProfiles.jsx';
 import {displayCharacterReference} from '../lib/characterIdentity.js';
 import { useState, useEffect } from 'react';
@@ -84,7 +86,7 @@ export default function StoryboardTab({
                   </div>
                   <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative shadow-sm">
                     {scene.startFrameUrl ? (
-                      <img src={scene.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-contain" />
+                      <img loading="lazy" decoding="async" src={scene.startFrameUrl} crossOrigin="anonymous" className="w-full h-full object-contain" />
                     ) : (isSemi && scene.videoUrl) ? (
                       <video src={scene.videoUrl} crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     ) : (
@@ -104,7 +106,7 @@ export default function StoryboardTab({
                       </div>
                     </div>
                     <div className="w-full aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center relative shadow-sm">
-                      <video aria-label={'Output scene '+scene.scene_n} src={outputVideoUrl} preload="metadata" crossOrigin="anonymous" controls className="w-full h-full object-contain" />
+                      <OutputVideo aria-label={'Output scene '+scene.scene_n} src={outputVideoUrl} preload="metadata" crossOrigin="anonymous" controls className="w-full h-full object-contain" />
                     </div>
                   </div>
                 )}
@@ -114,7 +116,7 @@ export default function StoryboardTab({
                   <div className={`flex items-center gap-3 p-2.5 mt-4 rounded-xl border shadow-sm ${darkMode ? 'bg-slate-950/60 border-white/[0.06]' : 'bg-zinc-50 border-zinc-200'}`}>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden shrink-0 border shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08]' : 'bg-zinc-200 border-zinc-300'}`}>
                       {characterInfo.imageUrl ? (
-                        <img src={characterInfo.imageUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Avatar" />
+                        <img loading="lazy" decoding="async" src={characterInfo.imageUrl} crossOrigin="anonymous" className="w-full h-full object-cover" alt="Avatar" />
                       ) : (
                         <User size={16} className={darkMode ? 'text-zinc-500' : 'text-zinc-400'} />
                       )}
@@ -229,7 +231,7 @@ export default function StoryboardTab({
                         <ImageIcon size={14} /> Tải Nền
                     </button>
                     
-                    {cloudVideo ? <SceneVideoAction scene={scene} projectId={projectId} batchStatus={videoBatchStates[sceneKey]} onCompleted={completed} onSaveVideo={onSaveVideo} outputUrl={outputVideoUrl} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
+                    {cloudVideo ? <SceneVideoAction appearance={approvedAppearance(scene,projectCharacters,projectId)} scene={scene} projectId={projectId} batchStatus={videoBatchStates[sceneKey]} onCompleted={completed} onSaveVideo={onSaveVideo} outputUrl={outputVideoUrl} recoveryReady={recovery.projectId===projectId} recoveryError={recovery.error} recoveryJob={recovery.jobs.find(job=>String(job.scene_id)===sceneKey&&['admission_unknown','queued','running','completed'].includes(job.state))}/> : (
                     <button 
                       onClick={() => localVideo ? setVideoScene(String(scene.scene_n)) : setActiveVideoGenModal(scene)} 
                       className={`h-8 px-3 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer shadow-md hover:shadow-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-emerald-500/60 ${darkMode ? 'text-white bg-gradient-to-r from-emerald-600/80 to-green-600/80 hover:from-emerald-500 hover:to-green-500 border-transparent' : 'text-white bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 border-transparent'}`}

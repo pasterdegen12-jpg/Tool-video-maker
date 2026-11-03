@@ -84,7 +84,7 @@ export function createVideoBatchService({config,store,video,sourceImage,upload,n
    if(!claim)return list(s,input.project_id);
    const {batch:b,item:i}=claim,a=actor(s,b);
    videoTrace('DISPATCH_CLAIMED',{projectId:b.projectId,sceneId:i.sceneId,attemptId:i.attemptId,batchId:b.id,state:i.state});
-   let state=i.state,error='',nextAt=0,tries=i.tries;
+   let state=i.state,error='',nextAt=0,tries=i.tries,renew=false;
    try{
     let l=await store.read(owner(s)),r=l.records[i.attemptId];
     if(r?.paidConsent){const job=await video.poll(a,r.id);state=job.state;error=job.message||'';if(state==='admission_unknown')nextAt=now()+60000;}
@@ -109,10 +109,21 @@ export function createVideoBatchService({config,store,video,sourceImage,upload,n
    }catch(e){
     const r=(await store.read(owner(s))).records[i.attemptId];
     if(r?.paidConsent){state=r.predictionId?'running':'admission_unknown';error='RECOVER_EXISTING_ATTEMPT';nextAt=now()+30000;}
+    else if(e.code==='QUOTE_EXPIRED'&&r&&!r.predictionId&&!activeStages.includes(r.stage)){
+     // Keep the old attempt for history. A new quote still validates the saved
+     // source/settings and admission before any separately reserved dispatch.
+     renew=true;state='pending';nextAt=now()+5000;
+    }
     else if(['RATE_LIMIT','CONCURRENCY_LIMIT'].includes(e.code)&&tries<5){tries++;nextAt=now()+Math.max(10000,Math.min(300000,(e.retryAfter||Math.pow(2,tries)*5)*1000));error=e.code;}
     else{state='failed';error=/^[A-Z0-9_]{2,70}$/.test(e.code||'')?e.code:'BATCH_PREPARATION_FAILED';}
    }finally{
-    await change(s,l=>{if(l.batchLease!==token)return;const item=l.batches[b.id].items.find(x=>x.attemptId===i.attemptId);if(item.state!=='cancelled')Object.assign(item,{state,error,nextAt,tries});l.batchLeaseUntil=0;l.batchNextTick=now()+5000;});
+    await change(s,l=>{if(l.batchLease!==token)return;const item=l.batches[b.id].items.find(x=>x.attemptId===i.attemptId);if(item.state!=='cancelled'){
+     const old=l.records[i.attemptId];
+     if(renew&&!old?.paidConsent&&!old?.predictionId&&!activeStages.includes(old?.stage)){
+      item.previousAttemptIds=[...(item.previousAttemptIds||[]),i.attemptId];item.attemptId=id();
+     }
+     Object.assign(item,{state,error,nextAt,tries});
+    }l.batchLeaseUntil=0;l.batchNextTick=now()+5000;});
    }
    return list(s,input.project_id);
   },

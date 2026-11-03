@@ -9,6 +9,9 @@ import {queueStore} from './_lib/qwen/store.js';
 import {qwenService} from './_lib/qwen/service.js';
 import {referenceReader} from './_lib/qwen/image.js';
 import {need} from './_lib/qwen/queue.js';
+import {molmoService} from './_lib/molmo/service.js';
+import {molmoStore} from './_lib/molmo/store.js';
+import {molmoProvider} from './_lib/molmo/provider.js';
 
 export const config={maxDuration:60};
 export function authenticateWorker(req,expected){
@@ -20,15 +23,16 @@ export function authenticateWorker(req,expected){
 export function createQwenHandler({env=process.env,authenticate=authenticateSession,service}={}){return async(req,res)=>{
  res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');
  try {
-  need(env.QWEN_REMOTE_ENABLED==='true','QWEN_UNAVAILABLE',503);
   const settings=mediaBaseConfig(env),url=new URL(req.url,settings.origin),action=url.searchParams.get('action');
+  const hosted=action?.startsWith('molmo_');
+  if(!hosted)need(env.QWEN_REMOTE_ENABLED==='true','QWEN_UNAVAILABLE',503);
   const isWorker=action?.startsWith('worker_');
   need(req.method==='POST','METHOD_NOT_ALLOWED',405);
   let session;
   if(isWorker)authenticateWorker(req,env.QWEN_WORKER_TOKEN_SHA256);else session=await authenticate(req,settings);
   const input=await readCloudBody(req,isWorker?750000:4096);
-  const backend=service||qwenService({store:queueStore(cloudDatabase(env)),issuer:settings.issuer,readImage:referenceReader(env.R2_PUBLIC_ORIGIN)});
-  const result=isWorker?await backend.worker(action.slice(7),input):await backend.user(session,action,input);
+  const backend=service||(hosted?molmoService({store:molmoStore(cloudDatabase(env)),issuer:settings.issuer,readImage:referenceReader(env.R2_PUBLIC_ORIGIN),provider:molmoProvider(env.WAVESPEED_VIDEO_API_KEY||env.WAVESPEED_API_KEY)}):qwenService({store:queueStore(cloudDatabase(env)),issuer:settings.issuer,readImage:referenceReader(env.R2_PUBLIC_ORIGIN)}));
+  const result=isWorker?await backend.worker(action.slice(7),input):await backend.user(session,hosted?action.slice(6):action,input);
   res.statusCode=200;res.end(JSON.stringify(result));
  }catch(error){
   const code=/^[A-Z_]{2,64}$/.test(error.code||'')?error.code:'QWEN_UNAVAILABLE';
