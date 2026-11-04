@@ -90,6 +90,27 @@ test('saved IDs hydrate after remount without a paid request or changed scene ma
 test('Firestore characters override stale navigation data',async()=>{
  const {savedProjectCharacters}=await import('../src/lib/characterIdentity.js');assert.deepEqual(savedProjectCharacters({characters:[]},{characters:[{id:'stale'}]}),[]);
 });
+test('multi Set ID starts only selected characters concurrently and isolates their results',async t=>{
+ const {container}=await mount(t), pending=new Map();
+ h.transport=(url,o)=>{assert.ok(url.endsWith('molmo_create'));const {characterId}=JSON.parse(o.body);assert.ok(!pending.has(characterId));return new Promise(resolve=>pending.set(characterId,resolve));};
+ const boxes=[...container.querySelectorAll('input[type=checkbox]')];
+ const start=find(container,'Set ID đã chọn');
+ assert.equal(boxes.length,3);assert.ok(start.disabled);
+ await click(boxes[0]);await click(boxes[2]);assert.equal(pending.size,0);
+ await click(start);await click(start);
+ const [first,unselected,last]=h.project.characters;
+ assert.deepEqual([...pending.keys()],[first.id,last.id]);assert.ok(!pending.has(unselected.id));
+ assert.ok(boxes[0].disabled&&boxes[2].disabled&&!boxes[1].disabled);
+ const id='f'.repeat(64);
+ await act(async()=>pending.get(last.id)(new Response(JSON.stringify({id,projectId:'proj_molmo',characterId:last.id,state:'confirmed',identity:{jobId:id,projectId:'proj_molmo',characterId:last.id,confirmedId:'person_green_sweater',version:1,status:'confirmed',referenceImage:{sha256:'a'.repeat(64)}}}))));
+ await act(async()=>pending.get(first.id)(new Response(JSON.stringify({id,projectId:'proj_molmo',characterId:first.id,state:'failed'}))));
+ assert.ok(container.querySelector('[data-approved-visual-id=person_green_sweater]'));assert.equal(container.querySelectorAll('[role=alert]').length,1);
+});
+test('changing the selected image removes the old selection without submitting',async t=>{
+ const {container,render}=await mount(t);await click(container.querySelector('input[type=checkbox]'));
+ await render({chars:h.project.characters.map(c=>({...c,imageUrl:c.imageUrl+'new'}))});
+ assert.ok(find(container,'Set ID đã chọn').disabled);assert.equal(h.posts,0);
+});
 test('both avatar and upload button target the selected character image picker',async t=>{
  const box=document.createElement('div'),root=createRoot(box),selected={current:null},picked=[];
  const chars=[{id:'a',name:'A',imageUrl:'https://media.example.org/a.jpg'},{id:'b',name:'B'}];

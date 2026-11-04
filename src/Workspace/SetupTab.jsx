@@ -1,4 +1,4 @@
-import { SetIdPanel } from './VisualProfiles.jsx';
+import { SetIdGroup,SetIdPanel } from './VisualProfiles.jsx';
 import { useState } from 'react';
 import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as ImageIcon, Music } from 'lucide-react';
 
@@ -55,7 +55,7 @@ export default function SetupTab({
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fadeIn">
-      {projectCharacters.map((char) => {
+      <SetIdGroup>{projectCharacters.map((char) => {
         const uploadState=avatarStates[projectId+':'+char.id];
         const uploading=uploadState==='uploading';
         const chooseAvatar=()=>{activeUploadIdRef.current=char.id;avatarInputRef.current.click();};
@@ -146,7 +146,7 @@ export default function SetupTab({
 
           </div>
         );
-      })}
+      })}</SetIdGroup>
 
       {projectCharacters.length === 0 && (
         <div className={`col-span-full text-center py-16 text-sm border border-dashed rounded-2xl ${darkMode ? 'text-zinc-500 border-white/[0.07] bg-slate-950/50' : 'text-zinc-500 border-zinc-300 bg-zinc-50'}`}>
