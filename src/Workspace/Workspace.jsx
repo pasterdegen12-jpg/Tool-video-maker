@@ -1,3 +1,4 @@
+import {saveCharacterAvatar} from '../lib/saveCharacterAvatar.js';
 import { VisualProfilesProvider } from './VisualProfiles.jsx';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
@@ -134,6 +135,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
   const fileInputRef = useRef(null);
   const frameInputRef = useRef(null);
+  const avatarRequests=useRef(new Map());
+  const [avatarStates,setAvatarStates]=useState({});
+  useEffect(()=>{
+    const requests=avatarRequests.current;
+    return ()=>{for(const request of requests.values())request.abort();requests.clear();setAvatarStates({});};
+  },[projectId]);
   const avatarInputRef = useRef(null);
   const charVoiceInputRef = useRef(null);
   const activeUploadIdRef = useRef(null);
@@ -250,12 +257,12 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return output;
   };
 
-  const uploadFileToR2 = async (file, folderPrefix) => {
-    const fileExt = file.name.split('.').pop() || 'bin';
+  const uploadFileToR2 = async (file, folderPrefix, signal) => {
+    const fileExt = folderPrefix.startsWith('avatar_') ? {'image/png':'png','image/jpeg':'jpg','image/webp':'webp'}[file.type] : file.name.split('.').pop() || 'bin';
     const uniqueFileName = `project_${projectId}/${folderPrefix}_${Date.now()}.${fileExt}`;
     const fileType = file.type || 'application/octet-stream';
 
-    const urlRes = await fetch('/api/get-upload-url', {
+    const urlRes = await fetch('/api/get-upload-url', {signal,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fileName: uniqueFileName, fileType })
@@ -263,7 +270,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     if (!urlRes.ok) throw new Error("Lỗi xin link upload Vercel");
     const { uploadUrl } = await urlRes.json();
 
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetch(uploadUrl, {signal,
       method: 'PUT',
       body: file,
       headers: { 'Content-Type': fileType }
@@ -273,22 +280,26 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
     return `${import.meta.env.VITE_R2_PUBLIC_URL}/${uniqueFileName}`;
   };
 
-  const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0];
-    const charId = activeUploadIdRef.current;
-    if (!file || !charId) return;
-
-    const tempUrl = URL.createObjectURL(file);
-    setProjectCharacters(prev => prev.map(c => c.id === charId ? { ...c, imageUrl: tempUrl } : c));
-
-    try {
-      const publicUrl = await uploadFileToR2(file, 'avatar');
-      setProjectCharacters(prev => {
-        const newChars = prev.map(c => c.id === charId ? { ...c, imageUrl: publicUrl } : c);
-        updateProjectProgress(projectId, { characters: newChars });
-        return newChars;
-      });
-    } catch (err) { console.error(err); alert("Không thể upload Avatar vĩnh viễn."); }
+  const handleAvatarUpload = async (event) => {
+    const file=event.target.files?.[0], id=activeUploadIdRef.current;
+    event.target.value='';
+    const current=projectCharacters.find(c=>c.id===id);
+    if(!file||!current||avatarRequests.current.has(id))return;
+    const request=new AbortController(), expected=current.imageUrl||'', key=projectId+':'+id;
+    avatarRequests.current.set(id,request);
+    const status=value=>setAvatarStates(prev=>({...prev,[key]:value}));
+    status('uploading');
+    try{
+      const signal=AbortSignal.any([request.signal,AbortSignal.timeout(120000)]);
+      const saved=await saveCharacterAvatar({db,projectId,id,expected,file,upload:uploadFileToR2,signal});
+      if(request.signal.aborted)return;
+      setProjectCharacters(prev=>prev.map(c=>c.id===id?{...c,imageUrl:saved.imageUrl,...(saved.characterIdentity?{characterIdentity:saved.characterIdentity}:{})}:c));
+      status('');
+    }catch{
+      if(!request.signal.aborted)status('error');
+    }finally{
+      if(avatarRequests.current.get(id)===request)avatarRequests.current.delete(id);
+    }
   };
 
   const handleCharVoiceUpload = async (e) => {
@@ -1003,7 +1014,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
 
       {/* Hidden file inputs */}
       <input type="file" accept="image/*" ref={frameInputRef} className="hidden" onChange={handleStartFrameUpload} />
-      <input type="file" accept="image/*" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
+      <input type="file" accept="image/png,image/jpeg,image/webp" ref={avatarInputRef} className="hidden" onChange={handleAvatarUpload} />
       <input type="file" accept="audio/*" ref={charVoiceInputRef} className="hidden" onChange={handleCharVoiceUpload} />
 
       {/* ── Main content area ─────────────────────────────────────────────── */}
@@ -1130,7 +1141,7 @@ export default function Workspace({ ffmpeg, isFfmpegReady, darkMode, setDarkMode
             setParsedData={setParsedData}
             handleSaveSetupData={handleSaveSetupData}
             handleDeleteCharacter={handleDeleteCharacter}
-            avatarInputRef={avatarInputRef}
+            avatarInputRef={avatarInputRef} avatarStates={avatarStates} projectId={projectId}
             charVoiceInputRef={charVoiceInputRef}
             activeUploadIdRef={activeUploadIdRef}
             darkMode={darkMode}

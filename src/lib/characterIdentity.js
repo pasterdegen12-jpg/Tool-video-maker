@@ -13,7 +13,11 @@ export function confirmedIdentity(character, projectId, ownerHash) {
     (!ownerHash || p.ownerHash===ownerHash) && (!p.sourceImageUrl || p.sourceImageUrl===character.imageUrl) && (p.sourceImageUrl?validVisualId(p.confirmedId):validCharacterId(p.confirmedId)) && /^[a-f0-9]{64}$/.test(p.referenceImage?.sha256) ? p : null;
 }
 function aliases(c, projectId, ownerHash) {
-  const p=confirmedIdentity(c,projectId,ownerHash);
+  // Old screenplays can reference a saved visual ID directly. It remains a
+  // valid character alias when the appearance is stale for a replacement photo.
+  const p=confirmedIdentity(c,projectId,ownerHash)||(
+    c.characterIdentity?.sourceImageUrl&&confirmedIdentity({...c,imageUrl:c.characterIdentity.sourceImageUrl},projectId,ownerHash)
+  );
   return [...new Set([c.id,c.name,p?.originalName,p?.confirmedId,...(p?.previousIds||[])].filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim()))];
 }
 export function resolveCharacterReference(reference, characters, projectId, ownerHash) {

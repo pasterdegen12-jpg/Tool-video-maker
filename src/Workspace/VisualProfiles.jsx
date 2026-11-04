@@ -33,10 +33,11 @@ function Detection({character,context,auth,disabled}){
   return ()=>controller.cancel();
  },[auth.isSignedIn,controller]);
  const id=confirmedIdentity(character,context.projectId)?.confirmedId;
+ const previous=!id&&character.characterIdentity?.sourceImageUrl&&confirmedIdentity({...character,imageUrl:character.characterIdentity.sourceImageUrl},context.projectId)?.confirmedId;
  const generating=state.busy&&state.status!=='recovering';
  const error=['failed','error','unknown','polling_paused'].includes(state.status);
  return <section aria-label={'Visual ID '+character.name} className="flex flex-wrap items-center gap-2 border-t border-purple-400/20 pt-2 text-xs">
-   <p className="min-w-0 flex-1 break-words" aria-live="polite">Visual ID: <span className="font-mono select-text" data-approved-visual-id={id}>{id||(generating?'Đang tạo...':'Chưa thiết lập')}</span></p>
+   <p className="min-w-0 flex-1 break-words" aria-live="polite">Visual ID: <span className="font-mono select-text" data-approved-visual-id={id}>{id||(previous?previous+' (ảnh trước)':null)||(generating?'Đang tạo...':'Chưa thiết lập')}</span></p>
    <button type="button" className="inline-flex items-center gap-1 rounded-lg border border-purple-400/40 px-2 py-1 font-semibold disabled:opacity-50" disabled={disabled||state.busy||!character.imageUrl||!auth.isSignedIn} onClick={()=>controller.submit()}>
     ✦ Set ID{generating&&<Loader2 className="animate-spin" size={12} aria-label="Đang tạo"/>}
    </button>

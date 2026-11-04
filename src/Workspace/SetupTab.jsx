@@ -5,14 +5,14 @@ import { Camera, Mic, Trash2, Upload, Pencil, Check, X, Sparkles, Image as Image
 function Avatar({url}){
   const [failed,setFailed]=useState(false);
   return failed?<Camera size={20} aria-label="Ảnh không khả dụng"/>:
-    <img src={url} className="w-full h-full object-cover" alt="avatar" onError={()=>setFailed(true)}/>;
+    <img crossOrigin="anonymous" src={url} className="w-full h-full object-cover" alt="avatar" onError={()=>setFailed(true)}/>;
 }
 
 export default function SetupTab({
   projectCharacters,
   parsedData,
   handleSaveSetupData, // 🚀 NHẬN HÀM LƯU FIREBASE TỪ WORKSPACE
-  handleDeleteCharacter, avatarInputRef, charVoiceInputRef, activeUploadIdRef, darkMode
+  handleDeleteCharacter, avatarInputRef, avatarStates={}, projectId, charVoiceInputRef, activeUploadIdRef, darkMode
 }) {
   const [isEditing, setIsEditing] = useState({});
   const [tempData, setTempData] = useState({});
@@ -56,6 +56,9 @@ export default function SetupTab({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fadeIn">
       {projectCharacters.map((char) => {
+        const uploadState=avatarStates[projectId+':'+char.id];
+        const uploading=uploadState==='uploading';
+        const chooseAvatar=()=>{activeUploadIdRef.current=char.id;avatarInputRef.current.click();};
         const editing = isEditing[char.id];
         const currentData = editing ? tempData[char.id] : char;
 
@@ -83,13 +86,13 @@ export default function SetupTab({
             )}
 
             <div className="flex gap-5 items-start">
-              <div className={`w-20 h-20 rounded-full border flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08]' : 'bg-zinc-100 border-zinc-200'}`}>
+              <button type="button" onClick={chooseAvatar} disabled={uploading} aria-label={'Thay ảnh nhân vật '+char.name} className={`w-20 h-20 rounded-full border flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner ${darkMode ? 'bg-slate-950/80 border-white/[0.08]' : 'bg-zinc-100 border-zinc-200'}`}>
                 {char.imageUrl ? (
                   <Avatar key={char.imageUrl} url={char.imageUrl}/>
                 ) : (
                   <Camera size={20} className={darkMode ? 'text-zinc-600' : 'text-zinc-400'} />
                 )}
-              </div>
+              </button>
 
               <div className="flex-1 min-w-0 pr-20">
 
@@ -120,8 +123,9 @@ export default function SetupTab({
               </div>
             )}
 
-            <SetIdPanel character={char} disabled={!!editing} />
+            <SetIdPanel character={char} disabled={!!editing||uploading} />
 
+            {uploadState==='error'&&<p role="alert" className="text-xs text-amber-500">Không thể lưu ảnh. Chọn PNG, JPEG hoặc WebP hợp lệ và thử lại.</p>}
             {char.voiceUrl && (
                <div className={`flex items-center gap-2 text-[11px] font-medium px-3 py-2 rounded-lg border ${darkMode ? 'text-green-400 bg-green-500/10 border-green-500/20' : 'text-green-700 bg-green-50 border-green-200'}`}>
                  <Music size={12} /> Đã tải Voice mẫu: {char.voiceFileName || "Audio.mp3"}
@@ -129,8 +133,8 @@ export default function SetupTab({
             )}
 
             <div className={`flex flex-wrap items-center gap-3 pt-4 mt-2 border-t ${darkMode ? 'border-white/[0.07]' : 'border-zinc-200'}`}>
-              <button onClick={() => { activeUploadIdRef.current = char.id; avatarInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[12px] font-semibold flex items-center gap-1.5 border transition-colors shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-amber-500/40 ${darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 border-white/[0.07]' : 'bg-white hover:bg-zinc-50 text-zinc-700 border-zinc-300'}`}>
-                <ImageIcon size={14} /> Tải Ảnh Nền
+              <button onClick={chooseAvatar} disabled={uploading} className={`h-9 px-4 rounded-lg text-[12px] font-semibold flex items-center gap-1.5 border transition-colors shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-amber-500/40 ${darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 border-white/[0.07]' : 'bg-white hover:bg-zinc-50 text-zinc-700 border-zinc-300'}`}>
+                <ImageIcon size={14} /> {uploading?'Đang tải ảnh…':'Tải ảnh nhân vật'}
               </button>
               <button onClick={() => { activeUploadIdRef.current = char.id; charVoiceInputRef.current.click(); }} className={`h-9 px-4 rounded-lg text-[12px] font-semibold flex items-center gap-1.5 border transition-colors shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-900 focus-visible:ring-amber-500/40 ${darkMode ? 'bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 border-white/[0.07]' : 'bg-white hover:bg-zinc-50 text-zinc-700 border-zinc-300'}`}>
                 <Upload size={14} /> Tải Voice Lên

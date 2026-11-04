@@ -36,6 +36,22 @@ test('durable batch deduplicates concurrent creation across fresh Admin stores; 
  }finally{await db.terminate();await deleteApp(app);}
 });
 test.after(()=>env.cleanup());
+test('profile image upload and replacement commit only to the chosen character and survive a fresh reader',async()=>{
+ const {saveCharacterAvatar}=await import('../../src/lib/saveCharacterAvatar.js');
+ const projectId='proj_avatar_test',db=env.authenticatedContext('avatar-admin').firestore(),ref=doc(db,'projects',projectId);
+ const identity={confirmedId:'person_black_suit',sourceImageUrl:'https://media.example.org/old.jpg'};
+ const original={data:[{scene_n:1,Dialogue:'Keep',startFrameUrl:'scene-input',videoUrl:'old-output'}],characters:[{id:'a',name:'A',imageUrl:identity.sourceImageUrl,characterIdentity:identity,voiceUrl:'voice'},{id:'b',name:'B'}]};
+ await env.withSecurityRulesDisabled(async ctx=>setDoc(doc(ctx.firestore(),'projects',projectId),original));
+ const fixture=JSON.parse(await fs.readFile(new URL('../support/visual-fixture.json',import.meta.url),'utf8'));
+ const file=new File([Buffer.from(fixture.image_base64,'base64')],'avatar.png',{type:'image/png'}),decode=async()=>({width:100,height:150,close(){}}),signal=new AbortController().signal;
+ const path='https://media.example.org/project_'+projectId+'/avatar_';
+ const save=(id,expected,suffix,extra={})=>saveCharacterAvatar({db,projectId,id,expected,file,decode,signal,upload:async()=>path+suffix+'.png',...extra});
+ await Promise.all([save('a',identity.sourceImageUrl,'first'),save('b','','second')]);await save('a',path+'first.png','replacement');
+ const fresh=async()=>(await getDoc(doc(env.authenticatedContext('avatar-admin-2').firestore(),'projects',projectId))).data();
+ const saved=await fresh();assert.equal(saved.characters[0].imageUrl,path+'replacement.png');assert.equal(saved.characters[1].imageUrl,path+'second.png');assert.deepEqual(saved.characters[0].characterIdentity,identity);assert.deepEqual(saved.data,original.data);assert.equal(saved.characters[0].voiceUrl,'voice');
+ await assert.rejects(save('a',identity.sourceImageUrl,'stale'));await assert.rejects(save('a',path+'replacement.png','failed',{upload:async()=>{throw Error('expired R2 ticket');}}));
+ await assert.rejects(save('b',path+'second.png','bad',{file:new File(['bad'],'bad.txt',{type:'text/plain'})}));assert.deepEqual(await fresh(),saved);
+});
 test('hosted visual prediction survives new store and concurrent cloud video publication; approval never rewrites scenes',async()=>{
  const app=initializeApp({projectId:'demo-webai-production'},'molmo-emulator'),db=getFirestore(app);
  try{

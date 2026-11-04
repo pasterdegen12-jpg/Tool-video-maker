@@ -90,3 +90,13 @@ test('saved IDs hydrate after remount without a paid request or changed scene ma
 test('Firestore characters override stale navigation data',async()=>{
  const {savedProjectCharacters}=await import('../src/lib/characterIdentity.js');assert.deepEqual(savedProjectCharacters({characters:[]},{characters:[{id:'stale'}]}),[]);
 });
+test('both avatar and upload button target the selected character image picker',async t=>{
+ const box=document.createElement('div'),root=createRoot(box),selected={current:null},picked=[];
+ const chars=[{id:'a',name:'A',imageUrl:'https://media.example.org/a.jpg'},{id:'b',name:'B'}];
+ await act(async()=>root.render(React.createElement(Setup,{projectCharacters:chars,activeUploadIdRef:selected,avatarInputRef:{current:{click:()=>picked.push(selected.current)}}})));
+ t.after(()=>act(async()=>root.unmount()));
+ assert.equal(box.querySelector('img').crossOrigin,'anonymous');
+ await click(box.querySelector('[aria-label="Thay ảnh nhân vật B"]'));
+ await click(find(box,'Tải ảnh nhân vật'));
+ assert.deepEqual(picked,['b','a']);
+});
