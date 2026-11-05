@@ -3,7 +3,7 @@ const messages={IDENTITY_CONFLICT:'ID này đang thuộc nhân vật khác.',POL
 export async function molmoRequest(getToken,action,input,{fetchImpl=fetch,signal}={}){
  const token=await getToken();if(!token)throw Error(messages.UNAUTHORIZED);
  const r=await fetchImpl('/api/qwen?action=molmo_'+action,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(input),credentials:'omit',mode:'same-origin',redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(60000)]):AbortSignal.timeout(60000)});
- const value=await r.json();if(!r.ok)throw Error(messages[value.error?.code]||'Không thể phân tích ảnh. Khôi phục trạng thái trước khi thử lại.');return value;
+ const value=await r.json();if(!r.ok)throw Error(messages[value.error?.code]||(value.error?.code==='INVALID_REQUEST'?'Thông tin nhân vật không hợp lệ. Hãy tải lại trang.':'Không thể phân tích ảnh. Khôi phục trạng thái trước khi thử lại.'));return value;
 }
 const pause=(ms,signal)=>new Promise((resolve,reject)=>{const stop=()=>{clearTimeout(timer);reject(Error('CANCELLED'));};const timer=setTimeout(()=>{signal.removeEventListener('abort',stop);resolve();},ms);signal.addEventListener('abort',stop,{once:true});});
 export function createMolmoController({getToken,onChange,projectId,characterId,fetchImpl=fetch,sleep=pause,now=Date.now}){

@@ -5,9 +5,11 @@ import {parseMolmoOutputs} from './output.js';
 import {MOLMO_MODEL,PROMPT_VERSION} from './prompt.js';
 const active=['submitting','running','unknown'];
 const terminal=['failed','cancelled','timeout','deleted'];
+const OUTPUT_REVISION=3;
+const recoverable=j=>j?.state==='failed'&&j.predictionId&&j.outputRevision!==OUTPUT_REVISION&&['VISUAL_OUTPUT_INVALID','VISUAL_OUTPUT_UNSUPPORTED'].includes(j.error);
 const view=j=>j?{id:j.id,projectId:j.projectId,characterId:j.characterId,state:j.state,predictionId:j.predictionId||null,error:j.error||null,...(j.profile?{profile:j.profile}:{}),pollAfterMs:2000}:{state:'idle'};
 export function molmoService({store,issuer,readImage,provider,now=Date.now}){return {async user(session,action,input){
- need(input&&/^proj_[A-Za-z0-9_-]{1,100}$/.test(input.projectId)&&/^[A-Za-z0-9_-]{1,100}$/.test(input.characterId),'INVALID_REQUEST',422);
+ need(input&&/^proj_[A-Za-z0-9_-]{1,100}$/.test(input.projectId)&&/^[A-Za-z0-9_-]{1,2048}$/.test(input.characterId),'INVALID_REQUEST',422);
  need(['create','status','cancel','edit'].includes(action),'NOT_FOUND',404);
  const project=await store.project(input.projectId),owner=authorize(project,session,issuer),c=character(project,input.characterId);
  const key=digest([owner,input.projectId,input.characterId]);
@@ -35,7 +37,8 @@ export function molmoService({store,issuer,readImage,provider,now=Date.now}){ret
   const admitted=await change((state,p)=>{
    need(binding(character(p,input.characterId))===binding(c),'CHARACTER_CHANGED');
    if(state.jobs[jobId])return{value:{job:state.jobs[jobId],send:false}};
-   const cached=Object.values(state.jobs).find(j=>(!state.latestJobId||state.latestJobId===j.id)&&j.sourceHash===image.sha256&&j.model===MOLMO_MODEL&&j.promptVersion===PROMPT_VERSION&&j.binding===binding(c)&&active.includes(j.state));
+   const cached=Object.values(state.jobs).find(j=>(!state.latestJobId||state.latestJobId===j.id)&&j.sourceHash===image.sha256&&j.model===MOLMO_MODEL&&j.promptVersion===PROMPT_VERSION&&j.binding===binding(c)&&(active.includes(j.state)||recoverable(j)));
+   if(cached&&recoverable(cached)){cached.state='running';cached.error=null;cached.deadline=now()+300000;cached.nextPoll=0;}
    if(cached)return{value:{job:cached,send:false}};
    const job={id:jobId,projectId:input.projectId,characterId:input.characterId,model:MOLMO_MODEL,promptVersion:PROMPT_VERSION,binding:binding(c),sourceHash:image.sha256,imageUrl:image.url,state:'submitting',createdAt:now(),updatedAt:now(),deadline:now()+300000};
    state.latestJobId=jobId;job.autoSave=true;state.jobs[jobId]=job;return{value:{job,send:true}};
@@ -58,6 +61,12 @@ export function molmoService({store,issuer,readImage,provider,now=Date.now}){ret
  // Old proposals were collected under manual review. Leave them in history.
  if(job.state==='proposal_ready')return view(null);
  if(job.state==='confirmed')return {...view(job),identity:c.characterIdentity?.jobId===job.id?c.characterIdentity:null};
+ if(recoverable(job)&&current.latestJobId===job.id){
+  return change((state,p)=>{const j=state.jobs[job.id];
+   if(recoverable(j)&&state.latestJobId===j.id&&binding(character(p,input.characterId))===j.binding){j.state='running';j.error=null;j.deadline=now()+300000;j.nextPoll=0;}
+   return {value:view(j)};
+  });
+ }
  if(job.state==='submitting'&&now()-job.createdAt>60000){
   return change(state=>{const j=state.jobs[job.id];if(j.state==='submitting'){j.state='unknown';j.error='SUBMISSION_UNKNOWN';}return{value:view(j)};});
  }
@@ -78,7 +87,7 @@ export function molmoService({store,issuer,readImage,provider,now=Date.now}){ret
   return change((state,p)=>{const j=state.jobs[job.id];if(j.pollToken!==lease||j.state!=='running')return{value:view(j)};
    j.pollUntil=0;j.updatedAt=now();
    if(binding(character(p,input.characterId))!==j.binding){j.state='failed';j.error='CHARACTER_CHANGED';}
-   else if(error){j.state='failed';j.error=error;}
+   else if(error){j.state='failed';j.error=error;j.outputRevision=OUTPUT_REVISION;}
    else if(profile){
     if(!j.autoSave){j.profile=profile;j.state='proposal_ready';}
     else if(state.latestJobId!==j.id||profile.status!=='detected'){

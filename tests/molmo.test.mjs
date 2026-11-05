@@ -87,7 +87,29 @@ test('plain appearance is normalized locally, description preserved, no guessed 
  const text='A bald man with thin glasses, clean-shaven, wearing a black robe and blue tie.';
  assert.deepEqual(parseMolmoOutputs([text]),{status:'detected',visual_id:'bald_man_thin_glasses_clean_shaven_black_robe_blue_tie',visual_description:text});
  assert.equal(normalizeVisualId(' Bald Man--BLACK Robe '),'bald_man_black_robe');
- for(const item of ['', 'No person is visible.', 'A man without glasses.', 'Maybe a man with gray hair.', '{"visualId":"man"}', molmoOutput,'A man '+('black '.repeat(40))])assert.throws(()=>parseMolmoOutputs([item]));
+ for(const item of ['', 'No person is visible.', 'A man without a beard.', 'Maybe a man with gray hair.', '{"visualId":"man"}', molmoOutput,'A man '+('black '.repeat(40))])assert.throws(()=>parseMolmoOutputs([item]));
+});
+test('actual operator screenshot description produces an attribute ID, preserving negation semantics',()=>{
+ const text='Short gray hair, no facial hair, no glasses, wearing a burgundy jacket over a white shirt.';
+ assert.equal(parseMolmoOutputs([text]).visual_id,'short_gray_hair_clean_shaven_burgundy_jacket_white_shirt');
+ assert.equal(parseMolmoOutputs(['Bald, clean-shaven, glasses, in black robe over white shirt.']).visual_id,'bald_clean_shaven_glasses_black_robe_white_shirt');
+ assert.equal(parseMolmoOutputs(['A man without glasses wearing a black robe.']).visual_id,'man_black_robe');
+});
+test('long existing import Character IDs are accepted unchanged',async()=>{
+ const h=molmoHarness(),id='char_'+Array(70).fill('61').join('_');h.project.characters[0].id=id;
+ const result=await h.service.user(h.session,'create',{projectId:h.input.projectId,characterId:id,requestKey:crypto.randomUUID()});
+ assert.equal(result.characterId,id);assert.equal(h.posts,1);
+});
+test('old failed normalization recovers the existing prediction without a paid resubmit',async()=>{
+ const h=molmoHarness(),job=await h.create();
+ Object.assign(h.state.jobs[job.id],{state:'failed',error:'VISUAL_OUTPUT_UNSUPPORTED'});
+ h.output('Short gray hair, no facial hair, no glasses, wearing a burgundy jacket over a white shirt.');
+ assert.equal((await h.statusJob()).state,'running');
+ assert.equal((await h.statusJob()).identity.confirmedId,'short_gray_hair_clean_shaven_burgundy_jacket_white_shirt');assert.equal(h.posts,1);
+});
+test('recovery of still invalid output is bounded and keeps saved ID',async()=>{
+ const h=molmoHarness(),job=await h.create();Object.assign(h.state.jobs[job.id],{state:'failed',error:'VISUAL_OUTPUT_UNSUPPORTED'});h.output('Unknown');
+ await h.statusJob();await h.statusJob();const polls=h.polls;assert.equal((await h.statusJob()).state,'failed');assert.equal(h.polls,polls);assert.equal(h.posts,1);
 });
 test('manual edit persists across reload, updates scene prompt and supersedes pending inference without a provider call',async()=>{
  const h=molmoHarness();await h.create();await h.statusJob();const before=structuredClone(h.project),old=h.project.characters[0].characterIdentity;
