@@ -1,7 +1,17 @@
+import {descriptionVisualId} from '../../../src/lib/visualIdText.js';
 import {need} from '../qwen/queue.js';
 const controls=value=>[...value].some(c=>c.charCodeAt(0)<32||c.charCodeAt(0)===127);
 export const normalizeVisualId=value=>value.trim().toLowerCase().replace(/[\s,.-]+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-export function parseMolmoOutputs(outputs){
+export function parseMolmoOutputs(outputs,legacy=false){
+ if(!legacy){
+  need(Array.isArray(outputs)&&outputs.length===1&&typeof outputs[0]==='string','VISUAL_OUTPUT_INVALID',422);
+  const description=outputs[0].trim();
+  let id;try{id=descriptionVisualId(description);}catch(e){need(false,e.message,422);}
+  return {status:'detected',visual_id:id,visual_description:description};
+ }
+ return parseLegacyOutputs(outputs);
+}
+function parseLegacyOutputs(outputs){
  need(Array.isArray(outputs)&&outputs.length===1,'VISUAL_OUTPUT_INVALID',422);
  let value=outputs[0];
  if(typeof value==='string'){
@@ -14,7 +24,7 @@ export function parseMolmoOutputs(outputs){
  for(const key of ['visualId','visualDescription','hair','facialHair','clothing'])need(typeof value[key]==='string'&&value[key].length<=(key==='visualDescription'?600:120)&&!controls(value[key]),'VISUAL_OUTPUT_INVALID',422);
  need(Array.isArray(value.accessories)&&value.accessories.length<=12&&value.accessories.every(x=>typeof x==='string'&&x.length<=100&&!controls(x)),'VISUAL_OUTPUT_INVALID',422);
  // These checks reject obvious sensitive/identity claims, not prove visual truth.
- // Attribute accuracy still requires the existing human review step.
+ // Legacy decoding only, for predictions submitted before the prompt change.
  const text=[value.visualId,value.visualDescription,value.hair,value.facialHair,value.clothing,...value.accessories].join(' ');
  need(!/https?:|@|\b(?:ethnicity|religion|muslim|christian|jewish|diabetic|diagnosed|named|identity is|real name|judge|lawyer|plaintiff|defendant|courtroom|background|dialogue|camera|angry|smiling)\b/i.test(text.replaceAll('_',' ')),'VISUAL_OUTPUT_UNSUPPORTED',422);
  if(value.subjectStatus!=='clear'){

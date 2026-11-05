@@ -1,4 +1,5 @@
 import {authorize,character,binding,digest,token,need} from '../qwen/queue.js';
+import {normalizeVisualId} from '../../../src/lib/visualIdText.js';
 import {confirmedIdentity} from '../../../src/lib/characterIdentity.js';
 import {parseMolmoOutputs} from './output.js';
 import {MOLMO_MODEL,PROMPT_VERSION} from './prompt.js';
@@ -7,10 +8,27 @@ const terminal=['failed','cancelled','timeout','deleted'];
 const view=j=>j?{id:j.id,projectId:j.projectId,characterId:j.characterId,state:j.state,predictionId:j.predictionId||null,error:j.error||null,...(j.profile?{profile:j.profile}:{}),pollAfterMs:2000}:{state:'idle'};
 export function molmoService({store,issuer,readImage,provider,now=Date.now}){return {async user(session,action,input){
  need(input&&/^proj_[A-Za-z0-9_-]{1,100}$/.test(input.projectId)&&/^[A-Za-z0-9_-]{1,100}$/.test(input.characterId),'INVALID_REQUEST',422);
- need(['create','status','cancel'].includes(action),'NOT_FOUND',404);
+ need(['create','status','cancel','edit'].includes(action),'NOT_FOUND',404);
  const project=await store.project(input.projectId),owner=authorize(project,session,issuer),c=character(project,input.characterId);
  const key=digest([owner,input.projectId,input.characterId]);
  const change=fn=>store.transact(key,input.projectId,(state,p)=>{authorize(p,session,issuer);return fn(state,p);});
+ if(action==='edit'){
+  need(Object.keys(input).sort().join(',')==='characterId,expectedJobId,projectId,visualId','INVALID_REQUEST',422);
+  let id;try{id=normalizeVisualId(input.visualId);}catch{need(false,'VISUAL_OUTPUT_INVALID',422);}
+  return change((state,p)=>{
+   const selected=character(p,input.characterId),old=confirmedIdentity(selected,input.projectId);
+   need(old&&old.jobId===input.expectedJobId&&binding(selected)===binding(c),'CHARACTER_CHANGED');
+   need(!p.characters.some(other=>other.id!==selected.id&&[other.id,other.name,other.characterIdentity?.confirmedId,...(other.characterIdentity?.previousIds||[])].includes(id)),'IDENTITY_CONFLICT');
+   const jobId=token(),identity={...old,confirmedId:id,sourceImageUrl:selected.imageUrl,jobId,confirmedAt:Math.max(now(),old.confirmedAt+1),manuallyEdited:true,
+    proposal:{status:'detected',visual_id:id,visual_description:id.replaceAll('_',' ')},
+    previousIds:[...new Set([...(old.previousIds||[]),old.confirmedId])]};
+   // Supersede in-flight predictions atomically with the manual save.
+   for(const job of Object.values(state.jobs))if(active.includes(job.state)){job.state='cancelled';job.error='ID_MANUALLY_EDITED';}
+   const job={id:jobId,projectId:input.projectId,characterId:selected.id,state:'confirmed',createdAt:now(),updatedAt:now()};
+   state.jobs[jobId]=job;state.latestJobId=jobId;
+   return {characters:p.characters.map(x=>x.id===selected.id?{...x,characterIdentity:identity}:x),value:{...view(job),identity}};
+  });
+ }
  if(action==='create'){
   need(Object.keys(input).sort().join(',')==='characterId,projectId,requestKey'&&/^[a-f0-9-]{36}$/.test(input.requestKey),'INVALID_REQUEST',422);
   const image=await readImage(c,input.projectId),jobId=digest([key,input.requestKey]);
@@ -52,12 +70,12 @@ export function molmoService({store,issuer,readImage,provider,now=Date.now}){ret
  try{
   const result=await provider.get(job.predictionId);
   let profile,error;
-  if(result.status==='completed'){try{profile=parseMolmoOutputs(result.outputs);}catch(e){error=e.code||'VISUAL_OUTPUT_INVALID';}}
+  if(result.status==='completed'){try{profile=parseMolmoOutputs(result.outputs,job.promptVersion!==PROMPT_VERSION);}catch(e){error=e.code||'VISUAL_OUTPUT_INVALID';}}
   if(profile?.status==='detected' && job.autoSave){
    const image=await readImage(c,input.projectId);
    if(image.sha256!==job.sourceHash)error='CHARACTER_CHANGED';
   }
-  return change((state,p)=>{const j=state.jobs[job.id];if(j.pollToken!==lease)return{value:view(j)};
+  return change((state,p)=>{const j=state.jobs[job.id];if(j.pollToken!==lease||j.state!=='running')return{value:view(j)};
    j.pollUntil=0;j.updatedAt=now();
    if(binding(character(p,input.characterId))!==j.binding){j.state='failed';j.error='CHARACTER_CHANGED';}
    else if(error){j.state='failed';j.error=error;}

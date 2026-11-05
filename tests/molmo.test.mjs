@@ -6,10 +6,12 @@ import {MOLMO_MODEL,VISION_PROMPT} from '../api/_lib/molmo/prompt.js';
 import {approvedAppearance} from '../src/lib/visualProfile.js';
 import {composeVideoPrompt} from '../src/lib/cloudVideoOptions.js';
 import {reconcileCharacterScenes} from '../src/lib/characterIdentity.js';
+import {normalizeVisualId} from '../src/lib/visualIdText.js';
+import {createMolmoController} from '../src/lib/molmoClient.js';
 export const molmoOutput={subjectStatus:'clear',visualId:'person_short_black_hair_black_suit',visualDescription:'A person with short black hair wearing a black suit.',hair:'Short black hair',facialHair:'',clothing:'Black suit',accessories:[]};
 const session={subject:'test',session:'mock'},issuer='https://clerk.example.org';
 export function molmoHarness(){
- let clock=100000,state={jobs:{}},project={id:'proj_molmo',projectType:'full-ai',ownerId:'test',characters:[{id:'judge_1',name:'Judge',imageUrl:'https://media.example.org/project_proj_molmo/judge.jpg',voiceId:'voice_unchanged'}],data:[{scene_n:1,Character:'judge_1',Dialogue:'Exact words.',Camera:'Fixed.',Action:'Sits.',Context:'Court.',duration_seconds:4,videoUrl:'https://media.example.org/old.mp4'}]},chain=Promise.resolve(),posts=0,polls=0,fail=false,status='completed',output=molmoOutput;
+ let clock=100000,state={jobs:{}},project={id:'proj_molmo',projectType:'full-ai',ownerId:'test',characters:[{id:'judge_1',name:'Judge',imageUrl:'https://media.example.org/project_proj_molmo/judge.jpg',voiceId:'voice_unchanged'}],data:[{scene_n:1,Character:'judge_1',Dialogue:'Exact words.',Camera:'Fixed.',Action:'Sits.',Context:'Court.',duration_seconds:4,videoUrl:'https://media.example.org/old.mp4'}]},chain=Promise.resolve(),posts=0,polls=0,fail=false,status='completed',output=molmoOutput.visualDescription;
  const store={project:async()=>structuredClone(project),read:async()=>structuredClone(state),transact:async(k,p,fn)=>{const task=chain.then(()=>{const next=structuredClone(state),out=fn(next,structuredClone(project));state=next;if(out.characters)project.characters=out.characters;return structuredClone(out.value);});chain=task.catch(()=>{});return task;}};
  const image={url:project.characters[0].imageUrl,sha256:'a'.repeat(64),mime:'image/jpeg'};
  const provider={submit:async()=>{posts++;if(fail)throw Error('connection lost');return{id:'actual_mock_prediction'};},get:async()=>{polls++;return{id:'actual_mock_prediction',status,outputs:[output]};}};
@@ -20,17 +22,17 @@ export function molmoHarness(){
 test('Molmo strict prompt and exact provider request; response ID required, no POST retries',async()=>{
  const calls=[];const provider=molmoProvider('fake-test-key',async(url,options)=>{calls.push({url,options});return{status:200,body:JSON.stringify({data:{id:'p_mock',status:'created'}})};});
  await provider.submit('https://media.example.org/profile.jpg');assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.wavespeed.ai/api/v3/'+MOLMO_MODEL);
- assert.deepEqual(JSON.parse(calls[0].options.body),{images:['https://media.example.org/profile.jpg'],text:VISION_PROMPT});assert.match(VISION_PROMPT,/Do not infer ethnicity/);
+ assert.deepEqual(JSON.parse(calls[0].options.body),{images:['https://media.example.org/profile.jpg'],text:VISION_PROMPT});assert.equal(VISION_PROMPT,"Describe the main person's visible physical appearance in a short, accurate English phrase. Focus on hairstyle or baldness, facial hair, glasses, and clothing. Include only clearly visible details. Do not guess or invent features. Do not describe the background, actions, or identity.");
  await assert.rejects(molmoProvider('fake-test-key',async()=>({status:200,body:'{"data":{}}'})).submit('https://example.org/a'),/MOLMO_RESPONSE_INVALID/);
 });
 test('valid JSON/object/fenced JSON and deterministic punctuation normalization',()=>{
- for(const item of [molmoOutput,JSON.stringify(molmoOutput),'```json\n'+JSON.stringify(molmoOutput)+'\n```'])assert.equal(parseMolmoOutputs([item]).visual_id,molmoOutput.visualId);
- assert.equal(parseMolmoOutputs([{...molmoOutput,visualId:'Short Black Hair, Black Suit'}]).visual_id,'short_black_hair_black_suit');
+ for(const item of [molmoOutput,JSON.stringify(molmoOutput),'```json\n'+JSON.stringify(molmoOutput)+'\n```'])assert.equal(parseMolmoOutputs([item],true).visual_id,molmoOutput.visualId);
+ assert.equal(parseMolmoOutputs([{...molmoOutput,visualId:'Short Black Hair, Black Suit'}],true).visual_id,'short_black_hair_black_suit');
 });
 test('malformed/plain text/missing attributes/unsupported identification never fabricated',()=>{
- for(const item of ['black hair','{"visualId":}',{...molmoOutput,accessories:'Glasses'},{...molmoOutput,visualId:'á_name'},{...molmoOutput,clothing:'',hair:''},{...molmoOutput,visualDescription:'His real name is John Smith.'},{...molmoOutput,extra:true}])assert.throws(()=>parseMolmoOutputs([item]));
+ for(const item of ['black hair','{"visualId":}',{...molmoOutput,accessories:'Glasses'},{...molmoOutput,visualId:'á_name'},{...molmoOutput,clothing:'',hair:''},{...molmoOutput,visualDescription:'His real name is John Smith.'},{...molmoOutput,extra:true}])assert.throws(()=>parseMolmoOutputs([item],true));
 });
-for(const subjectStatus of ['ambiguous','no_subject'])test(subjectStatus+' yields no approvable ID',()=>assert.equal(parseMolmoOutputs([{...molmoOutput,subjectStatus,visualId:''}]).visual_id,''));
+for(const subjectStatus of ['ambiguous','no_subject'])test(subjectStatus+' yields no approvable ID',()=>assert.equal(parseMolmoOutputs([{...molmoOutput,subjectStatus,visualId:''}],true).visual_id,''));
 test('duplicate clicks across sessions create one prediction; resume polls only',async()=>{
  const h=molmoHarness(),jobs=await Promise.all([h.create(),h.create(),h.create()]);assert.equal(h.posts,1);assert.equal(new Set(jobs.map(j=>j.id)).size,1);
  const j=await h.statusJob();assert.equal(j.state,'confirmed');assert.equal(h.posts,1);assert.equal(h.polls,1);assert.ok(j.predictionId);
@@ -58,7 +60,7 @@ test('foreign owner, changed character and invalid confirm cannot write',async()
 });
 test('a fresh explicit click replaces saved appearance only after a valid result commits',async()=>{
  const h=molmoHarness();await h.create();await h.statusJob();const old=h.project.characters[0].characterIdentity;
- h.output({...molmoOutput,visualId:'person_black_suit'});await h.create();assert.deepEqual(h.project.characters[0].characterIdentity,old);
+ h.output('A person wearing a black suit.');await h.create();assert.deepEqual(h.project.characters[0].characterIdentity,old);
  const result=await h.statusJob();assert.equal(result.identity.confirmedId,'person_black_suit');assert.equal(h.posts,2);
 });
 test('expired image content, superseded request and invalid output never overwrite a saved identity',async()=>{
@@ -80,4 +82,46 @@ test('failed Firestore commit exposes no new identity and status recovery uses s
  const original=h.store.transact;h.store.transact=(k,p,change)=>original(k,p,(s,project)=>{const out=change(s,project);if(out.characters)throw Error('WRITE_FAILED');return out;});
  await assert.rejects(h.statusJob(),/WRITE_FAILED/);assert.deepEqual(h.project.characters[0],old);
  h.store.transact=original;h.advance(31000);assert.equal((await h.statusJob()).state,'confirmed');assert.equal(h.posts,2);
+});
+test('plain appearance is normalized locally, description preserved, no guessed or truncated attributes',()=>{
+ const text='A bald man with thin glasses, clean-shaven, wearing a black robe and blue tie.';
+ assert.deepEqual(parseMolmoOutputs([text]),{status:'detected',visual_id:'bald_man_thin_glasses_clean_shaven_black_robe_blue_tie',visual_description:text});
+ assert.equal(normalizeVisualId(' Bald Man--BLACK Robe '),'bald_man_black_robe');
+ for(const item of ['', 'No person is visible.', 'A man without glasses.', 'Maybe a man with gray hair.', '{"visualId":"man"}', molmoOutput,'A man '+('black '.repeat(40))])assert.throws(()=>parseMolmoOutputs([item]));
+});
+test('manual edit persists across reload, updates scene prompt and supersedes pending inference without a provider call',async()=>{
+ const h=molmoHarness();await h.create();await h.statusJob();const before=structuredClone(h.project),old=h.project.characters[0].characterIdentity;
+ const pending=await h.create(),posts=h.posts;
+ const result=await h.service.user(h.session,'edit',{...h.input,expectedJobId:old.jobId,visualId:'Bald Man, Glasses Black Robe'});
+ assert.equal(result.identity.confirmedId,'bald_man_glasses_black_robe');assert.equal(h.posts,posts);
+ assert.deepEqual(h.project.data,before.data);
+ const refreshed=JSON.parse(JSON.stringify(h.project));
+ assert.equal(approvedAppearance(refreshed.data[0],refreshed.characters,refreshed.id).visualId,result.identity.confirmedId);
+ assert.ok(!approvedAppearance(refreshed.data[0],refreshed.characters,refreshed.id).visualDescription.includes('hair'));
+ await h.statusJob(pending.id);assert.equal(h.project.characters[0].characterIdentity.jobId,result.identity.jobId);
+ assert.equal((await h.statusJob()).identity.confirmedId,result.identity.confirmedId);
+ await assert.rejects(h.service.user(h.session,'edit',{...h.input,expectedJobId:old.jobId,visualId:'another_id'}),/CHARACTER_CHANGED/);
+ assert.deepEqual(h.project.characters[0].imageUrl,before.characters[0].imageUrl);
+});
+test('late provider completion cannot overwrite a concurrent manual transaction',async()=>{
+ const h=molmoHarness();await h.create();await h.statusJob();const old=h.project.characters[0].characterIdentity;await h.create();
+ const original=h.store.transact;let edited=false;
+ h.store.transact=async(k,p,fn)=>{if(!edited){edited=true;await h.service.user(h.session,'edit',{...h.input,expectedJobId:old.jobId,visualId:'man_blue_tie'});}return original(k,p,fn);};
+ await h.statusJob();assert.equal(h.project.characters[0].characterIdentity.confirmedId,'man_blue_tie');
+});
+test('controller stops bounded polling, unlocks on failure and resume never posts a prediction',async()=>{
+ let time=0;const states=[],actions=[];
+ const controller=createMolmoController({projectId:'proj_client',characterId:'judge_1',getToken:async()=>'mock',now:()=>time,sleep:async()=>{time+=310000;},onChange:s=>states.push(s),fetchImpl:async(url)=>{
+  actions.push(url);return new Response(JSON.stringify({id:'a'.repeat(64),projectId:'proj_client',characterId:'judge_1',state:'running'}));
+ }});
+ await controller.resume();assert.equal(states.at(-1).busy,false);assert.equal(states.at(-1).status,'error');assert.ok(actions.every(x=>x.endsWith('molmo_status')));
+ await controller.submit();assert.equal(actions.filter(x=>x.endsWith('molmo_create')).length,1);assert.equal(states.at(-1).busy,false);
+});
+test('gateway reads the current selected character image, not client supplied imagery',async()=>{
+ const h=molmoHarness(),images=[],submissions=[];
+ h.project.characters.push({id:'second',name:'Second',imageUrl:'https://media.example.org/second.png'});
+ const service=molmoService({store:h.store,issuer,readImage:async c=>{images.push(c.imageUrl);return {url:c.imageUrl,sha256:'b'.repeat(64)};},provider:{submit:async url=>{submissions.push(url);return{id:'mock'};}}});
+ await service.user(h.session,'create',{projectId:h.input.projectId,characterId:'second',requestKey:crypto.randomUUID()});
+ assert.deepEqual(images,['https://media.example.org/second.png']);assert.deepEqual(submissions,images);
+ await assert.rejects(service.user(h.session,'create',{...h.input,requestKey:crypto.randomUUID(),imageUrl:'https://wrong.example.org'}),/INVALID_REQUEST/);
 });

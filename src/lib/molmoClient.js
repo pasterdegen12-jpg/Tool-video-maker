@@ -1,5 +1,5 @@
 import {validVisualId} from './characterIdentity.js';
-const messages={UNAUTHORIZED:'Cần đăng nhập lại.',PROJECT_FORBIDDEN:'Bạn không có quyền truy cập dự án.',CHARACTER_CHANGED:'Ảnh hoặc nhân vật đã thay đổi. Đề xuất cũ không được lưu.',REFERENCE_IMAGE_MISSING:'Hãy tải ảnh nhân vật trước.',REFERENCE_IMAGE_FORBIDDEN:'Ảnh phải thuộc kho của dự án.',REFERENCE_IMAGE_INVALID:'Ảnh không hợp lệ.',REFERENCE_IMAGE_UNAVAILABLE:'Không đọc được ảnh đã lưu.',MOLMO_UNAVAILABLE:'Dịch vụ phân tích ảnh chưa sẵn sàng.',VISUAL_OUTPUT_INVALID:'Kết quả AI không đúng định dạng. ID đã duyệt được giữ nguyên; không tự gọi lại AI.',VISUAL_OUTPUT_UNSUPPORTED:'Đề xuất chứa thông tin không phù hợp. Không lưu ID này.',SUBMISSION_UNKNOWN:'Chưa xác định được kết quả gửi. Không gửi lại để tránh tính phí trùng.'};
+const messages={IDENTITY_CONFLICT:'ID này đang thuộc nhân vật khác.',POLLING_TIMEOUT:'Đã dừng chờ kết quả. Bấm Set ID để kiểm tra lại yêu cầu cũ.',ID_MANUALLY_EDITED:'ID đã được sửa tay. Kết quả cũ không được lưu.',UNAUTHORIZED:'Cần đăng nhập lại.',PROJECT_FORBIDDEN:'Bạn không có quyền truy cập dự án.',CHARACTER_CHANGED:'Ảnh hoặc nhân vật đã thay đổi. Đề xuất cũ không được lưu.',REFERENCE_IMAGE_MISSING:'Hãy tải ảnh nhân vật trước.',REFERENCE_IMAGE_FORBIDDEN:'Ảnh phải thuộc kho của dự án.',REFERENCE_IMAGE_INVALID:'Ảnh không hợp lệ.',REFERENCE_IMAGE_UNAVAILABLE:'Không đọc được ảnh đã lưu.',MOLMO_UNAVAILABLE:'Dịch vụ phân tích ảnh chưa sẵn sàng.',VISUAL_OUTPUT_INVALID:'Kết quả AI không đúng định dạng. ID đã duyệt được giữ nguyên; không tự gọi lại AI.',VISUAL_OUTPUT_UNSUPPORTED:'Đề xuất chứa thông tin không phù hợp. Không lưu ID này.',SUBMISSION_UNKNOWN:'Chưa xác định được kết quả gửi. Không gửi lại để tránh tính phí trùng.'};
 export async function molmoRequest(getToken,action,input,{fetchImpl=fetch,signal}={}){
  const token=await getToken();if(!token)throw Error(messages.UNAUTHORIZED);
  const r=await fetchImpl('/api/qwen?action=molmo_'+action,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(input),credentials:'omit',mode:'same-origin',redirect:'error',signal:signal?AbortSignal.any([signal,AbortSignal.timeout(60000)]):AbortSignal.timeout(60000)});
@@ -21,7 +21,7 @@ export function createMolmoController({getToken,onChange,projectId,characterId,f
     const busy=['submitting','running'].includes(job.state);
     const identity=job.identity;
     if(identity && (job.state!=='confirmed'||identity.jobId!==job.id||identity.characterId!==characterId||identity.projectId!==projectId||!validVisualId(identity.confirmedId)))throw Error('INVALID_RESULT');
-    onChange({status:job.state,busy,identity});
+    onChange({status:job.state,busy,identity,message:messages[job.error]||(job.state==='failed'?'Không thể phân tích ảnh. ID cũ được giữ nguyên.':undefined)});
     if(!busy){if(!['unknown','polling_paused'].includes(job.state))requestKey=null;return;}
     if(now()>=deadline)throw Error('Đã dừng chờ. Khôi phục trạng thái để kiểm tra prediction cũ.');
     await sleep(Math.max(2000,Math.min(15000,job.pollAfterMs||2000)),abort.signal);

@@ -59,7 +59,7 @@ test('actual Setup hosted approval preserves every original scene and stable cha
 test('automatic save and failed regeneration preserve approved identity',async t=>{
  t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container}=await mount(t),panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');
  await detect(t,panel);assert.equal(find(panel,'Xác nhận Visual ID và lưu'),undefined);const saved=structuredClone(h.project.characters);
- assert.equal(panel.querySelectorAll('button').length,1);assert.equal(panel.querySelector('img'),null);
+ assert.equal(panel.querySelectorAll('button').length,2);assert.equal(panel.querySelector('img'),null);
  h.status('failed');await detect(t,panel);assert.deepEqual(h.project.characters,saved);
 });
 for(const subjectStatus of ['ambiguous','no_subject'])test(subjectStatus+' has no approval action',async t=>{
@@ -89,6 +89,20 @@ test('saved IDs hydrate after remount without a paid request or changed scene ma
 });
 test('Firestore characters override stale navigation data',async()=>{
  const {savedProjectCharacters}=await import('../src/lib/characterIdentity.js');assert.deepEqual(savedProjectCharacters({characters:[]},{characters:[{id:'stale'}]}),[]);
+});
+test('manual Edit saves without inference and hydrated scene overlays use edited ID',async t=>{
+ t.mock.timers.enable({apis:['setTimeout','Date'],now:Date.now()});const {container,render}=await mount(t);
+ const panel=container.querySelector('[aria-label="Visual ID Plaintiff"]');await detect(t,panel);const posts=h.posts;
+ await click(find(panel,'Edit'));
+ const input=panel.querySelector('input[type=text],input:not([type])');
+ await act(async()=>{
+  Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype,'value').set.call(input,'Bald Man Black Robe');
+  input.dispatchEvent(new dom.window.Event('input',{bubbles:true}));
+ });
+ await click(find(panel,'Lưu'));await flush();
+ assert.equal(h.posts,posts);assert.ok(panel.querySelector('[data-approved-visual-id=bald_man_black_robe]'));
+ const saved=structuredClone(h.project.characters);await render({projectType:'semi'});await render({chars:saved});
+ assert.ok(container.querySelector('[data-approved-visual-id=bald_man_black_robe]'));assert.equal(h.posts,posts);
 });
 test('multi Set ID starts only selected characters concurrently and isolates their results',async t=>{
  const {container}=await mount(t), pending=new Map();

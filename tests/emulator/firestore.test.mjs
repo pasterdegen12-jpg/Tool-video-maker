@@ -57,7 +57,7 @@ test('hosted visual prediction survives new store and concurrent cloud video pub
  try{
   const session={subject:'molmo-user',session:'mock'},issuer='mock-issuer',owner=ownerOf(session,issuer),projectId='proj_molmo_emulator';
   const p={id:projectId,owner,projectType:'full-ai',characters:[{id:'judge_1',name:'Judge',imageUrl:'https://media.example.org/project_'+projectId+'/judge.png',voiceId:'preserved'}],data:[{scene_n:1,Character:'judge_1',Dialogue:'Exact words.',videoUrl:'https://media.example.org/old.mp4'}]};await db.doc('projects/'+projectId).set(p);
-  let posts=0;const provider={submit:async()=>{posts++;return{id:'mock_molmo_prediction'};},get:async()=>({id:'mock_molmo_prediction',status:'completed',outputs:[{subjectStatus:'clear',visualId:'person_black_hair_glasses',visualDescription:'A person with black hair wearing glasses.',hair:'Black hair',facialHair:'',clothing:'',accessories:['Glasses']}]})};
+  let posts=0;const provider={submit:async()=>{posts++;return{id:'mock_molmo_prediction'};},get:async()=>({id:'mock_molmo_prediction',status:'completed',outputs:['A person with black hair wearing glasses.']})};
   const make=()=>molmoService({store:molmoStore(db),issuer,provider,readImage:async()=>({url:p.characters[0].imageUrl,sha256:'c'.repeat(64),mime:'image/png'})});
   const base={projectId,characterId:'judge_1'},input={...base,requestKey:'d'.repeat(36)};
   await Promise.all([make().user(session,'create',input),make().user(session,'create',input)]);assert.equal(posts,1);
@@ -65,6 +65,11 @@ test('hosted visual prediction survives new store and concurrent cloud video pub
   const [proposal]=await Promise.all([make().user(session,'status',base),createCloudStore(db).publishVideo(owner,record)]);
   const saved=(await db.doc('projects/'+projectId).get()).data();assert.equal(saved.data[0].videoUrl,record.videoUrl);assert.equal(saved.data[0].Character,'judge_1');assert.equal(saved.data[0].Dialogue,p.data[0].Dialogue);assert.equal(saved.data[0].videoHistory[0].url,p.data[0].videoUrl);assert.equal(saved.characters[0].voiceId,'preserved');assert.equal(saved.characters[0].characterIdentity.confirmedId,proposal.profile.visual_id);
   assert.equal((await make().user(session,'status',base)).state,'confirmed');assert.equal(posts,1);
+  await make().user(session,'edit',{...base,expectedJobId:saved.characters[0].characterIdentity.jobId,visualId:'Bald Man Glasses Black Robe'});
+  const reloaded=(await db.doc('projects/'+projectId).get()).data();
+  assert.equal(reloaded.characters[0].characterIdentity.confirmedId,'bald_man_glasses_black_robe');
+  assert.deepEqual(reloaded.data,saved.data);assert.equal(reloaded.characters[0].imageUrl,p.characters[0].imageUrl);
+  assert.equal((await make().user(session,'status',base)).identity.confirmedId,'bald_man_glasses_black_robe');assert.equal(posts,1);
  }finally{await db.terminate();await deleteApp(app);}
 });
 test('paged ledger persists nested attempt and batch mutations through actual dispatch and output',async()=>{

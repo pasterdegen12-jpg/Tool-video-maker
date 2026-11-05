@@ -3,7 +3,8 @@ import {useAuth} from '@clerk/clerk-react';
 import {Loader2} from 'lucide-react';
 import {characterBinding,resolveSceneCharacterProfile} from '../lib/visualProfile.js';
 import {confirmedIdentity} from '../lib/characterIdentity.js';
-import {createMolmoController} from '../lib/molmoClient.js';
+import {createMolmoController,molmoRequest} from '../lib/molmoClient.js';
+import {normalizeVisualId} from '../lib/visualIdText.js';
 
 const Profiles=createContext(null);
 const MultiSelect=createContext(null);
@@ -49,6 +50,9 @@ export function SetIdPanel({character,disabled}){
 }
 function Detection({character,context,auth,disabled}){
  const [state,setState]=useState({status:'idle',busy:false});
+ const [editing,setEditing]=useState(false),[draft,setDraft]=useState(''),[saving,setSaving]=useState(false),[editError,setEditError]=useState('');
+ const saveAbort=useRef(null);
+ useEffect(()=>()=>saveAbort.current?.abort(),[]);
  const delivered=useRef(null);
  const {onConfirmed}=context;
  useEffect(()=>{
@@ -60,7 +64,7 @@ function Detection({character,context,auth,disabled}){
  const [controller]=useState(()=>createMolmoController({getToken:auth.getToken,projectId:context.projectId,characterId:character.id,onChange:setState}));
  const group=useContext(MultiSelect);
  const update=group?.update;
- const unavailable=disabled||state.busy||!character.imageUrl||!auth.isSignedIn;
+ const unavailable=disabled||state.busy||editing||saving||!character.imageUrl||!auth.isSignedIn;
  // A selection belongs to this mounted character/image controller. Dropping a
  // card or making it busy invalidates that selection before the next click.
  useLayoutEffect(()=>{
@@ -75,13 +79,29 @@ function Detection({character,context,auth,disabled}){
  const previous=!id&&character.characterIdentity?.sourceImageUrl&&confirmedIdentity({...character,imageUrl:character.characterIdentity.sourceImageUrl},context.projectId)?.confirmedId;
  const generating=state.busy&&state.status!=='recovering';
  const error=['failed','error','unknown','polling_paused'].includes(state.status);
+ async function saveEdit(){
+  if(saveAbort.current||disabled||!auth.isSignedIn)return;
+  const abort=new AbortController();saveAbort.current=abort;setSaving(true);setEditError('');
+  try{
+   const visualId=normalizeVisualId(draft);
+   const result=await molmoRequest(auth.getToken,'edit',{projectId:context.projectId,characterId:character.id,expectedJobId:character.characterIdentity.jobId,visualId},{signal:abort.signal});
+   if(abort.signal.aborted)return;
+   controller.cancel();setState({status:'confirmed',busy:false,identity:result.identity});setEditing(false);
+  }catch(e){if(!abort.signal.aborted)setEditError(e.message==='VISUAL_OUTPUT_INVALID'?'ID cần dùng chữ tiếng Anh, số và dấu gạch dưới; tối đa 100 ký tự.':e.message);}
+  finally{if(!abort.signal.aborted)setSaving(false);saveAbort.current=null;}
+ }
  return <section aria-label={'Visual ID '+character.name} className="flex flex-wrap items-center gap-2 border-t border-purple-400/20 pt-2 text-xs">
    <p className="min-w-0 flex-1 break-words" aria-live="polite">Visual ID: <span className="font-mono select-text" data-approved-visual-id={id}>{id||(previous?previous+' (ảnh trước)':null)||(generating?'Đang tạo...':'Chưa thiết lập')}</span></p>
+   {id&&!editing&&<button type="button" disabled={disabled||saving||!auth.isSignedIn} onClick={()=>{setDraft(id);setEditError('');setEditing(true);}} className="rounded border border-purple-400/40 px-2 py-1">✎ Edit</button>}
+   {editing&&<form className="flex basis-full gap-2" onSubmit={e=>{e.preventDefault();void saveEdit();}}>
+    <input aria-label={'Sửa Visual ID '+character.name} value={draft} onChange={e=>setDraft(e.target.value)} disabled={saving} className="min-w-0 flex-1 rounded bg-slate-900 px-2 py-1 text-white"/>
+    <button type="submit" disabled={saving}>Lưu</button><button type="button" disabled={saving} onClick={()=>setEditing(false)}>Hủy</button>
+   </form>}
    {group&&<label className="inline-flex items-center gap-1"><input type="checkbox" aria-label={'Chọn Set ID cho '+character.name} disabled={unavailable} checked={group.selected.has(controller)} onChange={e=>update(controller,e.target.checked)}/>Chọn</label>}
    <button type="button" className="inline-flex items-center gap-1 rounded-lg border border-purple-400/40 px-2 py-1 font-semibold disabled:opacity-50" disabled={unavailable} onClick={()=>controller.submit()}>
     ✦ Set ID{generating&&<Loader2 className="animate-spin" size={12} aria-label="Đang tạo"/>}
    </button>
-   {error&&<p role="alert" className="basis-full text-amber-500">Không thể tạo ID. Vui lòng thử lại.</p>}
+   {(editError||error)&&<p role="alert" className="basis-full text-amber-500">{editError||state.message||'Không thể tạo ID. Vui lòng thử lại.'}</p>}
  </section>;
 }
 export function SceneVisualProfile({ scene }) {
